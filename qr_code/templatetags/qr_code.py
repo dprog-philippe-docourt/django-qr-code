@@ -7,5 +7,5 @@ register = template.Library()
 
 
 @register.simple_tag()
-def qr_from_text(text, size='M', border=0, version=None):
+def qr_from_text(text, size='M', border=4, version=None):
     return make_qr_code(text, size=size, border=border, version=version)

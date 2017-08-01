@@ -12,7 +12,7 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
         ET.ElementTree(self._img).write(stream, encoding="UTF-8", xml_declaration=False, default_namespace=None, method='html')
 
 
-def make_qr_code(text, size='M', border=0, version=None):
+def make_qr_code(text, size='M', border=4, version=None):
     if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
         actual_version = version
     else:
