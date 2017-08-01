@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load qr_code %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo Site for django-qr-code</title>
+</head>
+<body>
+{% block content %}
+    <h3>Tiny hello world QR code</h3>
+    <div>{% qr_from_text "Hello World!" size="T" %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" {% templatetag closeblock %}</code></p>
+
+    <h3>Small hello world QR code</h3>
+    <div>{% qr_from_text "Hello World!" size="S" %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></p>
+
+    <h3>Medium hello world QR code</h3>
+    <div>{% qr_from_text "Hello World!" size="M" %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" {% templatetag closeblock %}</code></p>
+
+    <h3>Large hello world QR code</h3>
+    <div>{% qr_from_text "Hello World!" size="L" %}</div>
+    <code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" {% templatetag closeblock %}</code>
+
+    <h3>Huge hello world QR code</h3>
+    <div>{% qr_from_text "Hello World!" size="H" %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" {% templatetag closeblock %}</code></p>
+
+    <h3>Custom hello world QR code with size <em>8</em> and version <em>12</em></h3>
+    <div>{% qr_from_text "Hello World!" size=8 version=12 %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 {% templatetag closeblock %}</code></p>
+
+    <h3>Custom hello world QR code with size <em>10</em> and border <em>6</em></h3>
+    <div>{% qr_from_text "Hello World!" size=10 border=6 %}</div>
+    <p>Code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></p>
+{% endblock %}
+</body>
+</html>
