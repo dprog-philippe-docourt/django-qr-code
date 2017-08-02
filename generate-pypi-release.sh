@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 rm -r build/ dist/ django_qr_code.egg-info/
-pyton setup.py check && python setup.py sdist && python setup.py bdist_wheel && twine upload dist/*
+python setup.py check && python setup.py sdist && python setup.py bdist_wheel && twine upload dist/*
