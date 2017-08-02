@@ -17,8 +17,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3 :: Only',
-        'Framework :: Django :: 1.10'
-        'Framework :: Django :: 1.11'
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
         'Natural Language :: English'
     ],
     keywords='qr code django',
