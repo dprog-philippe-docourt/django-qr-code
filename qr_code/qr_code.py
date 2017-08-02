@@ -1,3 +1,5 @@
+# Utility classes and functions for generating QR code. This module depends on the qrcode python library.
+
 from io import BytesIO
 
 import xml.etree.ElementTree as ET
@@ -13,6 +15,7 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
 
 
 def make_qr_code(text, size='M', border=4, version=None):
+    # Generate a <svg> tag representing the QR code for the given text. This tag can be embedded into an HTML document.
     if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
         actual_version = int(version)
     else:
