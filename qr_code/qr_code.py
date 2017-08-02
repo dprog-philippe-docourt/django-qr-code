@@ -14,14 +14,14 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
 
 def make_qr_code(text, size='M', border=4, version=None):
     if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
-        actual_version = version
+        actual_version = int(version)
     else:
         actual_version = 0
     if isinstance(size, int) or (isinstance(size, str) and size.isdigit()):
-        actual_size = size
+        actual_size = int(size)
     else:
         sizes_dict = {'t': 6, 's': 12, 'm': 18, 'l': 30, 'h': 48}
-        if not size.lower() in sizes_dict:
+        if not size or not size.lower() in sizes_dict:
             size = 'm'
         actual_size = sizes_dict[size.lower()]
     import qrcode

@@ -5,12 +5,20 @@ This application depends on the [qrcode](https://github.com/lincolnloop/python-q
 
 Only Python 3 is supported.
 
-# Install
+## Installation
 ```bash
 pip install django-qr-code
 ```
 
-# Usage
+## Usage
+
+Start by adding `qr_code` to your `INSTALLED_APPS` setting like this:
+```python
+INSTALLED_APPS = (
+    ...,
+    'qr_code',
+)
+```
 
 The tag `qr_from_text` generates an embedded SVG tag within the HTML code of your template.
 
