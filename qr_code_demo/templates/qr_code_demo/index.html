@@ -10,7 +10,7 @@
     <h1>Django QR code Demo Site</h1>
     <h2>Examples of <em>qr_from_text</em> usage</h2>
     <p>The <em>qr_from_text</em> tag renders an inline QR code within your Django template. It comes with several options to customize the image format (SVG or PNG), the size, the border and the matrix size.</p>
-    <p>The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, so you do not know the number of pixel it will occupy. The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than SVG, so it might not matter that much of you use HTML compression on your web server.</p>
+    <p>The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, so you do not know the number of pixels it will occupy. The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.</p>
 
     <h3>Tiny "hello world" QR code in SVG format (default format)</h3>
     <div>{% qr_from_text "Hello World!" size="T" image_format="svg" %}</div>
