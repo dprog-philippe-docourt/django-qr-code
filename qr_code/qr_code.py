@@ -1,4 +1,5 @@
-# Utility classes and functions for generating QR code. This module depends on the qrcode python library.
+"""Utility classes and functions for generating QR code. This module depends on the qrcode python library."""
+
 import base64
 from io import BytesIO
 
@@ -13,12 +14,14 @@ from qrcode.image.svg import SvgPathImage
 class SvgEmbeddedInHtmlImage(SvgPathImage):
     def _write(self, stream):
         self._img.append(self.make_path())
-        ET.ElementTree(self._img).write(stream, encoding="UTF-8", xml_declaration=False, default_namespace=None, method='html')
+        ET.ElementTree(self._img).write(stream, encoding="UTF-8", xml_declaration=False, default_namespace=None,
+                                        method='html')
 
 
 def make_qr_code(text, size='M', border=4, version=None, image_format='svg'):
-    # Generate a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
-    # HTML document.
+    """Generate a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
+    HTML document. """
+
     image_format = image_format.lower()
     if image_format not in ['svg', 'png']:
         image_format = 'svg'
@@ -51,5 +54,6 @@ def make_qr_code(text, size='M', border=4, version=None, image_format='svg'):
         html_fragment = (str(stream.getvalue(), 'utf-8'))
     else:
         img.save(stream, format='PNG')
-        html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
+        html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (
+        str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)
