@@ -9,15 +9,22 @@
 {% block content %}
     <h1>Django QR code Demo Site</h1>
     <h2>Examples of <em>qr_from_text</em> usage</h2>
-    <h3>Tiny "hello world" QR code</h3>
-    <div>{% qr_from_text "Hello World!" size="T" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" {% templatetag closeblock %}</code></p>
+    <p>The <em>qr_from_text</em> tag renders an inline QR code within your Django template. It comes with several options to customize the image format (SVG or PNG), the size, the border and the matrix size.</p>
+    <p>The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, so you do not know the number of pixel it will occupy. The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than SVG, so it might not matter that much of you use HTML compression on your web server.</p>
+
+    <h3>Tiny "hello world" QR code in SVG format (default format)</h3>
+    <div>{% qr_from_text "Hello World!" size="T" image_format="svg" %}</div>
+    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="svg" {% templatetag closeblock %}</code></p>
+
+    <h3>Tiny "hello world" QR code in PNG format</h3>
+    <div>{% qr_from_text "Hello World!" size="T" image_format="png" %}</div>
+    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="png" {% templatetag closeblock %}</code></p>
 
     <h3>Small "hello world" QR code</h3>
     <div>{% qr_from_text "Hello World!" size="S" %}</div>
     <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></p>
 
-    <h3>Medium "hello world" QR code</h3>
+    <h3>Medium "hello world" QR code (default size)</h3>
     <div>{% qr_from_text "Hello World!" size="M" %}</div>
     <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" {% templatetag closeblock %}</code></p>
 
