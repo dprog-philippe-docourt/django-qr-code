@@ -19,8 +19,29 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
 
 
 def make_qr_code(text, size='M', border=4, version=None, image_format='svg'):
-    """Generate a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
-    HTML document. """
+    """
+    Generates a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
+    HTML document.
+
+    Any invalid argument is silently converted into the default value for that argument.
+
+    The size of the QR code can be either a positive integer or one of the following letters:
+        * t or T: tiny (value: 6)
+        * s or S: small (value: 12)
+        * m or M: medium (value: 18)
+        * l or L: large (value: 30)
+        * h or H: huge (value: 48)
+
+    The version parameter is an integer from 1 to 40 that controls the size of the QR Code. Set to None to determine
+    this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
+    The size grows by 4 boxes/side.
+
+    Keyword arguments:
+        * text (str): the text to render as a QR code
+        * size (int, str): the size of the QR code as an integer or a string. Default is 'm'.
+        * version (int): the version of the QR code gives the size of the matrix. Default is 1.
+        * image_format (str): the graphics format used to render the QR code. It can be either 'svg' or 'png'. Default is 'svg'.
+    """
 
     image_format = image_format.lower()
     if image_format not in ['svg', 'png']:
