@@ -1,18 +1,19 @@
 # Django QR Code
 [![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](http://django-qr-code.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master)](https://travis-ci.org/dprog-philippe-docourt/django-qr-code)
 
-This is an application that provides tools for displaying QR codes on your Django site.
+This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
 
 This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library.
 
 This app makes no usage of the Django models and therefore do not use any database.
 
-Only Python 3 is supported.
+Only Python >= 3.4 is supported.
 
 ## Installation
 
 ### Binary Package from PyPi
-In order to use this app in a Django project, the simplest way is to install it from PyPi:
+In order to use this app in a Django project, the simplest way is to install it from [PyPi](https://pypi.python.org/pypi/django-qr-code):
 ```bash
 pip install django-qr-code
 ```
