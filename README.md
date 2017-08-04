@@ -1,4 +1,4 @@
-# Django QR code
+# Django QR Code
 This is an application that provides tools for displaying QR codes on your Django site.
 
 This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library.
@@ -65,6 +65,11 @@ The border parameter controls how many boxes thick the border should be (the def
 
 The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code) contains a simple demo app. Please check out the templates folder (in qr_code_demo/templates/qr_code_demo) for examples.
 
+## Notes
+The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, so you do not know the number of pixels it will occupy. The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
+
+SVG has [broad support](http://caniuse.com/#feat=svg) now and it will work properly on any modern web browser.
+ 
 ## Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
 
