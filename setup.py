@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-qr-code',
-    version='0.1.2',
+    version='0.2.0',
     packages=['qr_code', 'qr_code.templatetags'],
     url='https://github.com/dprog-philippe-docourt/django-qr-code',
     license='BSD 3-clause',
