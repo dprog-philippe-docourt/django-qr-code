@@ -1,4 +1,6 @@
 # Django QR Code
+[![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](http://django-qr-code.readthedocs.io/en/latest/?badge=latest)
+
 This is an application that provides tools for displaying QR codes on your Django site.
 
 This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library.
