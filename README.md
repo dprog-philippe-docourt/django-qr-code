@@ -1,4 +1,5 @@
 # Django QR Code
+[![Latest PyPI version](https://badge.fury.io/py/django-qr-code.svg)](https://badge.fury.io/py/django-qr-code)
 [![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](http://django-qr-code.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master)](https://travis-ci.org/dprog-philippe-docourt/django-qr-code)
 
@@ -58,7 +59,7 @@ Here is a "hello world" QR code using the version 12:
 ```djangotemplate
 {% qr_from_text "Hello World!" size=8 version=12 %}
 ```
-The version parameter is an integer from 1 to 40 that controls the size of the QR Code. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 boxes/side.
+The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 boxes/side.
 
 Here is a "hello world" QR code using a border of 6 boxes:
 ```djangotemplate
