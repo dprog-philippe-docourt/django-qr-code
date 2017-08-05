@@ -25,16 +25,18 @@ def make_qr_code(text, size='M', border=4, version=None, image_format='svg'):
 
     Any invalid argument is silently converted into the default value for that argument.
 
-    The size of the QR code can be either a positive integer or one of the following letters:
+    The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one
+    of the following letters:
         * t or T: tiny (value: 6)
         * s or S: small (value: 12)
         * m or M: medium (value: 18)
         * l or L: large (value: 30)
         * h or H: huge (value: 48)
+    For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
 
-    The version parameter is an integer from 1 to 40 that controls the size of the QR Code. Set to None to determine
+    The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
     this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
-    The size grows by 4 boxes/side.
+    The size grows by 4 modules/side.
 
     Keyword arguments:
         * text (str): the text to render as a QR code

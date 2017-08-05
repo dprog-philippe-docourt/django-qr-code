@@ -1,6 +1,6 @@
 # Django QR Code
 [![Latest PyPI version](https://badge.fury.io/py/django-qr-code.svg)](https://badge.fury.io/py/django-qr-code)
-[![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](http://django-qr-code.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](http://django-qr-code.readthedocs.io/en/latest/)
 [![Build Status](https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master)](https://travis-ci.org/dprog-philippe-docourt/django-qr-code)
 
 This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
@@ -48,32 +48,34 @@ Here is a medium "hello world" QR code with an `img` tag:
 {% qr_from_text "Hello World!" size="m" image_format='png' %}
 ```
 
-The size of the QR code can be either a positive integer or one of the following letters:
+The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
 * t or T: tiny (value: 6)
 * s or S: small (value: 12)
 * m or M: medium (value: 18)
 * l or L: large (value: 30)
 * h or H: huge (value: 48)
 
+For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
+
 Here is a "hello world" QR code using the version 12:
 ```djangotemplate
 {% qr_from_text "Hello World!" size=8 version=12 %}
 ```
-The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 boxes/side.
+The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 modules/side.
 
-Here is a "hello world" QR code using a border of 6 boxes:
+Here is a "hello world" QR code using a border of 6 modules:
 ```djangotemplate
 {% qr_from_text "Hello World!" size=10 border=6 %}
 ```
-The border parameter controls how many boxes thick the border should be (the default is 4, which is the minimum according to the specs).
+The border parameter controls how many modules thick the border should be (the default is 4, which is the minimum according to the specs).
 
 The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code) contains a simple demo app. Please check out the templates folder (in qr_code_demo/templates/qr_code_demo) for examples.
 
 ## Notes
-The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, so you do not know the number of pixels it will occupy. The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
+The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
 
 SVG has [broad support](http://caniuse.com/#feat=svg) now and it will work properly on any modern web browser.
- 
+
 ## Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
 
