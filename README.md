@@ -37,7 +37,10 @@ INSTALLED_APPS = (
 )
 ```
 
-The tag `qr_from_text` generates an embedded `svg` or `img` tag within the HTML code produced by your template.
+The tag `qr_from_text` generates an embedded `svg` or `img` tag within the HTML code produced by your template. You need to load this tag in your template with:
+```djangotemplate
+{% load qr_code %}
+```
 
 The following renders a tiny "hello world" QR code with a `svg` tag:
 ```djangotemplate
