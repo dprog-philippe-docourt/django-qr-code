@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-qr-code',
-    version='0.2.1',
+    version='0.3.0',
     packages=['qr_code', 'qr_code.templatetags'],
     url='https://github.com/dprog-philippe-docourt/django-qr-code',
     license='BSD 3-clause',
@@ -10,7 +10,7 @@ setup(
     author_email='philippe@docourt.ch',
     maintainer='Philippe Docourt',
     description='An application that provides tools for displaying QR codes on your Django site.',
-    long_description="""This is an application that provides tools for displaying QR codes on your `Django <https://www.djangoproject.com/>`_ site.
+    long_description="""This application provides tools for displaying QR codes on your `Django <https://www.djangoproject.com/>`_ site.
 
 This application depends on the `qrcode <https://github.com/lincolnloop/python-qrcode>`_ python library.
 

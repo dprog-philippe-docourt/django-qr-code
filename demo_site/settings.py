@@ -116,3 +116,24 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Caches.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'qr-code': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'qr-code-cache',
+        'TIMEOUT': 3600
+    }
+}
+
+# Django QR Code specific options.
+QR_CODE_CACHE_ALIAS = 'qr-code'
+QR_CODE_URL_PROTECTION = {
+    'TOKEN_LENGTH': 30,                         # Optional random token length for URL protection. Defaults to 20.
+    'SIGNING_KEY': 'my-secret-signing-key',     # Optional signing key for URL token. Uses SECRET_KEY if not defined.
+    'SIGNING_SALT': 'my-signing-salt',          # Optional signing salt for URL token.
+    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It might be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+}

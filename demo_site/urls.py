@@ -18,5 +18,6 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='qr_code_demo/', permanent=True)),
-    url(r'^qr_code_demo/', include('qr_code_demo.urls', namespace="qr_code_demo")),
+    url(r'^qr_code_demo/', include('qr_code_demo.urls', namespace="qr_code_demod")),
+    url(r'^qr_code/', include('qr_code.urls', namespace="qr_code")),
 ]

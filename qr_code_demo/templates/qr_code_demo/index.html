@@ -8,7 +8,7 @@
 <body>
 {% block content %}
     <h1>Django QR Code Demo Site</h1>
-    <p>This is a demo site for the <em>Django QR code application.</em>.</p>
+    <p>This is a demo site for the <em>Django QR Code</em> application.</p>
     <a href="https://badge.fury.io/py/django-qr-code" ><img src="https://badge.fury.io/py/django-qr-code.svg" alt="Latest PyPI Version"></a>
     <a href="http://django-qr-code.readthedocs.io/en/latest/" ><img src="https://readthedocs.org/projects/django-qr-code/badge/?version=latest" alt="Documentation Status"></a>
     <a href="https://travis-ci.org/dprog-philippe-docourt/django-qr-code"><img src="https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master"  alt="Build Status"></a>
@@ -18,37 +18,61 @@
     <p>The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.</p><p></p>
     <p>SVG has <a href="http://caniuse.com/#feat=svg">broad support</a> now and it will work properly on any modern web browser.</p>
 
-    <h3>Tiny "hello world" QR code in SVG format (default format)</h3>
+    <h3>A tiny "hello world" QR code in SVG format (default format)</h3>
     <div>{% qr_from_text "Hello World!" size="T" image_format="svg" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="svg" {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="svg" {% templatetag closeblock %}</code></p>
 
-    <h3>Tiny "hello world" QR code in PNG format</h3>
+    <h3>A tiny "hello world" QR code in PNG format</h3>
     <div>{% qr_from_text "Hello World!" size="T" image_format="png" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="png" {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="png" {% templatetag closeblock %}</code></p>
 
-    <h3>Small "hello world" QR code</h3>
+    <h3>A small "hello world" QR code</h3>
     <div>{% qr_from_text "Hello World!" size="S" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></p>
 
-    <h3>Medium "hello world" QR code (default size)</h3>
+    <h3>A medium "hello world" QR code (default size)</h3>
     <div>{% qr_from_text "Hello World!" size="M" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" {% templatetag closeblock %}</code></p>
 
-    <h3>Large "hello world" QR code</h3>
+    <h3>A large "hello world" QR code</h3>
     <div>{% qr_from_text "Hello World!" size="L" %}</div>
     <code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" {% templatetag closeblock %}</code>
 
-    <h3>Huge "hello world" QR code</h3>
+    <h3>A huge "hello world" QR code</h3>
     <div>{% qr_from_text "Hello World!" size="H" %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" {% templatetag closeblock %}</code></p>
 
-    <h3>Custom "hello world" QR code with size <em>8</em> and version <em>12</em></h3>
+    <h3>A custom "hello world" QR code with size <em>8</em> and version <em>12</em></h3>
     <div>{% qr_from_text "Hello World!" size=8 version=12 %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 {% templatetag closeblock %}</code></p>
 
-    <h3>Custom "hello world" QR code with size <em>10</em> and border <em>6</em></h3>
+    <h3>A custom "hello world" QR code with size <em>10</em> and border <em>6</em></h3>
     <div>{% qr_from_text "Hello World!" size=10 border=6 %}</div>
-    <p>Template code: <code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></p>
+    <p><strong>Template code:</strong> <code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></p>
+
+    <h2>Examples of <em>qr_url_from_text</em> usage</h2>
+    <p>The <em>qr_url_from_text</em> tag generates an url to an image representing the QR code. It comes with the same options as <em>qr_from_text</em> to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option <strong>cache_enabled</strong> to disable caching of served image.</p>
+    <p>The image targeted by the generated URL is served by a view provided in <code>qr_code.urls</code>. Therefore you need to include the URLs provided by <code>qr_code.urls</code> in your app in order to make this tag work. This can be achieved with something like this:</p>
+    <code>
+    urlpatterns = [
+        ...
+        url(r'^qr_code/', include('qr_code', namespace="qr_code")),
+        ...
+    ]
+    </code>
+
+    <h3>A medium "hello world" QR code that uses an URL to serve the image in SVG format</h3>
+    <div><img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!"></div>
+    <p><strong>Template code:</strong> <code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></p>
+
+    <h3>A "hello world" QR code in version 10 that uses an URL to serve the image in PNG format</h3>
+    <div><img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!"></div>
+    <p><strong>Template code:</strong> <code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=10 image_format='png' {% templatetag closeblock %}" alt="Hello World!"&gt;</code></p>
+
+    <h3>A "hello world" QR code in version 20 that uses an URL to serve the image in SVG format, and disable caching for served image</h3>
+    <div><img src="{% qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False %}" alt="Hello World!"></div>
+    <p><strong>Template code:</strong> <code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False {% templatetag closeblock %}" alt="Hello World!"&gt;</code></p>
+
 {% endblock %}
 </body>
 </html>
