@@ -143,8 +143,11 @@ QR_CODE_URL_PROTECTION = {
 
 ## Notes
 
-### Image format
-The SVG is the default image format. It is a vectorial format so it can be scaled as wanted. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
+### Image Formats
+The SVG is the default image format.
+It is a vectorial format so it can be scaled as wanted.
+However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels).
+The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
 
 SVG has [broad support](http://caniuse.com/#feat=svg) now and it will work properly on any modern web browser.
 
@@ -162,13 +165,13 @@ One disadvantage of `qr_url_from_text` is that it increases the number of reques
 Be aware that serving image files (which are generated on the fly) from an URL can be abused and lead to DOS attack pretty easily, for instance by requesting very large QR codes from outside your application.
 This is the reason why the associated setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` in `QR_CODE_URL_PROTECTION` defaults to completely forbid external access to the API. Be careful when opening external access.
 
-### QR codes caching
+### QR Codes Caching
 Caching QR codes reduces CPU usage, but the usage of `qr_url_from_text` (which caching depends on) increases the number of requests to the server (one request to serve the page containing the URL and another to request the image).
 
 Moreover, be aware that the largest QR codes, in version 40 with a border of 4 modules and rendered in SVG format, have a size of ~800 KB.
 Be sure that your cache options are reasonable and can be supported by your server(s), especially for in-memory caching.
 
-Note that even without caching generated QR codes, the app will return a *HTTP 304 Not Modified* status code whenever the same QR code is requested again.
+Note that even without caching generated QR codes, the app will return a *HTTP 304 Not Modified* status code whenever the same QR code is requested again by the same user.
 
 ## Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
