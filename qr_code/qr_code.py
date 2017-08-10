@@ -8,7 +8,10 @@ from io import BytesIO
 import xml.etree.ElementTree as ET
 
 from django.conf import settings
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.core.signing import Signer
 from django.utils.crypto import get_random_string
 from django.utils.html import escape
@@ -48,8 +51,15 @@ def get_url_protection_options(user=None):
         # Evaluate the callable if required.
         if callable(options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER']):
             options['ALLOWS_EXTERNAL_REQUESTS'] = user and options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'](user)
+        elif options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'] and user:
+            if callable(user.is_authenticated):
+                # Django version < 1.10
+                options['ALLOWS_EXTERNAL_REQUESTS'] = user.is_authenticated()
+            else:
+                # Django version >= 1.10
+                options['ALLOWS_EXTERNAL_REQUESTS'] = user.is_authenticated
         else:
-            options['ALLOWS_EXTERNAL_REQUESTS'] = options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'] and user and user.is_authenticated
+            options['ALLOWS_EXTERNAL_REQUESTS'] = False
 
     return options
 

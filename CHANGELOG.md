@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.3.0 (2017-08-09)
+## 0.3.0 (2017-08-10)
 * Added new tag qr_url_from_text:
     * Separate image from the page displaying the image
     * Handle caching of images
@@ -12,6 +12,7 @@
     * Added examples to demo site
 * More robust testing of make_qr_code's arguments.
 * Improved documentation.
+* Demo site is compatible with Django 1.8.
 
 ## 0.2.1 (2017-08-05)
 * Added support for Django 1.8.

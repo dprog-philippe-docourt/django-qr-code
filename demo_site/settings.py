@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from distutils.version import StrictVersion
+import django
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -26,7 +27,6 @@ SECRET_KEY = '8l4)()f1&tg*dtxh6whlew#k-d5&79npe#j_dg9l0b)m8^g#8u'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -40,15 +40,28 @@ INSTALLED_APPS = [
     'qr_code_demo'
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+
+django_version = StrictVersion(django.get_version())
+if django_version >= StrictVersion('1.10'):
+    MIDDLEWARE = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    ]
+else:
+    MIDDLEWARE_CLASSES = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    ]
 
 ROOT_URLCONF = 'demo_site.urls'
 
@@ -70,13 +83,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'demo_site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -96,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -109,7 +119,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -132,8 +141,9 @@ CACHES = {
 # Django QR Code specific options.
 QR_CODE_CACHE_ALIAS = 'qr-code'
 QR_CODE_URL_PROTECTION = {
-    'TOKEN_LENGTH': 30,                         # Optional random token length for URL protection. Defaults to 20.
-    'SIGNING_KEY': 'my-secret-signing-key',     # Optional signing key for URL token. Uses SECRET_KEY if not defined.
-    'SIGNING_SALT': 'my-signing-salt',          # Optional signing salt for URL token.
-    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It might be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+    'TOKEN_LENGTH': 30,  # Optional random token length for URL protection. Defaults to 20.
+    'SIGNING_KEY': 'my-secret-signing-key',  # Optional signing key for URL token. Uses SECRET_KEY if not defined.
+    'SIGNING_SALT': 'my-signing-salt',  # Optional signing salt for URL token.
+    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False
+    # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It might be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }
