@@ -1,0 +1,13 @@
+version: '3'
+services:
+  django-qr-code:
+    build:
+      context: ./
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      - APP_PORT=8910
+    expose:
+      - "8910"
+    ports:
+      - "8910:8910"

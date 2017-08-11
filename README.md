@@ -182,8 +182,20 @@ python manage.py runserver
 ```
 The demo application should be running at <http://127.0.0.1:8000/>.
 
+If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can simply run the following from a terminal (this will save you the burden of setting up a proper python environment):
+```bash
+./run-demo-app.sh
+```
+The demo application should be running at <http://127.0.0.1:8910/>.
+
 ## Testing
 Get the source code from [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code), follow the [installation instructions](#from-the-source-code) above, and run the `test` command of Django:
 ```bash
 python manage.py test
 ```
+
+If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can simply run the following from a terminal (this will save you the burden of setting up a proper python environment):
+```bash
+./run-tests.sh
+```
+The test results are stored within `tests_result.txt`.

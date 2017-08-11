@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.3.0 (2017-08-10)
+## 0.3.0 (2017-08-12)
 * Added new tag qr_url_from_text:
     * Separate image from the page displaying the image
     * Handle caching of images
@@ -13,6 +13,7 @@
 * More robust testing of make_qr_code's arguments.
 * Improved documentation.
 * Demo site is compatible with Django 1.8.
+* Added support for Docker Compose for running the demo application and running the tests.
 
 ## 0.2.1 (2017-08-05)
 * Added support for Django 1.8.
