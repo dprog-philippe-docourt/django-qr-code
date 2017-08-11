@@ -1,3 +1,4 @@
 recommonmark
 sphinx
 sphinx-autobuild
+-r ../requirements.txt

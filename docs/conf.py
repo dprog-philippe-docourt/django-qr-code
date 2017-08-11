@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Django QR code documentation build configuration file, created by
+# Django QR Code documentation build configuration file, created by
 # sphinx-quickstart on Wed Aug  2 22:36:45 2017.
 #
 # This file is execfile()d with the current directory set to its
