@@ -25,7 +25,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, cache_enabled=cache_enabled)
             url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, cache_enabled=cache_enabled)
             url = url1
-            token_regex = re.compile(r"token=.+&")
+            token_regex = re.compile(r"token=.+&?")
             urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
@@ -40,7 +40,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, cache_enabled=cache_enabled)
             url3 = qr_url_from_text(TEST_TEXT, image_format='PNG', size=1, cache_enabled=cache_enabled)
             url = url1
-            token_regex = re.compile(r"token=.+&")
+            token_regex = re.compile(r"token=.+&?")
             urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3)))
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
