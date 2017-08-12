@@ -17,7 +17,8 @@ from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback
+from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, get_supported_image_format, SVG_FORMAT_NAME, \
+    PNG_FORMAT_NAME
 
 QR_CODE_GENERATION_VERSION_DATE = datetime(year=2017, month=8, day=7, hour=0)
 
@@ -26,7 +27,7 @@ SIZE_DICT = {'t': 6, 's': 12, 'm': 18, 'l': 30, 'h': 48}
 DEFAULT_MODULE_SIZE = 'M'
 DEFAULT_BORDER_SIZE = 4
 DEFAULT_VERSION = None
-DEFAULT_IMAGE_FORMAT = 'svg'
+DEFAULT_IMAGE_FORMAT = SVG_FORMAT_NAME
 DEFAULT_CACHE_ENABLED = True
 
 
@@ -126,16 +127,14 @@ def make_qr_code(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, ver
         * version (int): the version of the QR code gives the size of the matrix. Default is 1.
         * image_format (str): the graphics format used to render the QR code. It can be either 'svg' or 'png'. Default is 'svg'.
     """
-    image_format = image_format.lower()
-    if image_format not in ['svg', 'png']:
-        image_format = 'svg'
-    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == 'svg' else PilImageOrFallback, size=size, border=border, version=version)
+    image_format = get_supported_image_format(image_format)
+    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=size, border=border, version=version)
     stream = BytesIO()
-    if image_format == 'svg':
-        img.save(stream, kind='SVG')
+    if image_format == SVG_FORMAT_NAME:
+        img.save(stream, kind=SVG_FORMAT_NAME.upper())
         html_fragment = (str(stream.getvalue(), 'utf-8'))
     else:
-        img.save(stream, format='PNG')
+        img.save(stream, format=PNG_FORMAT_NAME.upper())
         html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (
         str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)
@@ -152,7 +151,8 @@ def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE,
     """
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 
-    params = dict(text=encoded_text, size=size, border=border, version=version, image_format=image_format.lower(), cache_enabled=cache_enabled)
+    image_format = get_supported_image_format(image_format)
+    params = dict(text=encoded_text, size=size, border=border, version=version, image_format=image_format, cache_enabled=cache_enabled)
     path = reverse('qr_code:serve_qr_code_image')
 
     if include_url_protection_token:
