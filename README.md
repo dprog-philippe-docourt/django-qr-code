@@ -193,9 +193,10 @@ Get the source code from [GitHub](https://github.com/dprog-philippe-docourt/djan
 ```bash
 python manage.py test
 ```
+This will run the test suite with the locally installed version of Python and Django.
 
 If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can simply run the following from a terminal (this will save you the burden of setting up a proper python environment):
 ```bash
 ./run-tests.sh
 ```
-The test results are stored within `tests_result.txt`.
+This will run the test suite with all supported versions of Python and Django. The test results are stored within `tests_result.txt`.
