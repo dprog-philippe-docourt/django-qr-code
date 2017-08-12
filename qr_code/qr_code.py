@@ -16,7 +16,11 @@ from django.core.signing import Signer
 from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from qrcode.image.pil import PilImage
+try:
+    from qrcode.image.pil import PilImage
+except ImportError:
+    print("WARNING: Pillow is not installed. No support available for PNG format.")
+    pass
 from qrcode.image.svg import SvgPathImage
 
 QR_CODE_GENERATION_VERSION_DATE = datetime(year=2017, month=8, day=7, hour=0)

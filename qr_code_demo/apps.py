@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DemoConfig(AppConfig):
-    name = 'demo'
-    verbose_name = 'Demo of Django QR code'
+class QRCodeDemoConfig(AppConfig):
+    name = 'qr_code_demo'
+    verbose_name = 'Demo of Django QR Code'

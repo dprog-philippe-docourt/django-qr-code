@@ -5,7 +5,7 @@
 
 This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
 
-This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library.
+This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library which requires the [Pillow](https://github.com/python-pillow/Pillow) library in order to support PNG image format. The Pillow library needs to be installed manually if you want to generate QR codes in PNG format; otherwise, only SVG is format is supported.
 
 This app makes no usage of the Django models and therefore do not use any database.
 
@@ -82,9 +82,12 @@ The `qr_url_from_text` tag generates an url to an image representing the QR code
 
 The image targeted by the generated URL is served by a view provided in `qr_code.urls`. Therefore you need to include the URLs provided by `qr_code.urls` in your app in order to make this tag work. This can be achieved with something like this:
 ```python
+from django.conf.urls import include
+from qr_code import urls as qr_code_urls
+
 urlpatterns = [
     ...
-    url(r'^qr_code/', include('qr_code', namespace="qr_code")),
+    url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
     ...
 ]
 ```

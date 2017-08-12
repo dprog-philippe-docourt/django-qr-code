@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.1 (2017-08-12)
+* Added a mention about Pillow library requirement in documentation.
+* Minor improvements to the documentation and the demo application.
+
 ## 0.3.0 (2017-08-12)
 * Added new tag qr_url_from_text:
     * Separate image from the page displaying the image
