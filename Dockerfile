@@ -3,9 +3,6 @@ MAINTAINER Philippe Docourt
 
 ENV PYTHONUNBUFFERED 1
 
-# Required site name for accesing settings and data.
-ARG SITE_NAME
-
 # Set env variables used in this Dockerfile (add a unique prefix, such as <app name>)
 # Directory in container for project source files.
 ARG APP_BASE_DIR=/usr/src/app

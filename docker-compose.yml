@@ -3,6 +3,7 @@ services:
   django-qr-code:
     build:
       context: ./
+      dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
     environment:
