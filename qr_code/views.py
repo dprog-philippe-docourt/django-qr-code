@@ -9,9 +9,8 @@ from django.utils.decorators import available_attrs
 from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
-from qrcode.image.svg import SvgPathImage
-from qrcode.image.pil import PilImage
 
+from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback
 from qr_code.qr_code import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_IMAGE_FORMAT, \
     make_qr_code_image, QR_CODE_GENERATION_VERSION_DATE, get_url_protection_options, get_qr_url_protection_token
 
@@ -70,7 +69,7 @@ def serve_qr_code_image(request):
         except BadSignature:
             raise PermissionDenied("Wrong token signature.")
 
-    img = make_qr_code_image(text, image_factory=SvgPathImage if image_format == 'svg' else PilImage, size=size,
+    img = make_qr_code_image(text, image_factory=SvgPathImage if image_format == 'svg' else PilImageOrFallback, size=size,
                              border=border, version=version)
 
     # Warning: The largest QR codes, in version 40, with a border of 4 modules, and rendered in SVG format, are ~800

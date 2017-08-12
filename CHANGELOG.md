@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.3.2 (2017-08-12)
+* Allows optional installation of Pillow (PNG format unavailable, fallback to SVG).
+
 ## 0.3.1 (2017-08-12)
 * Added a mention about Pillow library requirement in documentation.
 * Minor improvements to the documentation and the demo application.

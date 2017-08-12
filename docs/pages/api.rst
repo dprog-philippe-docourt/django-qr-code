@@ -8,6 +8,12 @@ qr_code
    :members:
 
 
+qrcode_image
+------------
+
+.. automodule:: qr_code.qrcode_image
+   :members:
+
 templatetags.qr_code
 --------------------
 
