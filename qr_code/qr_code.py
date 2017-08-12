@@ -65,6 +65,13 @@ def get_url_protection_options(user=None):
     return options
 
 
+def _make_random_token():
+    url_protection_options = get_url_protection_options()
+    return get_random_string(url_protection_options['TOKEN_LENGTH'])
+
+RANDOM_TOKEN = _make_random_token()
+
+
 def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION):
     """
     Generates an image object (from the qrcode library) representing the QR code for the given text.
@@ -169,9 +176,8 @@ def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE,
 def get_qr_url_protection_signed_token(size, border, version, image_format):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
-    random_token = get_random_string(url_protection_options['TOKEN_LENGTH'])
     signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
-    token = signer.sign(get_qr_url_protection_token(size, border, version, image_format, random_token))
+    token = signer.sign(get_qr_url_protection_token(size, border, version, image_format, RANDOM_TOKEN))
     return token
 
 

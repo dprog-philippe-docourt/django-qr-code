@@ -1,7 +1,9 @@
 # Change Log
 
-## 0.3.2 (2017-08-12)
+## 0.3.2 (2017-08-13)
 * Allows optional installation of Pillow (PNG format unavailable, fallback to SVG).
+* Fixed caching of images (not working due protection against external queries).
+* Fixed conditional view processing (HTTP 304) for rendered QR codes (not working due protection against external queries).
 
 ## 0.3.1 (2017-08-12)
 * Added a mention about Pillow library requirement in documentation.
