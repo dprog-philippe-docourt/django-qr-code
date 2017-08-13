@@ -82,13 +82,16 @@ The `qr_url_from_text` tag generates an url to an image representing the QR code
 
 The image targeted by the generated URL is served by a view provided in `qr_code.urls`. Therefore you need to include the URLs provided by `qr_code.urls` in your app in order to make this tag work. This can be achieved with something like this:
 ```python
-from django.conf.urls import include
+from django.conf.urls import include, url
 from qr_code import urls as qr_code_urls
 
 urlpatterns = [
-    ...
+    # ...
+    # For Django 1.8:
     url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
-    ...
+    # For Django >= 1.9:
+    url(r'^qr_code/', include(qr_code_urls)),
+    # ...
 ]
 ```
 

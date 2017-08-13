@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.3 (under development)
+* Added app_name namespace to qr_code.url (better compatibility with include() function provided with Django >= 1.9).
+* Update documentation regarding the inclusion of `qr_code.url`for distinct versions of Django.
+
 ## 0.3.2 (2017-08-13)
 * Allows optional installation of Pillow (PNG format unavailable, fallback to SVG).
 * Fixed caching of images (not working due protection against external queries).
