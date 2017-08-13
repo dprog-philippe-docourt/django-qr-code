@@ -4,10 +4,9 @@ format when the Pillow library is not available.
 """
 import logging
 from qrcode.image.svg import SvgPathImage as _SvgPathImage
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 try:
     from qrcode.image.pil import PilImage as _PilImageOrFallback
-
 except ImportError:
     logger.info("Pillow is not installed. No support available for PNG format.")
     from qrcode.image.svg import SvgPathImage as _PilImageOrFallback
