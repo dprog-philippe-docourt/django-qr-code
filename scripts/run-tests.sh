@@ -6,6 +6,8 @@ if [ -f "${log_file_path}" ]; then
     cp "${log_file_path}" "${log_file_path}.back"
 fi
 (
+    cd ../
+
     echo "--- Tests started on $(date)on $(hostname) ($(uname -a))"
     echo "--- Computer: $(hostname) ($(uname -a), CPU: $(nproc --all)"
     echo "--- CPU: $(nproc --all)"

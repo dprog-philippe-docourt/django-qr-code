@@ -1,8 +1,14 @@
+import re
+
 from setuptools import setup
+
+# Get version without importing
+with open('qr_code/__init__.py', 'rb') as f:
+    VERSION = str(re.search('__version__ = \'(.+?)\'', f.read().decode('utf-8')).group(1))
 
 setup(
     name='django-qr-code',
-    version='0.3.2',
+    version=VERSION,
     packages=['qr_code', 'qr_code.templatetags'],
     url='https://github.com/dprog-philippe-docourt/django-qr-code',
     license='BSD 3-clause',
@@ -23,6 +29,7 @@ Only Python >= 3.4 is supported.""",
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Internet :: WWW/HTTP',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3 :: Only',
         'Framework :: Django :: 1.8',

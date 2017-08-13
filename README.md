@@ -187,6 +187,7 @@ The demo application should be running at <http://127.0.0.1:8000/>.
 
 If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can simply run the following from a terminal (this will save you the burden of setting up a proper python environment):
 ```bash
+cd scripts
 ./run-demo-app.sh
 ```
 The demo application should be running at <http://127.0.0.1:8910/>.
@@ -200,6 +201,7 @@ This will run the test suite with the locally installed version of Python and Dj
 
 If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can simply run the following from a terminal (this will save you the burden of setting up a proper python environment):
 ```bash
+cd scripts
 ./run-tests.sh
 ```
 This will run the test suite with all supported versions of Python and Django. The test results are stored within `tests_result.txt`.
