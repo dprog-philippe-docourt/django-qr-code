@@ -2,18 +2,19 @@ import base64
 from io import BytesIO
 
 from django.conf import settings
-from django.core.signing import Signer, BadSignature
 from django.core.exceptions import PermissionDenied
+from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
 from django.utils.decorators import available_attrs
 from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
-from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME, \
+from qr_code.qr_code import DEFAULT_BORDER_SIZE, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, DEFAULT_VERSION, \
+    get_qr_url_protection_token, get_url_protection_options, make_qr_code_image, \
+    qr_code_etag, qr_code_last_modified
+from qr_code.qrcode_image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage, \
     get_supported_image_format
-from qr_code.qr_code import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_IMAGE_FORMAT, \
-    make_qr_code_image, QR_CODE_GENERATION_VERSION_DATE, get_url_protection_options, get_qr_url_protection_token
 
 
 def cache_qr_code():
@@ -35,14 +36,6 @@ def cache_qr_code():
             return response
         return _wrapped_view
     return decorator
-
-
-def qr_code_etag(request):
-    return '%s:%s:version_%s' % (request.path, request.GET.urlencode(), QR_CODE_GENERATION_VERSION_DATE.isoformat())
-
-
-def qr_code_last_modified(request):
-    return QR_CODE_GENERATION_VERSION_DATE
 
 
 @condition(etag_func=qr_code_etag, last_modified_func=qr_code_last_modified)

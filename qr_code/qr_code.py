@@ -130,9 +130,9 @@ def make_qr_code(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, ver
 
     Keyword arguments:
         * text (str): the text to render as a QR code
-        * size (int, str): the size of the QR code as an integer or a string. Default is 'm'.
-        * version (int): the version of the QR code gives the size of the matrix. Default is 1.
-        * image_format (str): the graphics format used to render the QR code. It can be either 'svg' or 'png'. Default is 'svg'.
+        * size (int, str): the size of the QR code as an integer or a string. Default is *'m'*.
+        * version (int): the version of the QR code gives the size of the matrix. Default is *1*.
+        * image_format (str): the graphics format used to render the QR code. It can be either *'svg'* or *'png'*. Default is *'svg'*.
     """
     image_format = get_supported_image_format(image_format)
     img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=size, border=border, version=version)
@@ -154,7 +154,9 @@ def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE,
 
     See the function :func:`~qr_code.qr_code.make_qr_code` for behavior and details about parameters meaning.
 
-    The parameter cache_enabled (bool) allows to skip caching the QR code (when set to False) when caching has been enabled.
+    The parameter *cache_enabled (bool)* allows to skip caching the QR code (when set to *False*) when caching has been enabled.
+
+    The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against external requests is added to the returned URL. It defaults to *True*.
     """
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 
@@ -189,3 +191,11 @@ def get_qr_url_protection_token(size, border, version, image_format, random_toke
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
     return '.'.join(list(map(str, (size, border, version, image_format, random_token))))
+
+
+def qr_code_etag(request):
+    return '"%s:%s:version_%s"' % (request.path, request.GET.urlencode(), QR_CODE_GENERATION_VERSION_DATE.isoformat())
+
+
+def qr_code_last_modified(request):
+    return QR_CODE_GENERATION_VERSION_DATE
