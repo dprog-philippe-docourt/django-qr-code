@@ -5,7 +5,8 @@
 
 This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
 
-This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library which requires the [Pillow](https://github.com/python-pillow/Pillow) library in order to support PNG image format. The Pillow library needs to be installed manually if you want to generate QR codes in PNG format; otherwise, only SVG is format is supported.
+This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library which requires the [Pillow](https://github.com/python-pillow/Pillow) library in order to support the PNG image format.
+The Pillow library needs to be installed manually if you want to generate QR codes in PNG format; otherwise, SVG is the only supported format.
 
 This app makes no usage of the Django models and therefore do not use any database.
 
@@ -134,16 +135,18 @@ Here is a "hello world" QR code in version 20 that uses an URL to serve the imag
 <img src="{% qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False %}" alt="Hello World!">
 ```
 
-The default settings protect served image URLs against external requests, and possibly easy DOS attacks.
+The default settings protect the URLs that serve images against external requests, and thus against possibly easy DOS attacks.
 However, if you are interested in providing those images as a service, there is a setting named `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to open access to some controlled users.
-This setting tells who can bypass the random token protection.
+This setting tells who can bypass the random token protection. It can be a boolean value used for any user, or a callable that takes a user as only parameter.
+Note that setting this option to `True` will only accepts authenticated users. However, setting this option to a callable that always return `True` (even for anonymous users) will allows anyone to access those URLs from outside the website.
+
 Here are the available settings to manage the protection for served images:
 ```python
 QR_CODE_URL_PROTECTION = {
     'TOKEN_LENGTH': 30,                         # Optional random token length for URL protection. Defaults to 20.
     'SIGNING_KEY': 'my-secret-signing-key',     # Optional signing key for URL token. Uses SECRET_KEY if not defined.
     'SIGNING_SALT': 'my-signing-salt',          # Optional signing salt for URL token.
-    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It might be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }
 ```
 
