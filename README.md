@@ -137,8 +137,8 @@ Here is a "hello world" QR code in version 20 that uses an URL to serve the imag
 
 The default settings protect the URLs that serve images against external requests, and thus against possibly easy DOS attacks.
 However, if you are interested in providing those images as a service, there is a setting named `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to open access to some controlled users.
-This setting tells who can bypass the random token protection. It can be a boolean value used for any user, or a callable that takes a user as only parameter.
-Note that setting this option to `True` will only accepts authenticated users. However, setting this option to a callable that always return `True` (even for anonymous users) will allows anyone to access those URLs from outside the website.
+This setting tells who can bypass the random token protection. It can be a boolean value used for any authenticated user, or a callable that takes a user as only parameter.
+Note that setting this option to `True` will only accept authenticated users. However, setting this option to a callable that always return `True` (even for anonymous users) will allow anyone to access those URLs from outside your Django app.
 
 Here are the available settings to manage the protection for served images:
 ```python
