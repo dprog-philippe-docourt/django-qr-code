@@ -3,7 +3,7 @@ import re
 
 from django.test import SimpleTestCase, override_settings
 
-from qr_code.qr_code import make_qr_code, make_qr_code_url
+from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'
@@ -110,7 +110,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             size = sizes[i]
             print('Testing SVG with size %s' % size)
             result = results[i]
-            qr1 = make_qr_code(TEST_TEXT, size=size)
+            qr1 = make_embedded_qr_code(TEST_TEXT, size=size)
             qr2 = qr_from_text(TEST_TEXT, size=size)
             qr3 = qr_from_text(TEST_TEXT, size=size, image_format='svg')
             self.assertEqual(qr1, qr2)
@@ -134,7 +134,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             version = versions[i]
             print('Testing SVG with version %s' % version)
             result = results[i]
-            qr1 = make_qr_code(TEST_TEXT, version=version)
+            qr1 = make_embedded_qr_code(TEST_TEXT, version=version)
             qr2 = qr_from_text(TEST_TEXT, version=version)
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='svg')
             qr4 = qr_from_text(TEST_TEXT, version=version, image_format='SVG')
@@ -164,7 +164,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             size = sizes[i]
             print('Testing PNG with size %s' % size)
             result = results[i]
-            qr1 = make_qr_code(TEST_TEXT, size=size, image_format='png')
+            qr1 = make_embedded_qr_code(TEST_TEXT, size=size, image_format='png')
             qr2 = qr_from_text(TEST_TEXT, size=size, image_format='png')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
@@ -186,7 +186,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             version = versions[i]
             print('Testing PNG with version %s' % version)
             result = results[i]
-            qr1 = make_qr_code(TEST_TEXT, version=version, image_format='png')
+            qr1 = make_embedded_qr_code(TEST_TEXT, version=version, image_format='png')
             qr2 = qr_from_text(TEST_TEXT, version=version, image_format='png')
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='PNG')
             self.assertEqual(qr1, qr2)

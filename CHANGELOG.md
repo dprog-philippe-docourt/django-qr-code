@@ -24,7 +24,7 @@
     * Added documentation for new features
     * Added tests for new features
     * Added examples to demo site
-* More robust testing of make_qr_code's arguments.
+* More robust testing of make_embedded_qr_code's arguments.
 * Improved documentation.
 * Demo site is compatible with Django 1.8.
 * Added support for Docker Compose for running the demo application and running the tests.

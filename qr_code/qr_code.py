@@ -8,12 +8,14 @@ from io import BytesIO
 import xml.etree.ElementTree as ET
 
 from django.conf import settings
+
 try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
 from django.core.signing import Signer
 from django.utils.crypto import get_random_string
+from django.utils.datetime_safe import strftime
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -69,6 +71,7 @@ def _make_random_token():
     url_protection_options = get_url_protection_options()
     return get_random_string(url_protection_options['TOKEN_LENGTH'])
 
+
 RANDOM_TOKEN = _make_random_token()
 
 
@@ -78,7 +81,7 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
 
     Any invalid argument is silently converted into the default value for that argument.
 
-    See the function :func:`~qr_code.qr_code.make_qr_code` for behavior and details about parameters meaning.
+    See the function :func:`~qr_code.qr_code.make_embedded_qr_code` for behavior and details about parameters meaning.
     """
 
     if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
@@ -108,7 +111,138 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
     return qr.make_image(image_factory=image_factory)
 
 
-def make_qr_code(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+def make_email_text(email):
+    return 'mailto:%s' % email
+
+
+def make_tel_text(phone_number):
+    return 'tel:%s' % phone_number
+
+
+def make_sms_text(phone_number):
+    return 'sms:%s' % phone_number
+
+
+def make_mms_text(phone_number):
+    return 'mms:%s' % phone_number
+
+
+def make_geo_text(latitude, longitude, altitude):
+    return 'geo:%s,%s,%s' % (latitude, longitude, altitude)
+
+
+def make_youtube_text(video_id):
+    return 'youtube://%s' % video_id
+
+
+def make_google_play_text(package_id):
+    return '{{{market://details?id=%s}}}' % package_id
+
+
+def _escape_mecard_special_chars(str):
+    if not str:
+        return str
+    special_chars = ['\\', '"', ';', ',']
+    for sc in special_chars:
+        str = str.replace(sc, '\\%' % sc)
+    return str
+
+
+def make_contact_text(contact_dict):
+    """
+    Make a text for configuring a contact in a phone book. The MeCARD format is used, with an optional, non-standard (but often recognized) ORG field.
+
+    See this archive of the format specifications: https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
+
+    The contact dictionary gives the following parameters:
+        * first_name
+        * last_name
+        * first_name_reading: the sound of the first name.
+        * last_name_reading: the sound of the last name.
+        * tel: the phone number, it can appear multiple times.
+        * tel-av: the video-phone number, it can appear multiple times.
+        * email: the email address, it can appear multiple times.
+        * memo: notes.
+        * birthday: the birth date (Python date).
+        * the address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
+        * url: homepage URL.
+        * nickname: display name.
+        * org: organization or company name (non-standard,but often recognized, ORG field).
+    :return: the MeCARD contact description.
+    """
+    # See this for an archive of the format specifications:
+    # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
+    contact_as_mecard = 'MECARD:'
+    first_name = _escape_mecard_special_chars(contact_dict.get('first_name', None))
+    last_name = _escape_mecard_special_chars(contact_dict.get('last_name', None))
+    if first_name and last_name:
+        name = '%s,%s' % (last_name, first_name)
+    else:
+        name = first_name if first_name else last_name
+    if name:
+        contact_as_mecard += 'N:%s;' % name
+    first_name_reading = _escape_mecard_special_chars(contact_dict.get('first_name_reading', None))
+    last_name_reading = _escape_mecard_special_chars(contact_dict.get('last_name_reading', None))
+    if first_name_reading and last_name_reading:
+        name_reading = '%s,%s' % (last_name_reading, first_name_reading)
+    else:
+        name_reading = first_name_reading if first_name_reading else last_name_reading
+    if name_reading:
+        contact_as_mecard += 'SOUND:%s;' % contact_dict['name_reading']
+    if 'tel' in contact_dict:
+        contact_as_mecard += 'TEL:%s;' % _escape_mecard_special_chars(contact_dict['tel'])
+    if 'tel-av' in contact_dict:
+        contact_as_mecard += 'TEL-AV:%s;' % _escape_mecard_special_chars(contact_dict['tel-av'])
+    if 'email' in contact_dict:
+        contact_as_mecard += 'EMAIL:%s;' % _escape_mecard_special_chars(contact_dict['email'])
+    if 'memo' in contact_dict:
+        contact_as_mecard += 'NOTE:%s;' % _escape_mecard_special_chars(contact_dict['memo'])
+    if 'birthday' in contact_dict:
+        # Format date to YYMMDD.
+        contact_as_mecard += 'BDAY:%s;' % _escape_mecard_special_chars(strftime(contact_dict['birthday'], '%Y%m%d'))
+    if 'address' in contact_dict:
+        contact_as_mecard += 'ADR:%s;' % contact_dict['address']
+    if 'url' in contact_dict:
+        contact_as_mecard += 'URL:%s;' % contact_dict['url']
+    if 'nickname' in contact_dict:
+        contact_as_mecard += 'NICKNAME:%s;' % _escape_mecard_special_chars(contact_dict['nickname'])
+    # Not standard, but recognized by several readers.
+    if 'org' in contact_dict:
+        contact_as_mecard += 'ORG:%s;' % _escape_mecard_special_chars(contact_dict['org'])
+    contact_as_mecard += ';'
+    return contact_as_mecard
+
+
+def make_wifi_text(wifi_dict):
+    """
+    Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
+
+    The wifi dictionary gives the following parameters:
+        * ssid: the name of the SSID
+        * authentication: the authentication type for the SSID; can be 'WEP' or 'WPA', or 'nopass' for no password. Or, omit for no password.
+        * password: the password, ignored if "authentication" is 'nopass' (in which case it may be omitted).
+        * hidden: tells whether the SSID is hidden or not; can be True or False.
+    :return: the WIFI configuration text that can be translated to a QR-code.
+    """
+    wifi_config = 'WIFI:'
+    if 'ssid' in wifi_dict:
+        wifi_config += 'S:%s;' % _escape_mecard_special_chars(wifi_dict['ssid'])
+    if 'authentication' in wifi_dict:
+        wifi_config += 'T:%s;' % wifi_dict['authentication']
+    if 'password' in wifi_dict:
+        wifi_config += 'P:%s;' % _escape_mecard_special_chars(wifi_dict['password'])
+    if 'hidden' in wifi_dict:
+        wifi_config += 'H:%s;' % str(wifi_dict['hidden']).lower()
+    return wifi_config
+
+
+def make_qr_code(embedded, text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+    if embedded is True:
+        return make_embedded_qr_code(text, size=size, border=border, version=version, image_format=image_format)
+    return make_qr_code_url(text, size=size, border=border, version=version, image_format=image_format)
+
+
+def make_embedded_qr_code(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
     """
     Generates a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
     HTML document.
@@ -152,7 +286,7 @@ def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE,
     Build an URL to a view that handle serving QR code image from the given parameters.
     Any invalid argument related to the size or the format of the image is silently converted into the default value for that argument.
 
-    See the function :func:`~qr_code.qr_code.make_qr_code` for behavior and details about parameters meaning.
+    See the function :func:`~qr_code.qr_code.make_embedded_qr_code` for behavior and details about parameters meaning.
 
     The parameter *cache_enabled (bool)* allows to skip caching the QR code (when set to *False*) when caching has been enabled.
 
