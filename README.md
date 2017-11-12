@@ -150,6 +150,26 @@ QR_CODE_URL_PROTECTION = {
 }
 ```
 
+### QR Codes for Apps
+Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc.
+
+django-qr-code proposes several utility tags to ease the generation of such codes, without having to build the appropriate text representation for each action you need. This remove the hassle of reading the specifications and handling all the required escaping for reserved chars.
+
+Please note that some commands are common patterns, rather than formal specifications. Therefore, there is no guarantee that all QR code readers will handle them properly.
+
+The following tags targeting apps are available:
+* `qr_for_email` and `qr_url_for_email`
+* `qr_for_tel` and `qr_url_for_tel`
+* `qr_for_sms` and `qr_url_for_sms`
+* `qr_for_geolocation` and `qr_url_for_geolocation`
+* `qr_for_google_maps` and `qr_url_for_google_maps`
+* `qr_for_youtube` and `qr_url_for_youtube`
+* `qr_for_google_play` and `qr_url_for_google_play`
+* `qr_for_contact` and `qr_url_for_contact`
+* `qr_for_wifi` and `qr_url_for_wifi`
+
+Please check-out the [demo application](#demo-application) to see how it works.
+
 ## Notes
 
 ### Image Formats
