@@ -15,7 +15,6 @@ except ImportError:
     from django.core.urlresolvers import reverse
 from django.core.signing import Signer
 from django.utils.crypto import get_random_string
-from django.utils.datetime_safe import strftime
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -123,20 +122,20 @@ def make_sms_text(phone_number):
     return 'sms:%s' % phone_number
 
 
-def make_mms_text(phone_number):
-    return 'mms:%s' % phone_number
+def make_geolocation_text(latitude, longitude, altitude):
+    return 'geo:%s,%s,%s' % (escape(latitude), escape(longitude), escape(altitude))
 
 
-def make_geo_text(latitude, longitude, altitude):
-    return 'geo:%s,%s,%s' % (latitude, longitude, altitude)
+def make_google_maps_text(latitude, longitude):
+    return 'https://maps.google.com/local?q=%s,%s' % (escape(latitude), escape(longitude))
 
 
 def make_youtube_text(video_id):
-    return 'youtube://%s' % video_id
+    return 'https://www.youtube.com/watch/?v=%s' % escape(video_id)
 
 
 def make_google_play_text(package_id):
-    return '{{{market://details?id=%s}}}' % package_id
+    return 'https://play.google.com/store/apps/details?id=%s' % escape(package_id)
 
 
 def _escape_mecard_special_chars(str):
@@ -144,7 +143,7 @@ def _escape_mecard_special_chars(str):
         return str
     special_chars = ['\\', '"', ';', ',']
     for sc in special_chars:
-        str = str.replace(sc, '\\%' % sc)
+        str = str.replace(sc, '\\%s' % sc)
     return str
 
 
@@ -164,7 +163,7 @@ def make_contact_text(contact_dict):
         * email: the email address, it can appear multiple times.
         * memo: notes.
         * birthday: the birth date (Python date).
-        * the address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
+        * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
         * url: homepage URL.
         * nickname: display name.
         * org: organization or company name (non-standard,but often recognized, ORG field).
@@ -188,7 +187,7 @@ def make_contact_text(contact_dict):
     else:
         name_reading = first_name_reading if first_name_reading else last_name_reading
     if name_reading:
-        contact_as_mecard += 'SOUND:%s;' % contact_dict['name_reading']
+        contact_as_mecard += 'SOUND:%s;' % name_reading
     if 'tel' in contact_dict:
         contact_as_mecard += 'TEL:%s;' % _escape_mecard_special_chars(contact_dict['tel'])
     if 'tel-av' in contact_dict:
@@ -199,7 +198,7 @@ def make_contact_text(contact_dict):
         contact_as_mecard += 'NOTE:%s;' % _escape_mecard_special_chars(contact_dict['memo'])
     if 'birthday' in contact_dict:
         # Format date to YYMMDD.
-        contact_as_mecard += 'BDAY:%s;' % _escape_mecard_special_chars(strftime(contact_dict['birthday'], '%Y%m%d'))
+        contact_as_mecard += 'BDAY:%s;' % contact_dict['birthday'].strftime('%Y%m%d')
     if 'address' in contact_dict:
         contact_as_mecard += 'ADR:%s;' % contact_dict['address']
     if 'url' in contact_dict:
@@ -222,7 +221,7 @@ def make_wifi_text(wifi_dict):
         * authentication: the authentication type for the SSID; can be 'WEP' or 'WPA', or 'nopass' for no password. Or, omit for no password.
         * password: the password, ignored if "authentication" is 'nopass' (in which case it may be omitted).
         * hidden: tells whether the SSID is hidden or not; can be True or False.
-    :return: the WIFI configuration text that can be translated to a QR-code.
+    :return: the WIFI configuration text that can be translated to a QR code.
     """
     wifi_config = 'WIFI:'
     if 'ssid' in wifi_dict:

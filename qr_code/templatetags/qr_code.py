@@ -2,7 +2,7 @@
 
 from django import template
 
-from qr_code.qr_code import make_embedded_qr_code, make_contact_text, make_wifi_text, make_email_text, make_geo_text, make_mms_text, make_google_play_text, make_tel_text, make_sms_text, make_youtube_text, DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, \
+from qr_code.qr_code import make_embedded_qr_code, make_contact_text, make_wifi_text, make_email_text, make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, make_youtube_text, DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, \
     DEFAULT_IMAGE_FORMAT, DEFAULT_CACHE_ENABLED, make_qr_code_url
 
 register = template.Library()
@@ -29,13 +29,13 @@ def qr_for_sms(phone_number, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZ
 
 
 @register.simple_tag()
-def qr_for_mms(phone_number, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
-    return make_embedded_qr_code(make_mms_text(phone_number), size=size, border=border, version=version, image_format=image_format)
+def qr_for_geolocation(latitude, longitude, altitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+    return make_embedded_qr_code(make_geolocation_text(latitude=latitude, longitude=longitude, altitude=altitude), size=size, border=border, version=version, image_format=image_format)
 
 
 @register.simple_tag()
-def qr_for_geo(latitude, longitude, altitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
-    return make_embedded_qr_code(make_geo_text(latitude=latitude, longitude=longitude, altitude=altitude), size=size, border=border, version=version, image_format=image_format)
+def qr_for_google_maps(latitude, longitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+    return make_embedded_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), size=size, border=border, version=version, image_format=image_format)
 
 
 @register.simple_tag()
@@ -82,13 +82,13 @@ def qr_url_for_sms(phone_number, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER
 
 
 @register.simple_tag()
-def qr_url_for_mms(phone_number, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
-    return make_qr_code_url(make_mms_text(phone_number), size=size, border=border, version=version, image_format=image_format)
+def qr_url_for_geolocation(latitude, longitude, altitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+    return make_qr_code_url(make_geolocation_text(latitude=latitude, longitude=longitude, altitude=altitude), size=size, border=border, version=version, image_format=image_format)
 
 
 @register.simple_tag()
-def qr_url_for_geo(latitude, longitude, altitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
-    return make_qr_code_url(make_geo_text(latitude=latitude, longitude=longitude, altitude=altitude), size=size, border=border, version=version, image_format=image_format)
+def qr_url_for_google_maps(latitude, longitude, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+    return make_qr_code_url(make_google_maps_text(latitude=latitude, longitude=longitude), size=size, border=border, version=version, image_format=image_format)
 
 
 @register.simple_tag()
