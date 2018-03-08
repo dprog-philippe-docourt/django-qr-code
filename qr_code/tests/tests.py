@@ -1,7 +1,10 @@
 """Tests for qr_code application."""
 import re
 
+from django.template import Template, Context
+from django.template.loader import render_to_string
 from django.test import SimpleTestCase, override_settings
+from django.utils.safestring import mark_safe
 
 from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
@@ -194,3 +197,56 @@ class TestQRFromTextPngResult(SimpleTestCase):
             self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
+
+
+class TestQRForApplications(SimpleTestCase):
+
+    def test_demo_samples_in_svg_format(self):
+        import os
+        tests_dir = os.path.dirname(os.path.abspath(__file__))
+        resources_dir = os.path.join(tests_dir, 'resources')
+        SVG_REF_SUFFIX = '.ref.svg'
+        from datetime import date
+        contact_dict = dict(
+            first_name='John',
+            last_name='Doe',
+            first_name_reading='jAAn',
+            last_name_reading='dOH',
+            tel='+41769998877',
+            email='j.doe@company.com',
+            url='http://www.company.com',
+            birthday=date(year=1985, month=10, day=2),
+            address='Cras des Fourches 987, 2800 Delémont, Jura, Switzerland',
+            memo='Development Manager',
+            org='Company Ltd',
+        )
+        wifi_dict = dict(
+            ssid='my-wifi',
+            authentication='wpa',
+            password='wifi-password'
+        )
+        tests_data = [
+            dict(source='{% qr_for_email "john.doe@domain.com" %}', ref_file_name='qr_for_email' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_tel "+41769998877" %}', ref_file_name='qr_for_tel' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_sms "+41769998877" %}', ref_file_name='qr_for_sms' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}', ref_file_name='qr_for_geolocation' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}', ref_file_name='qr_for_google_maps' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_wifi wifi_dict %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_dict': wifi_dict}),
+            dict(source='{% qr_for_contact contact_dict %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_dict': contact_dict}),
+            dict(source='{% qr_for_youtube "J9go2nj6b3M" %}', ref_file_name='qr_for_youtube' + SVG_REF_SUFFIX),
+            dict(source='{% qr_for_google_play "ch.admin.meteoswiss" %}', ref_file_name='qr_for_google_play' + SVG_REF_SUFFIX),
+        ]
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_context = test_data.get('source_context')
+            if source_context:
+                context.update(source_context)
+            source_image = template.render(context).strip()
+            with open(os.path.join(resources_dir, test_data['ref_file_name']), 'r', encoding='utf-8') as ref_file:
+                # Skip SVG header
+                ref_file.readline()
+                ref_image = ref_file.read().strip()
+                self.assertEqual(source_image, ref_image)
