@@ -87,12 +87,7 @@ from django.conf.urls import include, url
 from qr_code import urls as qr_code_urls
 
 urlpatterns = [
-    # ...
-    # For Django 1.8:
     url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
-    # For Django >= 1.9:
-    url(r'^qr_code/', include(qr_code_urls)),
-    # ...
 ]
 ```
 

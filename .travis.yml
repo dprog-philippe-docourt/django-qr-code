@@ -4,9 +4,8 @@ python:
   - "3.5"
   - "3.6"
 env:
-  - DJANGO_VERSION=1.8.18
-  - DJANGO_VERSION=1.10.7
-  - DJANGO_VERSION=1.11.7
+  - DJANGO_VERSION=1.11.11
+  - DJANGO_VERSION=2.0.3
 # command to install dependencies
 install:
   - pip install django~=$DJANGO_VERSION
