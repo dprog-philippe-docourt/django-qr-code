@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.4.0 (under development)
+## 0.4.0 (2018-03-09)
 * Added support for multiple new tags:
     * `qr_for_email` and `qr_url_for_email`
     * `qr_for_tel` and `qr_url_for_tel`
@@ -12,6 +12,7 @@
     * `qr_for_contact` and `qr_url_for_contact`
     * `qr_for_wifi` and `qr_url_for_wifi`
 * Reformat documentation on the demo site for better readability.
+* Drop support for Django <1.11.
 
 ## 0.3.3 (2017-08-16)
 * Added `app_name` namespace to `qr_code.urls` (better compatibility with `include()` function provided with Django >= 1.9).
