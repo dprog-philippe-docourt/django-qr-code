@@ -14,7 +14,7 @@ fi
     echo "--- RAM: $(free -h)"
 
     python_versions=("3.4" "3.5" "3.6")
-    django_versions=("1.8.18" "1.10.7" "1.11.4")
+    django_versions=("1.11.11" "2.0.3")
 
     for python_version in ${python_versions[@]}
     do
@@ -33,10 +33,10 @@ fi
             ${DOCKER_COMPOSE_COMMAND} stop && ${DOCKER_COMPOSE_COMMAND} build
 
             echo --- Force Django version
-            ${DOCKER_COMPOSE_COMMAND} run --rm --entrypoint "pip" django-qr-code install "django~=${django_version}"
+            ${DOCKER_COMPOSE_COMMAND} run --entrypoint "pip" django-qr-code install "django~=${django_version}"
 
             echo --- Setup test site
-            ${DOCKER_COMPOSE_COMMAND} run --rm --entrypoint "python" django-qr-code manage.py collectstatic --noinput
+            ${DOCKER_COMPOSE_COMMAND} run --entrypoint "python" django-qr-code manage.py collectstatic --noinput
 
             # Run tests
             ${DOCKER_COMPOSE_COMMAND} run --rm --entrypoint "python" django-qr-code manage.py test
