@@ -20,6 +20,6 @@ from qr_code import urls as qr_code_urls
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='qr_code_demo/', permanent=True)),
-    url(r'^qr_code_demo/', include(qr_code_demo_urls, namespace="qr_code_demo")),
-    url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
+    url(r'^qr_code_demo/', include(qr_code_demo_urls)),
+    url(r'^qr_code/', include(qr_code_urls)),
 ]
