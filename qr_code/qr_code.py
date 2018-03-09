@@ -138,13 +138,13 @@ def make_google_play_text(package_id):
     return 'https://play.google.com/store/apps/details?id=%s' % escape(package_id)
 
 
-def _escape_mecard_special_chars(str):
-    if not str:
-        return str
+def _escape_mecard_special_chars(escaped):
+    if not escaped:
+        return escaped
     special_chars = ['\\', '"', ';', ',']
     for sc in special_chars:
-        str = str.replace(sc, '\\%s' % sc)
-    return str
+        escaped = escaped.replace(sc, '\\%s' % sc)
+    return escaped
 
 
 def make_contact_text(contact_dict):
