@@ -138,13 +138,21 @@ def make_google_play_text(package_id):
     return 'https://play.google.com/store/apps/details?id=%s' % escape(package_id)
 
 
-def _escape_mecard_special_chars(escaped):
-    if not escaped:
-        return escaped
+def _escape_mecard_special_chars(string_to_escape):
+    if not string_to_escape:
+        return string_to_escape
     special_chars = ['\\', '"', ';', ',']
     for sc in special_chars:
-        escaped = escaped.replace(sc, '\\%s' % sc)
-    return escaped
+        string_to_escape = string_to_escape.replace(sc, '\\%s' % sc)
+    return string_to_escape
+
+
+def _escape_mecard_special_chars_in_dict(dict_to_escape, keys):
+    escaped_dict = dict(dict_to_escape)
+    for key in keys:
+        if key in dict_to_escape:
+            escaped_dict[key] = _escape_mecard_special_chars(escaped_dict[key])
+    return escaped_dict
 
 
 def make_contact_text(contact_dict):
@@ -169,47 +177,50 @@ def make_contact_text(contact_dict):
         * org: organization or company name (non-standard,but often recognized, ORG field).
     :return: the MeCARD contact description.
     """
+
+    test = _escape_mecard_special_chars_in_dict(contact_dict, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel-av', 'email', 'memo', 'nickname', 'org'))
+
     # See this for an archive of the format specifications:
     # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
-    contact_as_mecard = 'MECARD:'
-    first_name = _escape_mecard_special_chars(contact_dict.get('first_name', None))
-    last_name = _escape_mecard_special_chars(contact_dict.get('last_name', None))
+    contact_text = 'MECARD:'
+    first_name = contact_dict.get('first_name')
+    last_name = contact_dict.get('last_name')
     if first_name and last_name:
         name = '%s,%s' % (last_name, first_name)
     else:
         name = first_name if first_name else last_name
     if name:
-        contact_as_mecard += 'N:%s;' % name
-    first_name_reading = _escape_mecard_special_chars(contact_dict.get('first_name_reading', None))
-    last_name_reading = _escape_mecard_special_chars(contact_dict.get('last_name_reading', None))
+        contact_text += 'N:%s;' % name
+    first_name_reading = contact_dict.get('first_name_reading')
+    last_name_reading = contact_dict.get('last_name_reading')
     if first_name_reading and last_name_reading:
         name_reading = '%s,%s' % (last_name_reading, first_name_reading)
     else:
         name_reading = first_name_reading if first_name_reading else last_name_reading
     if name_reading:
-        contact_as_mecard += 'SOUND:%s;' % name_reading
+        contact_text += 'SOUND:%s;' % name_reading
     if 'tel' in contact_dict:
-        contact_as_mecard += 'TEL:%s;' % _escape_mecard_special_chars(contact_dict['tel'])
+        contact_text += 'TEL:%s;' % contact_dict['tel']
     if 'tel-av' in contact_dict:
-        contact_as_mecard += 'TEL-AV:%s;' % _escape_mecard_special_chars(contact_dict['tel-av'])
+        contact_text += 'TEL-AV:%s;' % contact_dict['tel-av']
     if 'email' in contact_dict:
-        contact_as_mecard += 'EMAIL:%s;' % _escape_mecard_special_chars(contact_dict['email'])
+        contact_text += 'EMAIL:%s;' % contact_dict['email']
     if 'memo' in contact_dict:
-        contact_as_mecard += 'NOTE:%s;' % _escape_mecard_special_chars(contact_dict['memo'])
+        contact_text += 'NOTE:%s;' % contact_dict['memo']
     if 'birthday' in contact_dict:
         # Format date to YYMMDD.
-        contact_as_mecard += 'BDAY:%s;' % contact_dict['birthday'].strftime('%Y%m%d')
+        contact_text += 'BDAY:%s;' % contact_dict['birthday'].strftime('%Y%m%d')
     if 'address' in contact_dict:
-        contact_as_mecard += 'ADR:%s;' % contact_dict['address']
+        contact_text += 'ADR:%s;' % contact_dict['address']
     if 'url' in contact_dict:
-        contact_as_mecard += 'URL:%s;' % contact_dict['url']
+        contact_text += 'URL:%s;' % contact_dict['url']
     if 'nickname' in contact_dict:
-        contact_as_mecard += 'NICKNAME:%s;' % _escape_mecard_special_chars(contact_dict['nickname'])
+        contact_text += 'NICKNAME:%s;' % contact_dict['nickname']
     # Not standard, but recognized by several readers.
     if 'org' in contact_dict:
-        contact_as_mecard += 'ORG:%s;' % _escape_mecard_special_chars(contact_dict['org'])
-    contact_as_mecard += ';'
-    return contact_as_mecard
+        contact_text += 'ORG:%s;' % contact_dict['org']
+    contact_text += ';'
+    return contact_text
 
 
 def make_wifi_text(wifi_dict):
@@ -223,13 +234,16 @@ def make_wifi_text(wifi_dict):
         * hidden: tells whether the SSID is hidden or not; can be True or False.
     :return: the WIFI configuration text that can be translated to a QR code.
     """
+
+    wifi_dict = _escape_mecard_special_chars_in_dict(wifi_dict, ('ssid', 'password'))
+
     wifi_config = 'WIFI:'
     if 'ssid' in wifi_dict:
-        wifi_config += 'S:%s;' % _escape_mecard_special_chars(wifi_dict['ssid'])
+        wifi_config += 'S:%s;' % wifi_dict['ssid']
     if 'authentication' in wifi_dict:
         wifi_config += 'T:%s;' % wifi_dict['authentication']
     if 'password' in wifi_dict:
-        wifi_config += 'P:%s;' % _escape_mecard_special_chars(wifi_dict['password'])
+        wifi_config += 'P:%s;' % wifi_dict['password']
     if 'hidden' in wifi_dict:
         wifi_config += 'H:%s;' % str(wifi_dict['hidden']).lower()
     return wifi_config
