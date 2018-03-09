@@ -49,20 +49,8 @@ def serve_qr_code_image(request):
     image_format = request.GET.get('image_format', DEFAULT_IMAGE_FORMAT)
     image_format = get_supported_image_format(image_format)
 
-    # Handle view protection (we do not allow external requests for anyone).
-    url_protection_options = get_url_protection_options(request.user)
-    if not url_protection_options['ALLOWS_EXTERNAL_REQUESTS']:
-        token = request.GET.get('token', '')
-        signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
-        try:
-            # Check signature.
-            url_protection_string = signer.unsign(token)
-            # Check that the given token matches the request parameters.
-            random_token = url_protection_string.split('.')[-1]
-            if get_qr_url_protection_token(size, border, version, image_format, random_token) != url_protection_string:
-                raise PermissionDenied("Request query does not match protection token.")
-        except BadSignature:
-            raise PermissionDenied("Wrong token signature.")
+    # Handle image access protection (we do not allow external requests for anyone).
+    check_image_access_permission(request, size, border, version, image_format)
 
     img = make_qr_code_image(text, image_factory=SvgPathImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=size,
                              border=border, version=version)
@@ -85,3 +73,20 @@ def serve_qr_code_image(request):
     # Build the response.
     response = HttpResponse(content=stream, content_type=mime_type)
     return response
+
+
+def check_image_access_permission(request, size, border, version, image_format):
+    """Handle image access protection (we do not allow external requests for anyone)."""
+    url_protection_options = get_url_protection_options(request.user)
+    if not url_protection_options['ALLOWS_EXTERNAL_REQUESTS']:
+        token = request.GET.get('token', '')
+        signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
+        try:
+            # Check signature.
+            url_protection_string = signer.unsign(token)
+            # Check that the given token matches the request parameters.
+            random_token = url_protection_string.split('.')[-1]
+            if get_qr_url_protection_token(size, border, version, image_format, random_token) != url_protection_string:
+                raise PermissionDenied("Request query does not match protection token.")
+        except BadSignature:
+            raise PermissionDenied("Wrong token signature.")
