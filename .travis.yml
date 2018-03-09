@@ -6,9 +6,19 @@ python:
 env:
   - DJANGO_VERSION=1.11.11
   - DJANGO_VERSION=2.0.3
+  global:
+    - CC_TEST_REPORTER_ID=1d07a67d2705d8389a9d5466912bf5cffec9aeda84d5560f513f540c6a43991c
 # command to install dependencies
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 install:
   - pip install django~=$DJANGO_VERSION
   - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
 # command to run tests
-script: python manage.py test
+script: coverage run --source 'qr_code' manage.py test qr_code
+after_script:
+  - coverage xml
+  - if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
