@@ -43,11 +43,7 @@ def cache_qr_code():
 def serve_qr_code_image(request):
     """Serve an image that represents the requested QR code."""
     text = base64.urlsafe_b64decode(request.GET.get('text', ''))
-    request_query = request.GET.dict()
-    for key in ('text', 'token', 'cache_enabled'):
-        if key in request_query:
-            request_query.pop(key)
-    qr_code_options = QRCodeOptions(**request_query)
+    qr_code_options = get_qr_code_option_from_request(request)
 
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
@@ -73,6 +69,15 @@ def serve_qr_code_image(request):
     # Build the response.
     response = HttpResponse(content=stream, content_type=mime_type)
     return response
+
+
+def get_qr_code_option_from_request(request):
+    request_query = request.GET.dict()
+    for key in ('text', 'token', 'cache_enabled'):
+        if key in request_query:
+            request_query.pop(key)
+    qr_code_options = QRCodeOptions(**request_query)
+    return qr_code_options
 
 
 def check_image_access_permission(request, qr_code_options):
