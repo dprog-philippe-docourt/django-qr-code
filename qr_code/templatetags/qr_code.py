@@ -2,21 +2,24 @@
 
 from django import template
 
-from qr_code.qr_code import make_embedded_qr_code, make_contact_text, make_wifi_text, make_email_text, make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, make_youtube_text, DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, \
+from qr_code.qr_code import make_embedded_qr_code, make_contact_text, make_wifi_text, make_email_text, \
+    make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, \
+    make_youtube_text, DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, \
     DEFAULT_IMAGE_FORMAT, DEFAULT_CACHE_ENABLED, make_qr_code_url
 
 register = template.Library()
 
 
 def _make_qr_code(text, qr_code_options, embedded):
-    if 'size' not in qr_code_options:
-        qr_code_options['size'] = DEFAULT_MODULE_SIZE
-    if 'border' not in qr_code_options:
-        qr_code_options['border'] = DEFAULT_BORDER_SIZE
-    if 'version' not in qr_code_options:
-        qr_code_options['version'] = DEFAULT_VERSION
-    if 'image_format' not in qr_code_options:
-        qr_code_options['image_format'] = DEFAULT_IMAGE_FORMAT
+    defaults = dict(
+        size=DEFAULT_MODULE_SIZE,
+        border=DEFAULT_BORDER_SIZE,
+        version=DEFAULT_VERSION,
+        image_format=DEFAULT_IMAGE_FORMAT,
+    )
+    for key, value in defaults.items():
+        if key not in qr_code_options:
+            qr_code_options[key] = value
     if embedded:
         return make_embedded_qr_code(text, **qr_code_options)
     else:
@@ -53,7 +56,8 @@ def qr_for_geolocation(latitude, longitude, altitude, **kwargs):
 
 @register.simple_tag()
 def qr_for_google_maps(latitude, longitude, **kwargs):
-    return _make_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), qr_code_options=kwargs, embedded=True)
+    return _make_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), qr_code_options=kwargs,
+                         embedded=True)
 
 
 @register.simple_tag()
@@ -101,12 +105,14 @@ def qr_url_for_sms(phone_number, **kwargs):
 
 @register.simple_tag()
 def qr_url_for_geolocation(latitude, longitude, altitude, **kwargs):
-    return _make_qr_code(make_geolocation_text(latitude=latitude, longitude=longitude, altitude=altitude), qr_code_options=kwargs, embedded=False)
+    return _make_qr_code(make_geolocation_text(latitude=latitude, longitude=longitude, altitude=altitude),
+                         qr_code_options=kwargs, embedded=False)
 
 
 @register.simple_tag()
 def qr_url_for_google_maps(latitude, longitude, **kwargs):
-    return _make_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), qr_code_options=kwargs, embedded=False)
+    return _make_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), qr_code_options=kwargs,
+                         embedded=False)
 
 
 @register.simple_tag()

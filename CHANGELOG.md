@@ -2,6 +2,7 @@
 
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.
+* Simplify handling of default values for QR code options.
 
 ## 0.4.0 (2018-03-09)
 * Added support for multiple new tags:
