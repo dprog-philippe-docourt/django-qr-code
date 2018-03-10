@@ -325,12 +325,12 @@ def make_sms_text(phone_number):
     return 'sms:%s' % phone_number
 
 
-def make_geolocation_text(latitude, longitude, altitude):
-    return 'geo:%s,%s,%s' % (escape(latitude), escape(longitude), escape(altitude))
+def make_geolocation_text(coordinates):
+    return 'geo:%s,%s,%s' % (escape(coordinates.latitude), escape(coordinates.longitude), escape(coordinates.altitude))
 
 
-def make_google_maps_text(latitude, longitude):
-    return 'https://maps.google.com/local?q=%s,%s' % (escape(latitude), escape(longitude))
+def make_google_maps_text(coordinates):
+    return 'https://maps.google.com/local?q=%s,%s' % (escape(coordinates.latitude), escape(coordinates.longitude))
 
 
 def make_youtube_text(video_id):

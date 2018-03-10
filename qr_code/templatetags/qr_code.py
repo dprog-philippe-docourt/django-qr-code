@@ -21,13 +21,19 @@ def _make_qr_code(text, qr_code_args, embedded):
         return make_qr_code_url(text, options, cache_enabled=cache_enabled)
 
 
-def _make_google_maps_qr_code(latitude, longitude, embedded, qr_code_args):
-    return _make_qr_code(make_google_maps_text(latitude=latitude, longitude=longitude), qr_code_args=qr_code_args,
-                         embedded=embedded)
+class Coordinates(object):
+    def __init__(self, latitude, longitude, altitude=None):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
 
 
-def _make_geolocation_qr_code(latitude, longitude, altitude, embedded, qr_code_args):
-    return _make_qr_code(make_geolocation_text(latitude=latitude, longitude=longitude, altitude=altitude), qr_code_args=qr_code_args, embedded=embedded)
+def _make_google_maps_qr_code(coordinates, embedded, qr_code_args):
+    return _make_qr_code(make_google_maps_text(coordinates), qr_code_args=qr_code_args, embedded=embedded)
+
+
+def _make_geolocation_qr_code(coordinates, embedded, qr_code_args):
+    return _make_qr_code(make_geolocation_text(coordinates), qr_code_args=qr_code_args, embedded=embedded)
 
 
 @register.simple_tag()
@@ -53,12 +59,12 @@ def qr_for_sms(phone_number, **kwargs):
 
 @register.simple_tag()
 def qr_for_geolocation(latitude, longitude, altitude, **kwargs):
-    return _make_geolocation_qr_code(latitude=latitude, longitude=longitude, altitude=altitude, qr_code_args=kwargs, embedded=True)
+    return _make_geolocation_qr_code(Coordinates(latitude, longitude, altitude), qr_code_args=kwargs, embedded=True)
 
 
 @register.simple_tag()
 def qr_for_google_maps(latitude, longitude, **kwargs):
-    return _make_google_maps_qr_code(latitude=latitude, longitude=longitude, embedded=True, qr_code_args=kwargs)
+    return _make_google_maps_qr_code(Coordinates(latitude, longitude), embedded=True, qr_code_args=kwargs)
 
 
 @register.simple_tag()
@@ -104,12 +110,12 @@ def qr_url_for_sms(phone_number, **kwargs):
 
 @register.simple_tag()
 def qr_url_for_geolocation(latitude, longitude, altitude, **kwargs):
-    return _make_geolocation_qr_code(latitude=latitude, longitude=longitude, altitude=altitude, qr_code_args=kwargs, embedded=False)
+    return _make_geolocation_qr_code(Coordinates(latitude, longitude, altitude), qr_code_args=kwargs, embedded=False)
 
 
 @register.simple_tag()
 def qr_url_for_google_maps(latitude, longitude, **kwargs):
-    return _make_google_maps_qr_code(latitude=latitude, longitude=longitude, qr_code_args=kwargs, embedded=False)
+    return _make_google_maps_qr_code(Coordinates(latitude, longitude), qr_code_args=kwargs, embedded=False)
 
 
 @register.simple_tag()
