@@ -178,7 +178,7 @@ def make_contact_text(contact_dict):
     :return: the MeCARD contact description.
     """
 
-    test = _escape_mecard_special_chars_in_dict(contact_dict, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel-av', 'email', 'memo', 'nickname', 'org'))
+    contact_dict = _escape_mecard_special_chars_in_dict(contact_dict, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel-av', 'email', 'memo', 'nickname', 'org'))
 
     # See this for an archive of the format specifications:
     # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
