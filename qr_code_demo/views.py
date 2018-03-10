@@ -18,7 +18,7 @@ def index(request):
     )
     wifi_dict = dict(
         ssid='my-wifi',
-        authentication='wpa',
+        authentication='WPA',
         password='wifi-password'
     )
     return render(request, 'qr_code_demo/index.html', context=dict(contact_dict=contact_dict, wifi_dict=wifi_dict))

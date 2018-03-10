@@ -222,7 +222,7 @@ class TestQRForApplications(SimpleTestCase):
         )
         wifi_dict = dict(
             ssid='my-wifi',
-            authentication='wpa',
+            authentication='WPA',
             password='wifi-password'
         )
         tests_data = [
