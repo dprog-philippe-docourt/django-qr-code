@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
 
 from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, get_supported_image_format, SVG_FORMAT_NAME, \
     PNG_FORMAT_NAME
@@ -42,9 +43,86 @@ def _escape_mecard_special_chars_in_object_fields(obj, keys):
             setattr(obj, 'escaped_%s' % key, _escape_mecard_special_chars(getattr(obj, key)))
 
 
+class QRCodeOptions(object):
+    """
+    Represents the options used to draw a QR code.
+
+    The following fields are provided:
+        * text (str): the text to render as a QR code
+        * size (int, str): the size of the QR code as an integer or a string. Default is *'m'*.
+        * version (int): the version of the QR code gives the size of the matrix. Default is *1*.
+        * image_format (str): the graphics format used to render the QR code. It can be either *'svg'* or *'png'*. Default is *'svg'*.
+
+    The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
+        * t or T: tiny (value: 6)
+        * s or S: small (value: 12)
+        * m or M: medium (value: 18)
+        * l or L: large (value: 30)
+        * h or H: huge (value: 48)
+
+    For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
+
+    The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
+    this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
+    The size grows by 4 modules/side.
+    """
+    _DEFAULT_QR_CODE_OPTIONS = dict(
+        size=DEFAULT_MODULE_SIZE,
+        border=DEFAULT_BORDER_SIZE,
+        version=DEFAULT_VERSION,
+        image_format=DEFAULT_IMAGE_FORMAT,
+    )
+    _qr_code_options = dict(_DEFAULT_QR_CODE_OPTIONS)
+
+    def __init__(self, **kwargs):
+        """
+        :raises: ValueError in case an unknown argument is given.
+        """
+        self._qr_code_options = dict(QRCodeOptions._DEFAULT_QR_CODE_OPTIONS)
+        for key, value in kwargs.items():
+            if key in self._qr_code_options:
+                self._qr_code_options[key] = value
+            else:
+                raise ValueError(_("The option '%s' is not a valid option for a QR code.") % key)
+        # Ensures that the image format is supported, or fallback to supported format.
+        if 'image_format' in kwargs:
+            self._qr_code_options['image_format'] = get_supported_image_format(self._qr_code_options['image_format'])
+
+    @property
+    def size(self):
+        return self._qr_code_options['size']
+
+    @property
+    def border(self):
+        return self._qr_code_options['border']
+
+    @property
+    def version(self):
+        return self._qr_code_options['version']
+
+    @property
+    def image_format(self):
+        return self._qr_code_options['image_format']
+
+
 class ContactDetail(object):
     """
     Represents the detail of a contact.
+
+    The following fields are provided:
+        * first_name
+        * last_name
+        * first_name_reading: the sound of the first name.
+        * last_name_reading: the sound of the last name.
+        * tel: the phone number, it can appear multiple times.
+        * tel-av: the video-phone number, it can appear multiple times.
+        * email: the email address, it can appear multiple times.
+        * memo: notes.
+        * birthday: the birth date (Python date).
+        * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
+        * url: homepage URL.
+        * nickname: display name.
+        * org: organization or company name (non-standard,but often recognized, ORG field).
     """
     first_name = None
     last_name = None
@@ -61,24 +139,6 @@ class ContactDetail(object):
     org = None
 
     def __init__(self, **kwargs):
-        """
-        The contact details support the following fields.
-        :param kwargs:
-            The contact dictionary gives the following parameters:
-            * first_name
-            * last_name
-            * first_name_reading: the sound of the first name.
-            * last_name_reading: the sound of the last name.
-            * tel: the phone number, it can appear multiple times.
-            * tel-av: the video-phone number, it can appear multiple times.
-            * email: the email address, it can appear multiple times.
-            * memo: notes.
-            * birthday: the birth date (Python date).
-            * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
-            * url: homepage URL.
-            * nickname: display name.
-            * org: organization or company name (non-standard,but often recognized, ORG field).
-        """
         self.first_name = kwargs.get('first_name')
         self.last_name = kwargs.get('last_name')
         self.first_name_reading = kwargs.get('first_name_reading')
@@ -99,20 +159,6 @@ class ContactDetail(object):
 
         See this archive of the format specifications: https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
 
-        The contact dictionary gives the following parameters:
-            * first_name
-            * last_name
-            * first_name_reading: the sound of the first name.
-            * last_name_reading: the sound of the last name.
-            * tel: the phone number, it can appear multiple times.
-            * tel_av: the video-phone number, it can appear multiple times.
-            * email: the email address, it can appear multiple times.
-            * memo: notes.
-            * birthday: the birth date (Python date).
-            * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
-            * url: homepage URL.
-            * nickname: display name.
-            * org: organization or company name (non-standard,but often recognized, ORG field).
         :return: the MeCARD contact description.
         """
 
@@ -121,18 +167,13 @@ class ContactDetail(object):
         # See this for an archive of the format specifications:
         # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
         contact_text = 'MECARD:'
-        if self.first_name and self.last_name:
-            name = '%s,%s' % (self.last_name, self.first_name)
-        else:
-            name = self.first_name if self.first_name else self.last_name
-        if name:
-            contact_text += 'N:%s;' % name
-        if self.first_name_reading and self.last_name_reading:
-            name_reading = '%s,%s' % (self.escaped_last_name_reading, self.escaped_first_name_reading)
-        else:
-            name_reading = self.escaped_first_name_reading if self.first_name_reading else self.escaped_last_name_reading
-        if name_reading:
-            contact_text += 'SOUND:%s;' % name_reading
+        for name_components_pair in (('N:%s;', (self.escaped_last_name, self.escaped_first_name)), ('SOUND:%s;', (self.escaped_last_name_reading, self.escaped_first_name_reading))):
+            if name_components_pair[1][0] and name_components_pair[1][1]:
+                name = '%s,%s' % name_components_pair[1]
+            else:
+                name = name_components_pair[1][0] if name_components_pair[1][0] else name_components_pair[1][1]
+            if name:
+                contact_text += name_components_pair[0] % name
         if self.tel:
             contact_text += 'TEL:%s;' % self.escaped_tel
         if self.tel_av:
@@ -159,7 +200,13 @@ class ContactDetail(object):
 
 class WifiConfig(object):
     """
-    Represents the configurion for a Wi-Fi connexion.
+    Represents the configuration of a Wi-Fi connexion.
+
+    The following fields are provided:
+        * ssid: the name of the SSID
+        * authentication: the authentication type for the SSID; can be AUTHENTICATION.wep or AUTHENTICATION.wpa, or AUTHENTICATION.nopass for no password. Or, omit for no password.
+        * password: the password, ignored if "authentsication" is 'nopass' (in which case it may be omitted).
+        * hidden: tells whether the SSID is hidden or not; can be True or Fals
     """
     AUTHENTICATION = namedtuple('AUTHENTICATION', 'nopass WEP WPA')._make(range(3))
     AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, 'nopass'), (AUTHENTICATION.WEP, 'WEP'), (AUTHENTICATION.WPA, 'WPA'))
@@ -169,14 +216,6 @@ class WifiConfig(object):
     hidden = False
 
     def __init__(self, **kwargs):
-        """
-        The wifi configuration recognizes the following parameters.
-        :param kwargs:
-            * ssid: the name of the SSID
-            * authentication: the authentication type for the SSID; can be AUTHENTICATION.wep or AUTHENTICATION.wpa, or AUTHENTICATION.nopass for no password. Or, omit for no password.
-            * password: the password, ignored if "authentsication" is 'nopass' (in which case it may be omitted).
-            * hidden: tells whether the SSID is hidden or not; can be True or False.
-        """
         self.ssid = kwargs.get('ssid')
         self.authentication = kwargs.get('authentication', WifiConfig.AUTHENTICATION.nopass)
         self.password = kwargs.get('password')
@@ -311,52 +350,30 @@ def _escape_mecard_special_chars(string_to_escape):
     return string_to_escape
 
 
-def make_qr_code(embedded, text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+def make_qr_code(embedded, text, qr_code_options):
     if embedded is True:
-        return make_embedded_qr_code(text, size=size, border=border, version=version, image_format=image_format)
-    return make_qr_code_url(text, size=size, border=border, version=version, image_format=image_format)
+        return make_embedded_qr_code(text, qr_code_options)
+    return make_qr_code_url(text, qr_code_options)
 
 
-def make_embedded_qr_code(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
+def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     """
     Generates a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
     HTML document.
-
-    Any invalid argument is silently converted into the default value for that argument.
-
-    The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
-        * t or T: tiny (value: 6)
-        * s or S: small (value: 12)
-        * m or M: medium (value: 18)
-        * l or L: large (value: 30)
-        * h or H: huge (value: 48)
-
-    For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
-
-    The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
-    this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
-    The size grows by 4 modules/side.
-
-    Keyword arguments:
-        * text (str): the text to render as a QR code
-        * size (int, str): the size of the QR code as an integer or a string. Default is *'m'*.
-        * version (int): the version of the QR code gives the size of the matrix. Default is *1*.
-        * image_format (str): the graphics format used to render the QR code. It can be either *'svg'* or *'png'*. Default is *'svg'*.
     """
-    image_format = get_supported_image_format(image_format)
-    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=size, border=border, version=version)
+    image_format = qr_code_options.image_format
+    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version)
     stream = BytesIO()
     if image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())
         html_fragment = (str(stream.getvalue(), 'utf-8'))
     else:
         img.save(stream, format=PNG_FORMAT_NAME.upper())
-        html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (
-        str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
+        html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)
 
 
-def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT, cache_enabled=DEFAULT_CACHE_ENABLED, include_url_protection_token=True):
+def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAULT_CACHE_ENABLED, include_url_protection_token=True):
     """
     Build an URL to a view that handle serving QR code image from the given parameters.
     Any invalid argument related to the size or the format of the image is silently converted into the default value for that argument.
@@ -369,37 +386,37 @@ def make_qr_code_url(text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE,
     """
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 
-    image_format = get_supported_image_format(image_format)
-    params = dict(text=encoded_text, size=size, border=border, version=version, image_format=image_format, cache_enabled=cache_enabled)
+    image_format = qr_code_options.image_format
+    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, image_format=image_format, cache_enabled=cache_enabled)
     path = reverse('qr_code:serve_qr_code_image')
 
     if include_url_protection_token:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace
         # existing plain text query arguments in order to allow usage of the URL as an API (without token since external
         # users cannot generate the signed token!).
-        token = get_qr_url_protection_signed_token(size, border, version, image_format)
+        token = get_qr_url_protection_signed_token(qr_code_options)
         params['token'] = token
 
     url = '%s?%s' % (path, urllib.parse.urlencode(params))
     return mark_safe(url)
 
 
-def get_qr_url_protection_signed_token(size, border, version, image_format):
+def get_qr_url_protection_signed_token(qr_code_options):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
     signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
-    token = signer.sign(get_qr_url_protection_token(size, border, version, image_format, RANDOM_TOKEN))
+    token = signer.sign(get_qr_url_protection_token(qr_code_options, RANDOM_TOKEN))
     return token
 
 
-def get_qr_url_protection_token(size, border, version, image_format, random_token):
+def get_qr_url_protection_token(qr_code_options, random_token):
     """
     Generate a random token for the QR code image.
 
     The token contains image attributes so that a user cannot use a token provided somewhere on a website to
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
-    return '.'.join(list(map(str, (size, border, version, image_format, random_token))))
+    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version, qr_code_options.image_format, random_token))))
 
 
 def qr_code_etag(request):

@@ -1,10 +1,10 @@
 # Change Log
 
 ## 0.5.0 (under development)
-* The context for rendering a QR code encoding a Wi-Fi configuration has been renamed from `wifi_dict` to `wifi_config`.
-* The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig`class.
-* The context for rendering a QR code encoding a contact detail has been renamed from `contact_dict` to `contact_detail`.
+* QR code options have been factorized and now use the `QRCodeOptions` class.
+* The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
 * The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
+* BREAKING CHANGES: The changes mentioned above might break the compatibility with code using qr_code.py' API directly, but template tags are not impacted.
 
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.

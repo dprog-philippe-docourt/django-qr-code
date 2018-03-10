@@ -12,7 +12,7 @@ from django.views.decorators.http import condition
 
 from qr_code.qr_code import DEFAULT_BORDER_SIZE, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, DEFAULT_VERSION, \
     get_qr_url_protection_token, get_url_protection_options, make_qr_code_image, \
-    qr_code_etag, qr_code_last_modified
+    qr_code_etag, qr_code_last_modified, QRCodeOptions
 from qr_code.qrcode_image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage, \
     get_supported_image_format
 
@@ -43,24 +43,24 @@ def cache_qr_code():
 def serve_qr_code_image(request):
     """Serve an image that represents the requested QR code."""
     text = base64.urlsafe_b64decode(request.GET.get('text', ''))
-    size = request.GET.get('size', DEFAULT_MODULE_SIZE)
-    border = request.GET.get('border', DEFAULT_BORDER_SIZE)
-    version = request.GET.get('version', DEFAULT_VERSION)
-    image_format = request.GET.get('image_format', DEFAULT_IMAGE_FORMAT)
-    image_format = get_supported_image_format(image_format)
+    request_query = request.GET.dict()
+    for key in ('text', 'token', 'cache_enabled'):
+        if key in request_query:
+            request_query.pop(key)
+    qr_code_options = QRCodeOptions(**request_query)
 
     # Handle image access protection (we do not allow external requests for anyone).
-    check_image_access_permission(request, size, border, version, image_format)
+    check_image_access_permission(request, qr_code_options)
 
-    img = make_qr_code_image(text, image_factory=SvgPathImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=size,
-                             border=border, version=version)
+    img = make_qr_code_image(text, image_factory=SvgPathImage if qr_code_options.image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size,
+                             border=qr_code_options.border, version=qr_code_options.version)
 
     # Warning: The largest QR codes, in version 40, with a border of 4 modules, and rendered in SVG format, are ~800
     # KB large. This can be handled in memory but could cause troubles if the server needs to generate thousands of
     # those QR codes within a short interval! Note that this would also be a problem for the CPU. Such QR codes needs
     # 0.7 second to be generated on a powerful machine (2017), and probably more than one second on a cheap hosting.
     stream = BytesIO()
-    if image_format == SVG_FORMAT_NAME:
+    if qr_code_options.image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())
         mime_type = 'image/svg+xml'
     else:
@@ -75,7 +75,7 @@ def serve_qr_code_image(request):
     return response
 
 
-def check_image_access_permission(request, size, border, version, image_format):
+def check_image_access_permission(request, qr_code_options):
     """Handle image access protection (we do not allow external requests for anyone)."""
     url_protection_options = get_url_protection_options(request.user)
     if not url_protection_options['ALLOWS_EXTERNAL_REQUESTS']:
@@ -86,7 +86,7 @@ def check_image_access_permission(request, size, border, version, image_format):
             url_protection_string = signer.unsign(token)
             # Check that the given token matches the request parameters.
             random_token = url_protection_string.split('.')[-1]
-            if get_qr_url_protection_token(size, border, version, image_format, random_token) != url_protection_string:
+            if get_qr_url_protection_token(qr_code_options, random_token) != url_protection_string:
                 raise PermissionDenied("Request query does not match protection token.")
         except BadSignature:
             raise PermissionDenied("Wrong token signature.")

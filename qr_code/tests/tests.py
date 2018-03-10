@@ -5,7 +5,7 @@ from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail
+from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail, QRCodeOptions
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'
@@ -25,7 +25,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     def test_svg_without_cache(self):
         for cache_enabled in [True, False]:
-            url1 = make_qr_code_url(TEST_TEXT, size=1, cache_enabled=cache_enabled)
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), cache_enabled=cache_enabled)
             url2 = qr_url_from_text(TEST_TEXT, size=1, cache_enabled=cache_enabled)
             url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, cache_enabled=cache_enabled)
             url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, cache_enabled=cache_enabled)
@@ -41,7 +41,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     def test_png_without_cache(self):
         for cache_enabled in [True, False]:
-            url1 = make_qr_code_url(TEST_TEXT, image_format='png', size=1, cache_enabled=cache_enabled)
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(image_format='png', size=1), cache_enabled=cache_enabled)
             url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, cache_enabled=cache_enabled)
             url3 = qr_url_from_text(TEST_TEXT, image_format='PNG', size=1, cache_enabled=cache_enabled)
             url = url1
@@ -112,7 +112,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             size = sizes[i]
             print('Testing SVG with size %s' % size)
             result = results[i]
-            qr1 = make_embedded_qr_code(TEST_TEXT, size=size)
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size))
             qr2 = qr_from_text(TEST_TEXT, size=size)
             qr3 = qr_from_text(TEST_TEXT, size=size, image_format='svg')
             self.assertEqual(qr1, qr2)
@@ -136,7 +136,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             version = versions[i]
             print('Testing SVG with version %s' % version)
             result = results[i]
-            qr1 = make_embedded_qr_code(TEST_TEXT, version=version)
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(version=version))
             qr2 = qr_from_text(TEST_TEXT, version=version)
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='svg')
             qr4 = qr_from_text(TEST_TEXT, version=version, image_format='SVG')
@@ -166,7 +166,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             size = sizes[i]
             print('Testing PNG with size %s' % size)
             result = results[i]
-            qr1 = make_embedded_qr_code(TEST_TEXT, size=size, image_format='png')
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size, image_format='png'))
             qr2 = qr_from_text(TEST_TEXT, size=size, image_format='png')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
@@ -188,11 +188,12 @@ class TestQRFromTextPngResult(SimpleTestCase):
             version = versions[i]
             print('Testing PNG with version %s' % version)
             result = results[i]
-            qr1 = make_embedded_qr_code(TEST_TEXT, version=version, image_format='png')
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(version=version, image_format='png'))
             qr2 = qr_from_text(TEST_TEXT, version=version, image_format='png')
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='PNG')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
+            # print('<img src="data:image/png;base64, %salt="Hello World!"' % result)
             self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
