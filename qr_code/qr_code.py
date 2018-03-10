@@ -115,7 +115,7 @@ class ContactDetail(object):
         * first_name_reading: the sound of the first name.
         * last_name_reading: the sound of the last name.
         * tel: the phone number, it can appear multiple times.
-        * tel-av: the video-phone number, it can appear multiple times.
+        * tel_av: the video-phone number, it can appear multiple times.
         * email: the email address, it can appear multiple times.
         * memo: notes.
         * birthday: the birth date (Python date).
