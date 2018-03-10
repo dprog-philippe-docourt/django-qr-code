@@ -2,11 +2,10 @@
 import re
 
 from django.template import Template, Context
-from django.template.loader import render_to_string
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url
+from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'
@@ -207,7 +206,7 @@ class TestQRForApplications(SimpleTestCase):
         resources_dir = os.path.join(tests_dir, 'resources')
         SVG_REF_SUFFIX = '.ref.svg'
         from datetime import date
-        contact_dict = dict(
+        contact_detail = ContactDetail(
             first_name='John',
             last_name='Doe',
             first_name_reading='jAAn',
@@ -220,9 +219,9 @@ class TestQRForApplications(SimpleTestCase):
             memo='Development Manager',
             org='Company Ltd',
         )
-        wifi_dict = dict(
+        wifi_config = WifiConfig(
             ssid='my-wifi',
-            authentication='WPA',
+            authentication=WifiConfig.AUTHENTICATION.WPA,
             password='wifi-password'
         )
         tests_data = [
@@ -231,8 +230,8 @@ class TestQRForApplications(SimpleTestCase):
             dict(source='{% qr_for_sms "+41769998877" %}', ref_file_name='qr_for_sms' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}', ref_file_name='qr_for_geolocation' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}', ref_file_name='qr_for_google_maps' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_wifi wifi_dict %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_dict': wifi_dict}),
-            dict(source='{% qr_for_contact contact_dict %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_dict': contact_dict}),
+            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config}),
+            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail}),
             dict(source='{% qr_for_youtube "J9go2nj6b3M" %}', ref_file_name='qr_for_youtube' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_google_play "ch.admin.meteoswiss" %}', ref_file_name='qr_for_google_play' + SVG_REF_SUFFIX),
         ]

@@ -1,9 +1,11 @@
 from datetime import date
 from django.shortcuts import render
 
+from qr_code.qr_code import WifiConfig, ContactDetail
+
 
 def index(request):
-    contact_dict = dict(
+    contact_detail = ContactDetail(
         first_name='John',
         last_name='Doe',
         first_name_reading='jAAn',
@@ -16,9 +18,9 @@ def index(request):
         memo='Development Manager',
         org='Company Ltd',
     )
-    wifi_dict = dict(
+    wifi_config = WifiConfig(
         ssid='my-wifi',
-        authentication='WPA',
+        authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
-    return render(request, 'qr_code_demo/index.html', context=dict(contact_dict=contact_dict, wifi_dict=wifi_dict))
+    return render(request, 'qr_code_demo/index.html', context=dict(contact_detail=contact_detail, wifi_config=wifi_config))

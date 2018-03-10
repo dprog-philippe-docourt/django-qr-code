@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.5.0 (under development)
+* The context for rendering a QR code encoding a Wi-Fi configuration has been renamed from `wifi_dict` to `wifi_config`.
+* The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig`class.
+* The context for rendering a QR code encoding a contact detail has been renamed from `contact_dict` to `contact_detail`.
+* The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
+
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.
 * Simplify handling of default values for QR code options.

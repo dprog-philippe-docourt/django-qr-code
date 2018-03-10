@@ -319,18 +319,18 @@
         </tr>
         <tr>
             <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_dict {% templatetag closeblock %}</code></strong>
+                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config {% templatetag closeblock %}</code></strong>
             </td>
             <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_dict {% templatetag closeblock %}"</code></strong>
+                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config {% templatetag closeblock %}"</code></strong>
             </td>
         </tr>
         <tr>
             <td width="33%">
-                <div>{% qr_for_wifi wifi_dict %}</div>
+                <div>{% qr_for_wifi wifi_config %}</div>
             </td>
             <td width="33%">
-                <div><img src="{% qr_url_for_wifi wifi_dict %}"></div>
+                <div><img src="{% qr_url_for_wifi wifi_config %}"></div>
             </td>
         </tr>
     </table>
@@ -342,18 +342,18 @@
         </tr>
         <tr>
             <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_contact contact_dict {% templatetag closeblock %}</code></strong>
+                <strong><code>{% templatetag openblock %} qr_for_contact contact_detail {% templatetag closeblock %}</code></strong>
             </td>
             <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_dict {% templatetag closeblock %}"</code></strong>
+                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail {% templatetag closeblock %}"</code></strong>
             </td>
         </tr>
         <tr>
             <td width="33%">
-                <div>{% qr_for_contact contact_dict %}</div>
+                <div>{% qr_for_contact contact_detail %}</div>
             </td>
             <td width="33%">
-                <div><img src="{% qr_url_for_contact contact_dict %}"></div>
+                <div><img src="{% qr_url_for_contact contact_detail %}"></div>
             </td>
         </tr>
     </table>

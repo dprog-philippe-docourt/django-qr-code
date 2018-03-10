@@ -2,7 +2,7 @@
 
 from django import template
 
-from qr_code.qr_code import make_embedded_qr_code, make_contact_text, make_wifi_text, make_email_text, \
+from qr_code.qr_code import make_embedded_qr_code, make_email_text, \
     make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, \
     make_youtube_text, DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, \
     DEFAULT_IMAGE_FORMAT, DEFAULT_CACHE_ENABLED, make_qr_code_url
@@ -71,15 +71,13 @@ def qr_for_google_play(package_id, **kwargs):
 
 
 @register.simple_tag()
-def qr_for_contact(contact_dict, **kwargs):
-    contact_as_mecard = make_contact_text(contact_dict=contact_dict)
-    return _make_qr_code(contact_as_mecard, qr_code_options=kwargs, embedded=True)
+def qr_for_contact(contact_detail, **kwargs):
+    return _make_qr_code(contact_detail.make_contact_text(), qr_code_options=kwargs, embedded=True)
 
 
 @register.simple_tag()
-def qr_for_wifi(wifi_dict, **kwargs):
-    wifi_config = make_wifi_text(wifi_dict=wifi_dict)
-    return _make_qr_code(wifi_config, qr_code_options=kwargs, embedded=True)
+def qr_for_wifi(wifi_config, **kwargs):
+    return _make_qr_code(wifi_config.make_wifi_text(), qr_code_options=kwargs, embedded=True)
 
 
 @register.simple_tag()
@@ -126,12 +124,10 @@ def qr_url_for_google_play(package_id, **kwargs):
 
 
 @register.simple_tag()
-def qr_url_for_contact(contact_dict, **kwargs):
-    contact_as_mecard = make_contact_text(contact_dict=contact_dict)
-    return _make_qr_code(contact_as_mecard, qr_code_options=kwargs, embedded=False)
+def qr_url_for_contact(contact_detail, **kwargs):
+    return _make_qr_code(contact_detail.make_contact_text(), qr_code_options=kwargs, embedded=False)
 
 
 @register.simple_tag()
-def qr_url_for_wifi(wifi_dict, **kwargs):
-    wifi_config = make_wifi_text(wifi_dict=wifi_dict)
-    return _make_qr_code(wifi_config, qr_code_options=kwargs, embedded=False)
+def qr_url_for_wifi(wifi_config, **kwargs):
+    return _make_qr_code(wifi_config.make_wifi_text(), qr_code_options=kwargs, embedded=False)

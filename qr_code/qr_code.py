@@ -2,18 +2,15 @@
 
 import base64
 import urllib.parse
+from collections import namedtuple
 from datetime import datetime
 from io import BytesIO
 
 import xml.etree.ElementTree as ET
 
 from django.conf import settings
-
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
 from django.core.signing import Signer
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -37,6 +34,173 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
         self._img.append(self.make_path())
         ET.ElementTree(self._img).write(stream, encoding="UTF-8", xml_declaration=False, default_namespace=None,
                                         method='html')
+
+
+def _escape_mecard_special_chars_in_object_fields(obj, keys):
+    for key in keys:
+        if hasattr(obj, key):
+            setattr(obj, 'escaped_%s' % key, _escape_mecard_special_chars(getattr(obj, key)))
+
+
+class ContactDetail(object):
+    """
+    Represents the detail of a contact.
+    """
+    first_name = None
+    last_name = None
+    first_name_reading = None
+    last_name_reading = None
+    tel = None
+    tel_av = None
+    email = None
+    memo = None
+    birthday = None
+    address = None
+    url = None
+    nickname = None
+    org = None
+
+    def __init__(self, **kwargs):
+        """
+        The contact details support the following fields.
+        :param kwargs:
+            The contact dictionary gives the following parameters:
+            * first_name
+            * last_name
+            * first_name_reading: the sound of the first name.
+            * last_name_reading: the sound of the last name.
+            * tel: the phone number, it can appear multiple times.
+            * tel-av: the video-phone number, it can appear multiple times.
+            * email: the email address, it can appear multiple times.
+            * memo: notes.
+            * birthday: the birth date (Python date).
+            * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
+            * url: homepage URL.
+            * nickname: display name.
+            * org: organization or company name (non-standard,but often recognized, ORG field).
+        """
+        self.first_name = kwargs.get('first_name')
+        self.last_name = kwargs.get('last_name')
+        self.first_name_reading = kwargs.get('first_name_reading')
+        self.last_name_reading = kwargs.get('last_name_reading')
+        self.tel = kwargs.get('tel')
+        self.tel_av = kwargs.get('tel_av')
+        self.email = kwargs.get('email')
+        self.memo = kwargs.get('memo')
+        self.birthday = kwargs.get('birthday')
+        self.address = kwargs.get('address')
+        self.url = kwargs.get('url')
+        self.nickname = kwargs.get('nickname')
+        self.org = kwargs.get('org')
+
+    def make_contact_text(self):
+        """
+        Make a text for configuring a contact in a phone book. The MeCARD format is used, with an optional, non-standard (but often recognized) ORG field.
+
+        See this archive of the format specifications: https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
+
+        The contact dictionary gives the following parameters:
+            * first_name
+            * last_name
+            * first_name_reading: the sound of the first name.
+            * last_name_reading: the sound of the last name.
+            * tel: the phone number, it can appear multiple times.
+            * tel_av: the video-phone number, it can appear multiple times.
+            * email: the email address, it can appear multiple times.
+            * memo: notes.
+            * birthday: the birth date (Python date).
+            * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
+            * url: homepage URL.
+            * nickname: display name.
+            * org: organization or company name (non-standard,but often recognized, ORG field).
+        :return: the MeCARD contact description.
+        """
+
+        _escape_mecard_special_chars_in_object_fields(self, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel_av', 'email', 'memo', 'nickname', 'org'))
+
+        # See this for an archive of the format specifications:
+        # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
+        contact_text = 'MECARD:'
+        if self.first_name and self.last_name:
+            name = '%s,%s' % (self.last_name, self.first_name)
+        else:
+            name = self.first_name if self.first_name else self.last_name
+        if name:
+            contact_text += 'N:%s;' % name
+        if self.first_name_reading and self.last_name_reading:
+            name_reading = '%s,%s' % (self.escaped_last_name_reading, self.escaped_first_name_reading)
+        else:
+            name_reading = self.escaped_first_name_reading if self.first_name_reading else self.escaped_last_name_reading
+        if name_reading:
+            contact_text += 'SOUND:%s;' % name_reading
+        if self.tel:
+            contact_text += 'TEL:%s;' % self.escaped_tel
+        if self.tel_av:
+            contact_text += 'TEL-AV:%s;' % self.escaped_tel_av
+        if self.email:
+            contact_text += 'EMAIL:%s;' % self.escaped_email
+        if self.memo:
+            contact_text += 'NOTE:%s;' % self.escaped_memo
+        if self.birthday:
+            # Format date to YYMMDD.
+            contact_text += 'BDAY:%s;' % self.birthday.strftime('%Y%m%d')
+        if self.address:
+            contact_text += 'ADR:%s;' % self.address
+        if self.url:
+            contact_text += 'URL:%s;' % self.url
+        if self.nickname:
+            contact_text += 'NICKNAME:%s;' % self.escaped_nickname
+        # Not standard, but recognized by several readers.
+        if self.org:
+            contact_text += 'ORG:%s;' % self.escaped_org
+        contact_text += ';'
+        return contact_text
+
+
+class WifiConfig(object):
+    """
+    Represents the configurion for a Wi-Fi connexion.
+    """
+    AUTHENTICATION = namedtuple('AUTHENTICATION', 'nopass WEP WPA')._make(range(3))
+    AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, 'nopass'), (AUTHENTICATION.WEP, 'WEP'), (AUTHENTICATION.WPA, 'WPA'))
+    ssid = None
+    authentication = AUTHENTICATION.nopass
+    password = None
+    hidden = False
+
+    def __init__(self, **kwargs):
+        """
+        The wifi configuration recognizes the following parameters.
+        :param kwargs:
+            * ssid: the name of the SSID
+            * authentication: the authentication type for the SSID; can be AUTHENTICATION.wep or AUTHENTICATION.wpa, or AUTHENTICATION.nopass for no password. Or, omit for no password.
+            * password: the password, ignored if "authentsication" is 'nopass' (in which case it may be omitted).
+            * hidden: tells whether the SSID is hidden or not; can be True or False.
+        """
+        self.ssid = kwargs.get('ssid')
+        self.authentication = kwargs.get('authentication', WifiConfig.AUTHENTICATION.nopass)
+        self.password = kwargs.get('password')
+        self.hidden = kwargs.get('hidden')
+
+    def make_wifi_text(self):
+        """
+        Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
+
+        :return: the WIFI configuration text that can be translated to a QR code.
+        """
+
+        _escape_mecard_special_chars_in_object_fields(self, ('ssid', 'password'))
+
+        wifi_config = 'WIFI:'
+        if self.ssid:
+            wifi_config += 'S:%s;' % self.escaped_ssid
+        if self.authentication:
+            wifi_config += 'T:%s;' % WifiConfig.AUTHENTICATION_CHOICES[self.authentication][1]
+        if self.password:
+            wifi_config += 'P:%s;' % self.escaped_password
+        if self.hidden:
+            wifi_config += 'H:%s;' % str(self.hidden).lower()
+        return wifi_config
 
 
 def get_url_protection_options(user=None):
@@ -145,108 +309,6 @@ def _escape_mecard_special_chars(string_to_escape):
     for sc in special_chars:
         string_to_escape = string_to_escape.replace(sc, '\\%s' % sc)
     return string_to_escape
-
-
-def _escape_mecard_special_chars_in_dict(dict_to_escape, keys):
-    escaped_dict = dict(dict_to_escape)
-    for key in keys:
-        if key in dict_to_escape:
-            escaped_dict[key] = _escape_mecard_special_chars(escaped_dict[key])
-    return escaped_dict
-
-
-def make_contact_text(contact_dict):
-    """
-    Make a text for configuring a contact in a phone book. The MeCARD format is used, with an optional, non-standard (but often recognized) ORG field.
-
-    See this archive of the format specifications: https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
-
-    The contact dictionary gives the following parameters:
-        * first_name
-        * last_name
-        * first_name_reading: the sound of the first name.
-        * last_name_reading: the sound of the last name.
-        * tel: the phone number, it can appear multiple times.
-        * tel-av: the video-phone number, it can appear multiple times.
-        * email: the email address, it can appear multiple times.
-        * memo: notes.
-        * birthday: the birth date (Python date).
-        * address: the fields divided by commas (,) denote PO box, room number, house number, city, prefecture, zip code and country, in order.
-        * url: homepage URL.
-        * nickname: display name.
-        * org: organization or company name (non-standard,but often recognized, ORG field).
-    :return: the MeCARD contact description.
-    """
-
-    contact_dict = _escape_mecard_special_chars_in_dict(contact_dict, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel-av', 'email', 'memo', 'nickname', 'org'))
-
-    # See this for an archive of the format specifications:
-    # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
-    contact_text = 'MECARD:'
-    first_name = contact_dict.get('first_name')
-    last_name = contact_dict.get('last_name')
-    if first_name and last_name:
-        name = '%s,%s' % (last_name, first_name)
-    else:
-        name = first_name if first_name else last_name
-    if name:
-        contact_text += 'N:%s;' % name
-    first_name_reading = contact_dict.get('first_name_reading')
-    last_name_reading = contact_dict.get('last_name_reading')
-    if first_name_reading and last_name_reading:
-        name_reading = '%s,%s' % (last_name_reading, first_name_reading)
-    else:
-        name_reading = first_name_reading if first_name_reading else last_name_reading
-    if name_reading:
-        contact_text += 'SOUND:%s;' % name_reading
-    if 'tel' in contact_dict:
-        contact_text += 'TEL:%s;' % contact_dict['tel']
-    if 'tel-av' in contact_dict:
-        contact_text += 'TEL-AV:%s;' % contact_dict['tel-av']
-    if 'email' in contact_dict:
-        contact_text += 'EMAIL:%s;' % contact_dict['email']
-    if 'memo' in contact_dict:
-        contact_text += 'NOTE:%s;' % contact_dict['memo']
-    if 'birthday' in contact_dict:
-        # Format date to YYMMDD.
-        contact_text += 'BDAY:%s;' % contact_dict['birthday'].strftime('%Y%m%d')
-    if 'address' in contact_dict:
-        contact_text += 'ADR:%s;' % contact_dict['address']
-    if 'url' in contact_dict:
-        contact_text += 'URL:%s;' % contact_dict['url']
-    if 'nickname' in contact_dict:
-        contact_text += 'NICKNAME:%s;' % contact_dict['nickname']
-    # Not standard, but recognized by several readers.
-    if 'org' in contact_dict:
-        contact_text += 'ORG:%s;' % contact_dict['org']
-    contact_text += ';'
-    return contact_text
-
-
-def make_wifi_text(wifi_dict):
-    """
-    Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
-
-    The wifi dictionary gives the following parameters:
-        * ssid: the name of the SSID
-        * authentication: the authentication type for the SSID; can be 'WEP' or 'WPA', or 'nopass' for no password. Or, omit for no password.
-        * password: the password, ignored if "authentication" is 'nopass' (in which case it may be omitted).
-        * hidden: tells whether the SSID is hidden or not; can be True or False.
-    :return: the WIFI configuration text that can be translated to a QR code.
-    """
-
-    wifi_dict = _escape_mecard_special_chars_in_dict(wifi_dict, ('ssid', 'password'))
-
-    wifi_config = 'WIFI:'
-    if 'ssid' in wifi_dict:
-        wifi_config += 'S:%s;' % wifi_dict['ssid']
-    if 'authentication' in wifi_dict:
-        wifi_config += 'T:%s;' % wifi_dict['authentication']
-    if 'password' in wifi_dict:
-        wifi_config += 'P:%s;' % wifi_dict['password']
-    if 'hidden' in wifi_dict:
-        wifi_config += 'H:%s;' % str(wifi_dict['hidden']).lower()
-    return wifi_config
 
 
 def make_qr_code(embedded, text, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, image_format=DEFAULT_IMAGE_FORMAT):
