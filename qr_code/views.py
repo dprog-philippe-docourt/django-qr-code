@@ -42,12 +42,12 @@ def cache_qr_code():
 @cache_qr_code()
 def serve_qr_code_image(request):
     """Serve an image that represents the requested QR code."""
-    text = base64.urlsafe_b64decode(request.GET.get('text', ''))
     qr_code_options = get_qr_code_option_from_request(request)
 
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
 
+    text = base64.urlsafe_b64decode(request.GET.get('text', ''))
     img = make_qr_code_image(text, image_factory=SvgPathImage if qr_code_options.image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size,
                              border=qr_code_options.border, version=qr_code_options.version)
 
