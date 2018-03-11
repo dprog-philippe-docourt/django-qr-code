@@ -15,6 +15,7 @@ from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
+from qrcode import ERROR_CORRECT_L, ERROR_CORRECT_M, ERROR_CORRECT_Q, ERROR_CORRECT_H
 
 from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, get_supported_image_format, SVG_FORMAT_NAME, \
     PNG_FORMAT_NAME
@@ -22,12 +23,14 @@ from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, get_supported
 QR_CODE_GENERATION_VERSION_DATE = datetime(year=2017, month=8, day=7, hour=0)
 
 SIZE_DICT = {'t': 6, 's': 12, 'm': 18, 'l': 30, 'h': 48}
+ERROR_CORRECTION_DICT = {'L': ERROR_CORRECT_L, 'M': ERROR_CORRECT_M, 'Q': ERROR_CORRECT_Q, 'H': ERROR_CORRECT_H}
 
 DEFAULT_MODULE_SIZE = 'M'
 DEFAULT_BORDER_SIZE = 4
 DEFAULT_VERSION = None
 DEFAULT_IMAGE_FORMAT = SVG_FORMAT_NAME
 DEFAULT_CACHE_ENABLED = True
+DEFAULT_ERROR_CORRECTION = 'M'
 
 
 class SvgEmbeddedInHtmlImage(SvgPathImage):
@@ -52,6 +55,7 @@ class QRCodeOptions(object):
         * size (int, str): the size of the QR code as an integer or a string. Default is *'m'*.
         * version (int): the version of the QR code gives the size of the matrix. Default is *1*.
         * image_format (str): the graphics format used to render the QR code. It can be either *'svg'* or *'png'*. Default is *'svg'*.
+        * error_correction: how much error correction that might be required to read the code.
 
     The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
         * t or T: tiny (value: 6)
@@ -65,12 +69,21 @@ class QRCodeOptions(object):
     The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
     this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
     The size grows by 4 modules/side.
+
+    There are 4 error correction levels used for QR codes, with each one adding different amounts of “backup” data
+    depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
+    error correction may be required:
+        * Level L – up to 7% damage (use 'l' or 'L')
+        * Level M – up to 15% damage (use 'm' or 'M')
+        * Level Q – up to 25% damage (use 'q' or 'Q')
+        * Level H – up to 30% damage (use 'h' or 'H')
     """
     _DEFAULT_QR_CODE_OPTIONS = dict(
         size=DEFAULT_MODULE_SIZE,
         border=DEFAULT_BORDER_SIZE,
         version=DEFAULT_VERSION,
         image_format=DEFAULT_IMAGE_FORMAT,
+        error_correction=DEFAULT_ERROR_CORRECTION
     )
     _qr_code_options = dict(_DEFAULT_QR_CODE_OPTIONS)
 
@@ -103,6 +116,10 @@ class QRCodeOptions(object):
     @property
     def image_format(self):
         return self._qr_code_options['image_format']
+
+    @property
+    def error_correction(self):
+        return self._qr_code_options['error_correction']
 
 
 class ContactDetail(object):
@@ -277,7 +294,7 @@ def _make_random_token():
 RANDOM_TOKEN = _make_random_token()
 
 
-def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION):
+def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, error_correction=DEFAULT_ERROR_CORRECTION):
     """
     Generates an image object (from the qrcode library) representing the QR code for the given text.
 
@@ -303,7 +320,7 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
     import qrcode
     qr = qrcode.QRCode(
         version=actual_version if actual_version != 0 else 1,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        error_correction=ERROR_CORRECTION_DICT.get(error_correction.upper(), DEFAULT_ERROR_CORRECTION),
         box_size=actual_size,
         border=border
     )
@@ -416,7 +433,7 @@ def get_qr_url_protection_token(qr_code_options, random_token):
     The token contains image attributes so that a user cannot use a token provided somewhere on a website to
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
-    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version, qr_code_options.image_format, random_token))))
+    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version, qr_code_options.image_format, qr_code_options.error_correction, random_token))))
 
 
 def qr_code_etag(request):
