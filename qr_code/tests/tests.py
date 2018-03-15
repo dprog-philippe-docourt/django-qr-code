@@ -22,7 +22,6 @@ PNG_REF_SUFFIX = '.ref.png'
 
 
 def get_resources_path():
-    import os
     tests_dir = os.path.dirname(os.path.abspath(__file__))
     resources_dir = os.path.join(tests_dir, 'resources')
     return resources_dir
