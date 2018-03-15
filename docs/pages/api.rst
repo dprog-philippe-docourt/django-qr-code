@@ -1,18 +1,41 @@
 API Reference
 =============
 
-qr_code
+
+qrcode.constants
 -------
 
-.. automodule:: qr_code.qr_code
+.. automodule:: qr_code.qrcode.constants
    :members:
 
 
-qrcode_image
+qrcode.image
 ------------
 
-.. automodule:: qr_code.qrcode_image
+.. automodule:: qr_code.qrcode.image
    :members:
+
+
+qrcode.maker
+-------
+
+.. automodule:: qr_code.qrcode.maker
+   :members:
+
+
+qrcode.serve
+-------
+
+.. automodule:: qr_code.qrcode.serve
+   :members:
+
+
+qrcode.utils
+-------
+
+.. automodule:: qr_code.qrcode.utils
+   :members:
+
 
 templatetags.qr_code
 --------------------
