@@ -29,18 +29,11 @@ class _Coordinates(object):
         self.altitude = altitude
 
 
-def make_contact_qr_code(contact_detail, embedded, qr_code_args):
-    if not isinstance(contact_detail, ContactDetail):
+def make_contact_or_wifi_qr_code(contact_or_wifi, expected_cls, embedded, qr_code_args):
+    if not isinstance(contact_or_wifi, expected_cls):
         # For compatibility with existing views and templates, try to build from dict.
-        contact_detail = ContactDetail(**contact_detail)
-    return _make_qr_code(contact_detail.make_contact_text(), qr_code_args=qr_code_args, embedded=embedded)
-
-
-def make_wifi_qr_code(wifi_config, embedded, qr_code_args):
-    if not isinstance(wifi_config, WifiConfig):
-        # For compatibility with existing views and templates, try to build from dict.
-        wifi_config = WifiConfig(**wifi_config)
-    return _make_qr_code(wifi_config.make_wifi_text(), qr_code_args=qr_code_args, embedded=embedded)
+        contact_or_wifi = expected_cls(**contact_or_wifi)
+    return _make_qr_code(contact_or_wifi.make_qr_code_text(), qr_code_args=qr_code_args, embedded=embedded)
 
 
 def _make_google_maps_qr_code(coordinates, embedded, qr_code_args):
@@ -94,12 +87,12 @@ def qr_for_google_play(package_id, **kwargs):
 
 @register.simple_tag()
 def qr_for_contact(contact_detail, **kwargs):
-    return make_contact_qr_code(contact_detail, qr_code_args=kwargs, embedded=True)
+    return make_contact_or_wifi_qr_code(contact_detail, ContactDetail, qr_code_args=kwargs, embedded=True)
 
 
 @register.simple_tag()
 def qr_for_wifi(wifi_config, **kwargs):
-    return make_wifi_qr_code(wifi_config, qr_code_args=kwargs, embedded=True)
+    return make_contact_or_wifi_qr_code(wifi_config, WifiConfig, qr_code_args=kwargs, embedded=True)
 
 
 @register.simple_tag()
@@ -145,9 +138,9 @@ def qr_url_for_google_play(package_id, **kwargs):
 
 @register.simple_tag()
 def qr_url_for_contact(contact_detail, **kwargs):
-    return make_contact_qr_code(contact_detail, qr_code_args=kwargs, embedded=False)
+    return make_contact_or_wifi_qr_code(contact_detail, ContactDetail, qr_code_args=kwargs, embedded=False)
 
 
 @register.simple_tag()
 def qr_url_for_wifi(wifi_config, **kwargs):
-    return make_wifi_qr_code(wifi_config, qr_code_args=kwargs, embedded=False)
+    return make_contact_or_wifi_qr_code(wifi_config. WifiConfig, qr_code_args=kwargs, embedded=False)

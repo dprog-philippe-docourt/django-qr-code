@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION
+from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import make_qr_code_url
@@ -52,25 +52,29 @@ def _get_valid_error_correction_or_default(error_correction):
 
 
 def _get_valid_size_or_default(size):
-    if isinstance(size, int) or (isinstance(size, str) and size.isdigit()):
+    if _can_be_cast_to_int(size):
         actual_size = int(size)
         if actual_size < 1:
-            actual_size = SIZE_DICT['m']
+            actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE.lower()]
+    elif isinstance(size, str):
+        actual_size = SIZE_DICT.get(size.lower(), DEFAULT_MODULE_SIZE)
     else:
-        if not size or not size.lower() in SIZE_DICT:
-            size = 'm'
-        actual_size = SIZE_DICT[size.lower()]
+        actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE.lower()]
     return actual_size
 
 
 def _get_valid_version_or_none(version):
-    if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
+    if _can_be_cast_to_int(version):
         actual_version = int(version)
         if actual_version < 1 or actual_version > 40:
             actual_version = None
     else:
         actual_version = None
     return actual_version
+
+
+def _can_be_cast_to_int(value):
+    return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
 def make_qr_code(embedded, text, qr_code_options):

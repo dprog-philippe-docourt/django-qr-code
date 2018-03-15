@@ -138,7 +138,7 @@ class ContactDetail(object):
         self.nickname = kwargs.get('nickname')
         self.org = kwargs.get('org')
 
-    def make_contact_text(self):
+    def make_qr_code_text(self):
         """
         Make a text for configuring a contact in a phone book. The MeCARD format is used, with an optional, non-standard (but often recognized) ORG field.
 
@@ -206,7 +206,7 @@ class WifiConfig(object):
         self.password = kwargs.get('password')
         self.hidden = kwargs.get('hidden')
 
-    def make_wifi_text(self):
+    def make_qr_code_text(self):
         """
         Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
 
