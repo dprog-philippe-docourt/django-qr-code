@@ -142,4 +142,4 @@ def qr_url_for_contact(contact_detail, **kwargs):
 
 @register.simple_tag()
 def qr_url_for_wifi(wifi_config, **kwargs):
-    return make_contact_or_wifi_qr_code(wifi_config. WifiConfig, qr_code_args=kwargs, embedded=False)
+    return make_contact_or_wifi_qr_code(wifi_config, WifiConfig, qr_code_args=kwargs, embedded=False)
