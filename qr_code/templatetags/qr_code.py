@@ -4,7 +4,8 @@ from django import template
 
 from qr_code.qrcode.maker import make_embedded_qr_code,  make_qr_code_url
 from qr_code.qrcode.constants import DEFAULT_CACHE_ENABLED
-from qr_code.qrcode.utils import QRCodeOptions, make_email_text, make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, make_youtube_text
+from qr_code.qrcode.utils import QRCodeOptions, make_email_text, make_google_maps_text, make_geolocation_text, \
+    make_google_play_text, make_tel_text, make_sms_text, make_youtube_text, WifiConfig, ContactDetail
 
 register = template.Library()
 
@@ -79,11 +80,17 @@ def qr_for_google_play(package_id, **kwargs):
 
 @register.simple_tag()
 def qr_for_contact(contact_detail, **kwargs):
+    if not isinstance(contact_detail, ContactDetail):
+        # For compatibility with existing views and templates, try to build from dict.
+        contact_detail = ContactDetail(**contact_detail)
     return _make_qr_code(contact_detail.make_contact_text(), qr_code_args=kwargs, embedded=True)
 
 
 @register.simple_tag()
 def qr_for_wifi(wifi_config, **kwargs):
+    if not isinstance(wifi_config, WifiConfig):
+        # For compatibility with existing views and templates, try to build from dict.
+        wifi_config = WifiConfig(**wifi_config)
     return _make_qr_code(wifi_config.make_wifi_text(), qr_code_args=kwargs, embedded=True)
 
 
@@ -130,9 +137,15 @@ def qr_url_for_google_play(package_id, **kwargs):
 
 @register.simple_tag()
 def qr_url_for_contact(contact_detail, **kwargs):
+    if not isinstance(contact_detail, ContactDetail):
+        # For compatibility with existing views and templates, try to build from dict.
+        contact_detail = ContactDetail(**contact_detail)
     return _make_qr_code(contact_detail.make_contact_text(), qr_code_args=kwargs, embedded=False)
 
 
 @register.simple_tag()
 def qr_url_for_wifi(wifi_config, **kwargs):
+    if not isinstance(wifi_config, WifiConfig):
+        # For compatibility with existing views and templates, try to build from dict.
+        wifi_config = WifiConfig(**wifi_config)
     return _make_qr_code(wifi_config.make_wifi_text(), qr_code_args=kwargs, embedded=False)

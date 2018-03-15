@@ -305,7 +305,7 @@ class TestQRForApplications(SimpleTestCase):
 
     def test_demo_samples_in_svg_format(self):
         from datetime import date
-        contact_detail = ContactDetail(
+        contact_detail1 = dict(
             first_name='John',
             last_name='Doe',
             first_name_reading='jAAn',
@@ -318,10 +318,16 @@ class TestQRForApplications(SimpleTestCase):
             memo='Development Manager',
             org='Company Ltd',
         )
-        wifi_config = WifiConfig(
+        contact_detail2 = ContactDetail(
+            **contact_detail1
+        )
+        wifi_config1 = dict(
             ssid='my-wifi',
             authentication=WifiConfig.AUTHENTICATION.WPA,
             password='wifi-password'
+        )
+        wifi_config2 = WifiConfig(
+           **wifi_config1
         )
         tests_data = [
             dict(source='{% qr_for_email "john.doe@domain.com" %}', ref_file_name='qr_for_email' + SVG_REF_SUFFIX),
@@ -329,8 +335,10 @@ class TestQRForApplications(SimpleTestCase):
             dict(source='{% qr_for_sms "+41769998877" %}', ref_file_name='qr_for_sms' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}', ref_file_name='qr_for_geolocation' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}', ref_file_name='qr_for_google_maps' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config}),
-            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail}),
+            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config1}),
+            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config2}),
+            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail1}),
+            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail2}),
             dict(source='{% qr_for_youtube "J9go2nj6b3M" %}', ref_file_name='qr_for_youtube' + SVG_REF_SUFFIX),
             dict(source='{% qr_for_google_play "ch.admin.meteoswiss" %}', ref_file_name='qr_for_google_play' + SVG_REF_SUFFIX),
         ]
