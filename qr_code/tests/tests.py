@@ -1,17 +1,29 @@
 """Tests for qr_code application."""
+import base64
 import re
 
+import os
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail, QRCodeOptions
+from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail, QRCodeOptions, \
+    ERROR_CORRECTION_DICT
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'
 OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
                            'qr-code': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                                        'LOCATION': 'qr-code-cache', 'TIMEOUT': 3600}}
+SVG_REF_SUFFIX = '.ref.svg'
+PNG_REF_SUFFIX = '.ref.png'
+
+
+def get_resources_path():
+    import os
+    tests_dir = os.path.dirname(os.path.abspath(__file__))
+    resources_dir = os.path.join(tests_dir, 'resources')
+    return resources_dir
 
 
 class TestQRUrlFromTextResult(SimpleTestCase):
@@ -96,7 +108,11 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
 
 class TestQRFromTextSvgResult(SimpleTestCase):
-    """Ensures that produced QR codes in SVG format coincide with verified references."""
+    """
+    Ensures that produced QR codes in SVG format coincide with verified references.
+
+    The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
+    """
 
     def test_size(self):
         sizes = ['t', 'T', 's', 'S', None, -1, 0, 'm', 'M', 'l', 'L', 'h', 'H', '6', 6, '8', 8]
@@ -147,9 +163,31 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
+    def test_error_correction(self):
+        file_base_name = 'testqrfromtextsvgresult_error_correction'
+        tests_data = []
+        for correction_level in ERROR_CORRECTION_DICT.keys():
+            ref_file_name = '%s_%s%s' % (file_base_name, correction_level, SVG_REF_SUFFIX)
+            tests_data.append(dict(source='{% qr_from_text "Hello World!" image_format="svg" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image_data = template.render(context).strip()
+            # Debug code for updating reference file.
+            write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
+            self.assertEqual(source_image_data, ref_image_data)
+
 
 class TestQRFromTextPngResult(SimpleTestCase):
-    """Ensures that produced QR codes in PNG format coincide with verified references."""
+    """
+    Ensures that produced QR codes in PNG format coincide with verified references.
+
+    The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
+    """
 
     def test_size(self):
         sizes = ['t', 'T', 's', 'S', None, -1, 0, 'm', 'M', 'l', 'L', 'h', 'H', '6', 6, '8', 8, 10, '10']
@@ -198,14 +236,30 @@ class TestQRFromTextPngResult(SimpleTestCase):
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
+    def test_error_correction(self):
+        file_base_name = 'testqrfromtextpngresult_error_correction'
+        tests_data = []
+        for correction_level in ERROR_CORRECTION_DICT.keys():
+            ref_file_name = '%s_%s%s' % (file_base_name, correction_level, PNG_REF_SUFFIX)
+            tests_data.append(dict(source='{% qr_from_text "Hello World!" image_format="png" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image = template.render(context).strip()
+            source_image_data = source_image[33:-20]
+            source_image_data = base64.b64decode(source_image_data)
+            # Debug code for updating reference file.
+            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(source_image_data, ref_image_data)
+
 
 class TestQRForApplications(SimpleTestCase):
 
     def test_demo_samples_in_svg_format(self):
-        import os
-        tests_dir = os.path.dirname(os.path.abspath(__file__))
-        resources_dir = os.path.join(tests_dir, 'resources')
-        SVG_REF_SUFFIX = '.ref.svg'
         from datetime import date
         contact_detail = ContactDetail(
             first_name='John',
@@ -245,8 +299,32 @@ class TestQRForApplications(SimpleTestCase):
             if source_context:
                 context.update(source_context)
             source_image = template.render(context).strip()
-            with open(os.path.join(resources_dir, test_data['ref_file_name']), 'r', encoding='utf-8') as ref_file:
-                # Skip SVG header
-                ref_file.readline()
-                ref_image = ref_file.read().strip()
-                self.assertEqual(source_image, ref_image)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(source_image, ref_image_data)
+
+
+def get_svg_content_from_file_name(file_name, skip_header=True):
+    with open(os.path.join(get_resources_path(), file_name), 'r', encoding='utf-8') as file:
+        if skip_header:
+            # Skip SVG header.
+            file.readline()
+        image_data = file.read().strip()
+        return image_data
+    return None
+
+
+def get_png_content_from_file_name(file_name):
+    with open(os.path.join(get_resources_path(), file_name), 'rb') as file:
+        image_data = file.read()
+        return image_data
+    return None
+
+
+def write_png_content_to_file(file_name, image_content):
+    with open(os.path.join(get_resources_path(), file_name), 'wb') as file:
+        file.write(image_content)
+
+
+def write_svg_content_to_file(file_name, image_content):
+    with open(os.path.join(get_resources_path(), file_name), 'wt', encoding='utf-8') as file:
+        file.write(image_content)

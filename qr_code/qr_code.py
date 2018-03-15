@@ -320,7 +320,7 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
     import qrcode
     qr = qrcode.QRCode(
         version=actual_version if actual_version != 0 else 1,
-        error_correction=ERROR_CORRECTION_DICT.get(error_correction.upper(), DEFAULT_ERROR_CORRECTION),
+        error_correction=ERROR_CORRECTION_DICT.get(error_correction.upper(), ERROR_CORRECTION_DICT[DEFAULT_ERROR_CORRECTION]),
         box_size=actual_size,
         border=border
     )
@@ -379,7 +379,7 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     HTML document.
     """
     image_format = qr_code_options.image_format
-    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version)
+    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, error_correction=qr_code_options.error_correction)
     stream = BytesIO()
     if image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())
@@ -404,7 +404,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAUL
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
-    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, image_format=image_format, cache_enabled=cache_enabled)
+    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
     path = reverse('qr_code:serve_qr_code_image')
 
     if include_url_protection_token:
