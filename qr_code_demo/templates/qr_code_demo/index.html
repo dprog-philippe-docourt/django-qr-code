@@ -76,13 +76,13 @@
         <tr><td><br><br></td></tr>
         <tr>
             <td width="33%">
-                <h3>A medium "hello world" QR code (default size)</h3>
+                <h3>A medium "hello world" QR code (default size) with level H of error correction (up to 30% damage)</h3>
             </td>
             <td width="33%">
-                <h3>A large "hello world" QR code</h3>
+                <h3>A large "hello world" QR code with level L of error correction (up to 7% damage)</h3>
             </td>
             <td width="33%">
-                <h3>A huge "hello world" QR code</h3>
+                <h3>A huge "hello world" QR code with level M of error correction (default level, up to 15% damage)</h3>
             </td>
         </tr>
         <tr>
@@ -90,24 +90,24 @@
         </tr>
         <tr>
             <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" {% templatetag closeblock %}</code></strong>
+                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" error_correction="H" {% templatetag closeblock %}</code></strong>
             </td>
             <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" {% templatetag closeblock %}</code></strong>
+                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" error_correction="L" {% templatetag closeblock %}</code></strong>
             </td>
             <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" {% templatetag closeblock %}</code></strong>
+                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" error_correction="M" {% templatetag closeblock %}</code></strong>
             </td>
         </tr>
         <tr>
             <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="M" %}</div>
+                <div>{% qr_from_text "Hello World!" size="M" error_correction="H" %}</div>
             </td>
             <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="L" %}</div>
+                <div>{% qr_from_text "Hello World!" size="L" error_correction="L" %}</div>
             </td>
             <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="H" %}</div>
+                <div>{% qr_from_text "Hello World!" size="H" error_correction="M" %}</div>
             </td>
         </tr>
 

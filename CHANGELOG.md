@@ -6,7 +6,7 @@
 * The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
 * BREAKING CHANGES: The changes mentioned above might break the compatibility with code using qr_code.py' API directly, but template tags are not impacted.
 * Added support for `error_correction` parameter when generating a QR code.
-
+* Additions to documentation.
 
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.

@@ -70,13 +70,13 @@ class QRCodeOptions(object):
     this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
     The size grows by 4 modules/side.
 
-    There are 4 error correction levels used for QR codes, with each one adding different amounts of “backup” data
+    There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
     depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
-    error correction may be required:
-        * Level L – up to 7% damage (use 'l' or 'L')
-        * Level M – up to 15% damage (use 'm' or 'M')
-        * Level Q – up to 25% damage (use 'q' or 'Q')
-        * Level H – up to 30% damage (use 'h' or 'H')
+    error correction may be required. The correction level can be configured with the error_correction parameter as follow:
+        * l or L: level L – up to 7% damage
+        * m or M: level M – up to 15% damage
+        * q or Q: level Q – up to 25% damage
+        * h or H: level H – up to 30% damage
     """
     _DEFAULT_QR_CODE_OPTIONS = dict(
         size=DEFAULT_MODULE_SIZE,

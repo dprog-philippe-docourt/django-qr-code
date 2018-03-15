@@ -57,7 +57,7 @@ Here is a medium "hello world" QR code with an `img` tag:
 {% qr_from_text "Hello World!" size="m" image_format='png' %}
 ```
 
-The size parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
+The `size` parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
 * t or T: tiny (value: 6)
 * s or S: small (value: 12)
 * m or M: medium (value: 18)
@@ -70,14 +70,22 @@ Here is a "hello world" QR code using the version 12:
 ```djangotemplate
 {% qr_from_text "Hello World!" size=8 version=12 %}
 ```
-The version parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 modules/side.
+The `version` parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix. The size grows by 4 modules/side.
 
 Here is a "hello world" QR code using a border of 6 modules:
 ```djangotemplate
 {% qr_from_text "Hello World!" size=10 border=6 %}
 ```
-The border parameter controls how many modules thick the border should be (the default is 4, which is the minimum according to the specs).
+The `border` parameter controls how many modules thick the border should be (the default is 4, which is the minimum according to the specs).
 
+There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
+depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
+error correction may be required. The correction level can be configured with the `error_correction` parameter as follow:
+* l or L: level L – up to 7% damage
+* m or M: level M – up to 15% damage
+* q or Q: level Q – up to 25% damage
+* h or H: level H – up to 30% damage
+        
 ### qr_url_from_text
 The `qr_url_from_text` tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option **cache_enabled** to disable caching of served image.
 
