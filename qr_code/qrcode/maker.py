@@ -11,7 +11,6 @@ from django.utils.safestring import mark_safe
 from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.utils import QRCodeOptions
-from qr_code.qrcode.serve import make_qr_code_url
 
 
 class SvgEmbeddedInHtmlImage(SvgPathImage):
@@ -75,12 +74,6 @@ def _can_be_cast_to_int(value):
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
-def make_qr_code(embedded, text, qr_code_options):
-    if embedded is True:
-        return make_embedded_qr_code(text, qr_code_options)
-    return make_qr_code_url(text, qr_code_options)
-
-
 def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     """
     Generates a <svg> or <img> tag representing the QR code for the given text. This tag can be embedded into an
@@ -96,5 +89,3 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
         img.save(stream, format=PNG_FORMAT_NAME.upper())
         html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)
-
-
