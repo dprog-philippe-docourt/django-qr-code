@@ -11,25 +11,27 @@ from qr_code.qrcode.constants import QR_CODE_GENERATION_VERSION_DATE, DEFAULT_CA
 from qr_code.qrcode.utils import QRCodeOptions
 
 
-def get_url_protection_options(user=None):
-    defaults = {
+def _get_default_url_protection_options():
+    return {
         'TOKEN_LENGTH': 20,
         'SIGNING_KEY': settings.SECRET_KEY,
         'SIGNING_SALT': 'qr_code_url_protection_salt',
         'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False,
         'ALLOWS_EXTERNAL_REQUESTS': False
     }
-    options = defaults
+
+
+def get_url_protection_options(user=None):
+    options = _get_default_url_protection_options()
     if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, dict):
         options.update(settings.QR_CODE_URL_PROTECTION)
         # Evaluate the callable if required.
         if callable(options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER']):
             options['ALLOWS_EXTERNAL_REQUESTS'] = user and options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'](user)
-        elif options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'] and user:
+        elif options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'] is True and user:
             options['ALLOWS_EXTERNAL_REQUESTS'] = user.is_authenticated
         else:
             options['ALLOWS_EXTERNAL_REQUESTS'] = False
-
     return options
 
 

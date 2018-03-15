@@ -8,8 +8,7 @@ import xml.etree.ElementTree as ET
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_MODULE_SIZE, \
-    DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_ERROR_CORRECTION
+from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import make_qr_code_url
@@ -22,7 +21,7 @@ class SvgEmbeddedInHtmlImage(SvgPathImage):
                                         method='html')
 
 
-def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEFAULT_BORDER_SIZE, version=DEFAULT_VERSION, error_correction=DEFAULT_ERROR_CORRECTION):
+def make_qr_code_image(text, image_factory, qr_code_options=QRCodeOptions()):
     """
     Generates an image object (from the qrcode library) representing the QR code for the given text.
 
@@ -31,12 +30,28 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
     See the function :func:`~qr_code.qr_code.make_embedded_qr_code` for behavior and details about parameters meaning.
     """
 
-    if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
-        actual_version = int(version)
-        if actual_version < 1 or actual_version > 40:
-            actual_version = 0
-    else:
-        actual_version = 0
+    valid_version = _get_valid_version_or_none(qr_code_options.version)
+    valid_size = _get_valid_size_or_default(qr_code_options.size)
+    valid_error_correction = _get_valid_error_correction_or_default(qr_code_options.error_correction)
+    import qrcode
+    qr = qrcode.QRCode(
+        version=valid_version if valid_version != 0 else 1,
+        error_correction=valid_error_correction,
+        box_size=valid_size,
+        border=qr_code_options.border
+    )
+    qr.add_data(text)
+    if valid_version == 0:
+        qr.make(fit=True)
+    return qr.make_image(image_factory=image_factory)
+
+
+def _get_valid_error_correction_or_default(error_correction):
+    return ERROR_CORRECTION_DICT.get(error_correction.upper(), ERROR_CORRECTION_DICT[
+        DEFAULT_ERROR_CORRECTION])
+
+
+def _get_valid_size_or_default(size):
     if isinstance(size, int) or (isinstance(size, str) and size.isdigit()):
         actual_size = int(size)
         if actual_size < 1:
@@ -45,18 +60,17 @@ def make_qr_code_image(text, image_factory, size=DEFAULT_MODULE_SIZE, border=DEF
         if not size or not size.lower() in SIZE_DICT:
             size = 'm'
         actual_size = SIZE_DICT[size.lower()]
-    import qrcode
-    qr = qrcode.QRCode(
-        version=actual_version if actual_version != 0 else 1,
-        error_correction=ERROR_CORRECTION_DICT.get(error_correction.upper(), ERROR_CORRECTION_DICT[
-            DEFAULT_ERROR_CORRECTION]),
-        box_size=actual_size,
-        border=border
-    )
-    qr.add_data(text)
-    if actual_version == 0:
-        qr.make(fit=True)
-    return qr.make_image(image_factory=image_factory)
+    return actual_size
+
+
+def _get_valid_version_or_none(version):
+    if isinstance(version, int) or (isinstance(version, str) and version.isdigit()):
+        actual_version = int(version)
+        if actual_version < 1 or actual_version > 40:
+            actual_version = None
+    else:
+        actual_version = None
+    return actual_version
 
 
 def make_qr_code(embedded, text, qr_code_options):
@@ -71,7 +85,7 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     HTML document.
     """
     image_format = qr_code_options.image_format
-    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, error_correction=qr_code_options.error_correction)
+    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
     stream = BytesIO()
     if image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())

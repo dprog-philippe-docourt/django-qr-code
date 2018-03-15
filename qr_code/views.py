@@ -48,8 +48,7 @@ def serve_qr_code_image(request):
     check_image_access_permission(request, qr_code_options)
 
     text = base64.urlsafe_b64decode(request.GET.get('text', ''))
-    img = make_qr_code_image(text, image_factory=SvgPathImage if qr_code_options.image_format == SVG_FORMAT_NAME else PilImageOrFallback, size=qr_code_options.size,
-                             border=qr_code_options.border, version=qr_code_options.version, error_correction=qr_code_options.error_correction)
+    img = make_qr_code_image(text, image_factory=SvgPathImage if qr_code_options.image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
 
     # Warning: The largest QR codes, in version 40, with a border of 4 modules, and rendered in SVG format, are ~800
     # KB large. This can be handled in memory but could cause troubles if the server needs to generate thousands of
