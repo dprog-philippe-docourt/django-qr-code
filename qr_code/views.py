@@ -10,8 +10,11 @@ from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
-from qr_code.qr_code import get_qr_url_protection_token, get_url_protection_options, make_qr_code_image, qr_code_etag, qr_code_last_modified, QRCodeOptions
-from qr_code.qrcode_image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage
+from qr_code.qrcode.maker import make_qr_code_image
+from qr_code.qrcode.utils import QRCodeOptions
+from qr_code.qrcode.serve import get_url_protection_options, get_qr_url_protection_token, qr_code_etag, \
+    qr_code_last_modified
+from qr_code.qrcode.image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage
 
 
 def cache_qr_code():

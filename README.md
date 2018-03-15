@@ -54,7 +54,7 @@ The following renders a tiny "hello world" QR code with a `svg` tag:
 ```
 Here is a medium "hello world" QR code with an `img` tag:
 ```djangotemplate
-{% qr_from_text "Hello World!" size="m" image_format='png' %}
+{% qr_from_text "Hello World!" size="m" image_format="png" error_correction="L" %}
 ```
 
 The `size` parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
@@ -81,10 +81,10 @@ The `border` parameter controls how many modules thick the border should be (the
 There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
 depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
 error correction may be required. The correction level can be configured with the `error_correction` parameter as follow:
-* l or L: level L – up to 7% damage
-* m or M: level M – up to 15% damage
-* q or Q: level Q – up to 25% damage
-* h or H: level H – up to 30% damage
+* l or L: error correction level L – up to 7% damage
+* m or M: error correction level M – up to 15% damage
+* q or Q: error correction level Q – up to 25% damage
+* h or H: error correction level H – up to 30% damage
         
 ### qr_url_from_text
 The `qr_url_from_text` tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option **cache_enabled** to disable caching of served image.
@@ -133,9 +133,9 @@ Here is a "hello world" QR code in version 10 that uses an URL to serve the imag
 <img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!">
 ```
 
-Here is a "hello world" QR code in version 20 that uses an URL to serve the image in SVG format, and disable caching for served image:
+Here is a "hello world" QR code in version 20 with an error correction level Q (25% of redundant data) that uses an URL to serve the image in SVG format, and disable caching for served image:
 ```djangotemplate
-<img src="{% qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False %}" alt="Hello World!">
+<img src="{% qr_url_from_text "Hello World!" size=8 version=20 error_correction="Q" cache_enabled=False %}" alt="Hello World!">
 ```
 
 The default settings protect the URLs that serve images against external requests, and thus against possibly easy DOS attacks.
@@ -170,6 +170,7 @@ The following tags targeting apps are available:
 * `qr_for_google_play` and `qr_url_for_google_play`
 * `qr_for_contact` and `qr_url_for_contact`
 * `qr_for_wifi` and `qr_url_for_wifi`
+
 
 Please check-out the [demo application](#demo-application) to see how it works.
 

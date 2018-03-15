@@ -1,7 +1,7 @@
 from datetime import date
 from django.shortcuts import render
 
-from qr_code.qr_code import WifiConfig, ContactDetail
+from qr_code.qrcode.utils import ContactDetail, WifiConfig
 
 
 def index(request):

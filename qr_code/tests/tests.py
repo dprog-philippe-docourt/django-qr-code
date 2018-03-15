@@ -8,8 +8,10 @@ from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
-from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail, QRCodeOptions, \
-    ERROR_CORRECTION_DICT
+from qr_code.qrcode.maker import make_embedded_qr_code
+from qr_code.qrcode.constants import ERROR_CORRECTION_DICT
+from qr_code.qrcode.serve import make_qr_code_url
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'

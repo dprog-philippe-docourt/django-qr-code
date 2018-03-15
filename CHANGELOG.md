@@ -4,7 +4,8 @@
 * QR code options have been factorized and now use the `QRCodeOptions` class.
 * The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
 * The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
-* BREAKING CHANGES: The changes mentioned above might break the compatibility with code using qr_code.py' API directly, but template tags are not impacted.
+* Reorganize code and split qr_code.py into several modules.
+* BREAKING CHANGES: The changes mentioned above might break the compatibility with code using qr_code.py's API directly, but template tags are not impacted.
 * Added support for `error_correction` parameter when generating a QR code.
 * Additions to documentation.
 

@@ -2,9 +2,9 @@
 
 from django import template
 
-from qr_code.qr_code import make_embedded_qr_code, make_email_text, \
-    make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, DEFAULT_CACHE_ENABLED, make_qr_code_url, QRCodeOptions
+from qr_code.qrcode.maker import make_embedded_qr_code,  make_qr_code_url
+from qr_code.qrcode.constants import DEFAULT_CACHE_ENABLED
+from qr_code.qrcode.utils import QRCodeOptions, make_email_text, make_google_maps_text, make_geolocation_text, make_google_play_text, make_tel_text, make_sms_text, make_youtube_text
 
 register = template.Library()
 
