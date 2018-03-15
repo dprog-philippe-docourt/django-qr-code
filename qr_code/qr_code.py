@@ -20,7 +20,7 @@ from qrcode import ERROR_CORRECT_L, ERROR_CORRECT_M, ERROR_CORRECT_Q, ERROR_CORR
 from qr_code.qrcode_image import SvgPathImage, PilImageOrFallback, get_supported_image_format, SVG_FORMAT_NAME, \
     PNG_FORMAT_NAME
 
-QR_CODE_GENERATION_VERSION_DATE = datetime(year=2017, month=8, day=7, hour=0)
+QR_CODE_GENERATION_VERSION_DATE = datetime(year=2018, month=3, day=15, hour=0)
 
 SIZE_DICT = {'t': 6, 's': 12, 'm': 18, 'l': 30, 'h': 48}
 ERROR_CORRECTION_DICT = {'L': ERROR_CORRECT_L, 'M': ERROR_CORRECT_M, 'Q': ERROR_CORRECT_Q, 'H': ERROR_CORRECT_H}
@@ -100,6 +100,8 @@ class QRCodeOptions(object):
         # Ensures that the image format is supported, or fallback to supported format.
         if 'image_format' in kwargs:
             self._qr_code_options['image_format'] = get_supported_image_format(self._qr_code_options['image_format'])
+        if 'version' in kwargs and (kwargs['version'] == '' or kwargs['version'] == 'None'):
+            self._qr_code_options['version'] = None
 
     @property
     def size(self):
@@ -404,7 +406,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAUL
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
-    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version, image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
+    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
     path = reverse('qr_code:serve_qr_code_image')
 
     if include_url_protection_token:
@@ -433,7 +435,7 @@ def get_qr_url_protection_token(qr_code_options, random_token):
     The token contains image attributes so that a user cannot use a token provided somewhere on a website to
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
-    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version, qr_code_options.image_format, qr_code_options.error_correction, random_token))))
+    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version or '', qr_code_options.image_format, qr_code_options.error_correction, random_token))))
 
 
 def qr_code_etag(request):

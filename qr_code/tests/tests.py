@@ -6,12 +6,14 @@ import os
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 from qr_code.qr_code import make_embedded_qr_code, make_qr_code_url, WifiConfig, ContactDetail, QRCodeOptions, \
     ERROR_CORRECTION_DICT
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 TEST_TEXT = 'Hello World!'
+COMPLEX_TEST_TEXT = '/%+¼@#=<>àé'
 OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
                            'qr-code': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                                        'LOCATION': 'qr-code-cache', 'TIMEOUT': 3600}}
@@ -106,6 +108,47 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         # Therefore, we must expect an HTTP 403.
         self.assertEqual(response.status_code, 200)
 
+    def test_svg_error_correction(self):
+        for correction_level in ERROR_CORRECTION_DICT:
+            print('Testing SVG URL with error correction: %s' % correction_level)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(error_correction=correction_level), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='SVG', cache_enabled=False)
+            url = url1
+            token_regex = re.compile(r"token=.+&?")
+            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content.decode('utf-8')
+            # Skip header and adjust tag format.
+            source_image_data = source_image_data[source_image_data.index('\n') + 1:]
+            source_image_data = source_image_data.replace(' /></svg>', '></path></svg>')
+            ref_image_data = get_svg_content_from_file_name('qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX), skip_header=False)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_png_error_correction(self):
+        for correction_level in ERROR_CORRECTION_DICT:
+            print('Testing PNG URL with error correction: %s' % correction_level)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(error_correction=correction_level, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(error_correction=correction_level, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='PNG', cache_enabled=False)
+            url = url1
+            token_regex = re.compile(r"token=.+&?")
+            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content
+            ref_image_data = get_png_content_from_file_name('qrfromtextpngresult_error_correction_%s%s' % (correction_level.lower(), PNG_REF_SUFFIX))
+            self.assertEqual(source_image_data, ref_image_data)
+
 
 class TestQRFromTextSvgResult(SimpleTestCase):
     """
@@ -164,11 +207,11 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
     def test_error_correction(self):
-        file_base_name = 'testqrfromtextsvgresult_error_correction'
+        file_base_name = 'qrfromtextsvgresult_error_correction'
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s%s' % (file_base_name, correction_level, SVG_REF_SUFFIX)
-            tests_data.append(dict(source='{% qr_from_text "Hello World!" image_format="svg" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source='{% qr_from_text "' + COMPLEX_TEST_TEXT + '" image_format="svg" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
@@ -177,7 +220,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             context = Context()
             source_image_data = template.render(context).strip()
             # Debug code for updating reference file.
-            write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            # write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
@@ -237,11 +280,11 @@ class TestQRFromTextPngResult(SimpleTestCase):
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
     def test_error_correction(self):
-        file_base_name = 'testqrfromtextpngresult_error_correction'
+        file_base_name = 'qrfromtextpngresult_error_correction'
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s%s' % (file_base_name, correction_level, PNG_REF_SUFFIX)
-            tests_data.append(dict(source='{% qr_from_text "Hello World!" image_format="png" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source='{% qr_from_text "' + COMPLEX_TEST_TEXT + '" image_format="png" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
@@ -249,7 +292,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             template = Template(html_source)
             context = Context()
             source_image = template.render(context).strip()
-            source_image_data = source_image[33:-20]
+            source_image_data = source_image[33:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
             source_image_data = base64.b64decode(source_image_data)
             # Debug code for updating reference file.
             # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
