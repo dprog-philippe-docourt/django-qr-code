@@ -26,8 +26,6 @@ def make_qr_code_image(text, image_factory, qr_code_options=QRCodeOptions()):
     Generates an image object (from the qrcode library) representing the QR code for the given text.
 
     Any invalid argument is silently converted into the default value for that argument.
-
-    See the function :func:`~qr_code.qr_code.make_embedded_qr_code` for behavior and details about parameters meaning.
     """
 
     valid_version = _get_valid_version_or_none(qr_code_options.version)

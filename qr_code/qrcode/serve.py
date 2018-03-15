@@ -71,14 +71,14 @@ def qr_code_last_modified(request):
 
 def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAULT_CACHE_ENABLED, include_url_protection_token=True):
     """
-    Build an URL to a view that handle serving QR code image from the given parameters.
-    Any invalid argument related to the size or the format of the image is silently converted into the default value for that argument.
+    Build an URL to a view that handle serving QR code image from the given parameters. Any invalid argument related
+    to the size or the format of the image is silently converted into the default value for that argument.
 
-    See the function :func:`~qr_code.qr_code.make_embedded_qr_code` for behavior and details about parameters meaning.
+    The parameter *cache_enabled (bool)* allows to skip caching the QR code (when set to *False*) when caching has
+    been enabled.
 
-    The parameter *cache_enabled (bool)* allows to skip caching the QR code (when set to *False*) when caching has been enabled.
-
-    The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against external requests is added to the returned URL. It defaults to *True*.
+    The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against
+    external requests is added to the returned URL. It defaults to *True*.
     """
     encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
 

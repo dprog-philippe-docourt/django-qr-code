@@ -2,13 +2,6 @@ API Reference
 =============
 
 
-qrcode.constants
--------
-
-.. automodule:: qr_code.qrcode.constants
-   :members:
-
-
 qrcode.image
 ------------
 
