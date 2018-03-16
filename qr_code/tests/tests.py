@@ -29,6 +29,10 @@ def get_resources_path():
     return resources_dir
 
 
+def _make_closing_path_tag(svg):
+    return svg.replace(' /></svg>', '></path></svg>')
+
+
 class TestQRUrlFromTextResult(SimpleTestCase):
     """
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
@@ -127,7 +131,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             source_image_data = response.content.decode('utf-8')
             # Skip header and adjust tag format.
             source_image_data = source_image_data[source_image_data.index('\n') + 1:]
-            source_image_data = source_image_data.replace(' /></svg>', '></path></svg>')
+            source_image_data = _make_closing_path_tag(source_image_data)
             ref_image_data = get_svg_content_from_file_name('qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX), skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
@@ -303,7 +307,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
 
 class TestQRForApplications(SimpleTestCase):
 
-    def test_demo_samples_in_svg_format(self):
+    @staticmethod
+    def _get_tests_data(embedded=True):
         from datetime import date
         contact_detail1 = dict(
             first_name='John',
@@ -327,32 +332,66 @@ class TestQRForApplications(SimpleTestCase):
             password='wifi-password'
         )
         wifi_config2 = WifiConfig(
-           **wifi_config1
+            **wifi_config1
         )
+        tag_prefix = 'qr_for_' if embedded else 'qr_url_for_'
         tests_data = [
-            dict(source='{% qr_for_email "john.doe@domain.com" %}', ref_file_name='qr_for_email' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_tel "+41769998877" %}', ref_file_name='qr_for_tel' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_sms "+41769998877" %}', ref_file_name='qr_for_sms' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}', ref_file_name='qr_for_geolocation' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}', ref_file_name='qr_for_google_maps' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config1}),
-            dict(source='{% qr_for_wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX, source_context={'wifi_config': wifi_config2}),
-            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail1}),
-            dict(source='{% qr_for_contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX, source_context={'contact_detail': contact_detail2}),
-            dict(source='{% qr_for_youtube "J9go2nj6b3M" %}', ref_file_name='qr_for_youtube' + SVG_REF_SUFFIX),
-            dict(source='{% qr_for_google_play "ch.admin.meteoswiss" %}', ref_file_name='qr_for_google_play' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'email "john.doe@domain.com" %}', ref_file_name='qr_for_email' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'tel "+41769998877" %}', ref_file_name='qr_for_tel' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'sms "+41769998877" %}', ref_file_name='qr_for_sms' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}',
+                 ref_file_name='qr_for_geolocation' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'google_maps latitude=586000.32 longitude=250954.19 %}',
+                 ref_file_name='qr_for_google_maps' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX,
+                 template_context={'wifi_config': wifi_config1}),
+            dict(source='{% ' + tag_prefix + 'wifi wifi_config %}', ref_file_name='qr_for_wifi' + SVG_REF_SUFFIX,
+                 template_context={'wifi_config': wifi_config2}),
+            dict(source='{% ' + tag_prefix + 'contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX,
+                 template_context={'contact_detail': contact_detail1}),
+            dict(source='{% ' + tag_prefix + 'contact contact_detail %}', ref_file_name='qr_for_contact' + SVG_REF_SUFFIX,
+                 template_context={'contact_detail': contact_detail2}),
+            dict(source='{% ' + tag_prefix + 'youtube "J9go2nj6b3M" %}', ref_file_name='qr_for_youtube' + SVG_REF_SUFFIX),
+            dict(source='{% ' + tag_prefix + 'google_play "ch.admin.meteoswiss" %}',
+                 ref_file_name='qr_for_google_play' + SVG_REF_SUFFIX),
         ]
+        if not embedded:
+            # Deactivate cache.
+            for test_data in tests_data:
+                if 'template_context' in test_data:
+                    test_data['template_context']['cache_enabled'] = False
+                else:
+                    test_data['template_context'] = dict(cache_enabled=False)
+        return tests_data
+
+    @staticmethod
+    def _get_rendered_template(template_source, template_context):
+        html_source = mark_safe('{% load qr_code %}' + template_source)
+        template = Template(html_source)
+        context = Context()
+        if template_context:
+            context.update(template_context)
+        return template.render(context).strip()
+
+    def test_demo_samples_embedded_in_svg_format(self):
+        tests_data = self._get_tests_data(embedded=True)
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
-            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
-            template = Template(html_source)
-            context = Context()
-            source_context = test_data.get('source_context')
-            if source_context:
-                context.update(source_context)
-            source_image = template.render(context).strip()
+            source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
-            self.assertEqual(source_image, ref_image_data)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_demo_sample_urls_in_svg_format(self):
+        tests_data = self._get_tests_data(embedded=False)
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            source_image_url = TestQRForApplications._get_rendered_template(test_data['source'],
+                                                                       test_data.get('template_context'))
+            response = self.client.get(source_image_url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = _make_closing_path_tag(response.content.decode('utf-8'))
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
+            self.assertEqual(source_image_data, ref_image_data)
 
 
 def get_svg_content_from_file_name(file_name, skip_header=True):
