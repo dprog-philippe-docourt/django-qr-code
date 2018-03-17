@@ -309,8 +309,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
 class TestQRForApplications(SimpleTestCase):
 
     @staticmethod
-    def _make_test_data(tag_name_prefix, tag_pattern, ref_file_name, tag_args, template_context=dict()):
-        tag_content = tag_name_prefix + tag_pattern
+    def _make_test_data(tag_pattern, ref_file_name, tag_args, template_context=dict()):
+        tag_content = tag_pattern
         for key, value in tag_args.items():
             if isinstance(value, str):
                 tag_content += ' %s="%s"' % (key, value)
@@ -319,7 +319,7 @@ class TestQRForApplications(SimpleTestCase):
         return dict(source='{% ' + tag_content + ' %}', ref_file_name=ref_file_name, template_context=template_context)
 
     @staticmethod
-    def _get_tests_data(embedded=True, image_format=SVG_FORMAT_NAME):
+    def _make_tests_data(embedded=True, image_format=SVG_FORMAT_NAME):
         from datetime import date
         contact_detail1 = dict(
             first_name='John',
@@ -356,23 +356,26 @@ class TestQRForApplications(SimpleTestCase):
         if not embedded:
             # Deactivate cache for URL.
             tag_args['cache_enabled'] = False
-        tests_data = [
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='email "john.doe@domain.com"', ref_file_name='qr_for_email' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='tel "+41769998877"', ref_file_name='qr_for_tel' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='sms "+41769998877"', ref_file_name='qr_for_sms' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='geolocation latitude=586000.32 longitude=250954.19 altitude=500', ref_file_name='qr_for_geolocation' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='google_maps latitude=586000.32 longitude=250954.19',
-                 ref_file_name='qr_for_google_maps' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='wifi wifi_config', ref_file_name='qr_for_wifi' + ref_suffix, tag_args=tag_args,
-                 template_context={'wifi_config': wifi_config1}),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='wifi wifi_config', ref_file_name='qr_for_wifi' + ref_suffix, tag_args=tag_args,
-                 template_context={'wifi_config': wifi_config2}),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='contact contact_detail', ref_file_name='qr_for_contact' + ref_suffix, tag_args=tag_args,
-                 template_context={'contact_detail': contact_detail1}),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='contact contact_detail', ref_file_name='qr_for_contact' + ref_suffix, template_context={'contact_detail': contact_detail2}, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='youtube "J9go2nj6b3M"', ref_file_name='qr_for_youtube' + ref_suffix, tag_args=tag_args),
-            TestQRForApplications._make_test_data(tag_name_prefix=tag_prefix, tag_pattern='google_play "ch.admin.meteoswiss"', ref_file_name='qr_for_google_play' + ref_suffix, tag_args=tag_args),
-        ]
+        raw_data = (
+            ('email', '"john.doe@domain.com"', None),
+            ('tel', ' "+41769998877"', None),
+            ('sms', ' "+41769998877"', None),
+            ('geolocation', 'latitude=586000.32 longitude=250954.19 altitude=500', None),
+            ('google_maps', 'latitude=586000.32 longitude=250954.19', None),
+            ('wifi', 'wifi_config', {'wifi_config': wifi_config1}),
+            ('wifi', 'wifi_config', {'wifi_config': wifi_config2}),
+            ('contact', 'contact_detail', {'contact_detail': contact_detail1}),
+            ('contact', 'contact_detail', {'contact_detail': contact_detail2}),
+            ('youtube', '"J9go2nj6b3M"', None),
+            ('google_play', '"ch.admin.meteoswiss"', None),
+        )
+        tests_data = []
+        for tag_base_name, tag_data, template_context in raw_data:
+            test_data = TestQRForApplications._make_test_data(tag_pattern='%s%s %s' % (tag_prefix, tag_base_name, tag_data),
+                                                              ref_file_name='qr_for_%s%s' % (tag_base_name, ref_suffix),
+                                                              tag_args=tag_args,
+                                                              template_context=template_context)
+            tests_data.append(test_data)
         return tests_data
 
     @staticmethod
@@ -385,7 +388,7 @@ class TestQRForApplications(SimpleTestCase):
         return template.render(context).strip()
 
     def test_demo_samples_embedded_in_svg_format(self):
-        tests_data = self._get_tests_data(embedded=True)
+        tests_data = self._make_tests_data(embedded=True)
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
             source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
@@ -393,7 +396,7 @@ class TestQRForApplications(SimpleTestCase):
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_samples_embedded_in_png_format(self):
-        tests_data = self._get_tests_data(embedded=True, image_format=PNG_FORMAT_NAME)
+        tests_data = self._make_tests_data(embedded=True, image_format=PNG_FORMAT_NAME)
         image_data_re = re.compile(r'data:image/png;base64, (?P<data>[\w/+=]+)')
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
@@ -405,7 +408,7 @@ class TestQRForApplications(SimpleTestCase):
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_svg_format(self):
-        tests_data = self._get_tests_data(embedded=False)
+        tests_data = self._make_tests_data(embedded=False)
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content.decode('utf-8')
             source_image_data = _make_closing_path_tag(source_image_data)
@@ -413,7 +416,7 @@ class TestQRForApplications(SimpleTestCase):
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_png_format(self):
-        tests_data = self._get_tests_data(embedded=False, image_format=PNG_FORMAT_NAME)
+        tests_data = self._make_tests_data(embedded=False, image_format=PNG_FORMAT_NAME)
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
