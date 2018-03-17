@@ -407,24 +407,25 @@ class TestQRForApplications(SimpleTestCase):
     def test_demo_sample_urls_in_svg_format(self):
         tests_data = self._get_tests_data(embedded=False)
         for test_data in tests_data:
-            print('Testing template: %s' % test_data['source'])
-            source_image_url = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
-            response = self.client.get(source_image_url)
-            self.assertEqual(response.status_code, 200)
-            source_image_data = _make_closing_path_tag(response.content.decode('utf-8'))
+            source_image_data = self._check_url_for_test_data(test_data).content.decode('utf-8')
+            source_image_data = _make_closing_path_tag(source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_png_format(self):
         tests_data = self._get_tests_data(embedded=False, image_format=PNG_FORMAT_NAME)
         for test_data in tests_data:
-            print('Testing template: %s' % test_data['source'])
-            source_image_url = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
-            response = self.client.get(source_image_url)
-            self.assertEqual(response.status_code, 200)
-            source_image_data = response.content
+            source_image_data = self._check_url_for_test_data(test_data).content
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
+
+    def _check_url_for_test_data(self, test_data):
+        print('Testing template: %s' % test_data['source'])
+        source_image_url = TestQRForApplications._get_rendered_template(test_data['source'],
+                                                                        test_data.get('template_context'))
+        response = self.client.get(source_image_url)
+        self.assertEqual(response.status_code, 200)
+        return response
 
 
 def get_svg_content_from_file_name(file_name, skip_header=True):
