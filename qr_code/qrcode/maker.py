@@ -8,8 +8,10 @@ import xml.etree.ElementTree as ET
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE
+from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE, \
+    DEFAULT_CACHE_ENABLED
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
+from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
 
 
@@ -89,3 +91,15 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
         img.save(stream, format=PNG_FORMAT_NAME.upper())
         html_fragment = '<img src="data:image/png;base64, %s" alt="%s">' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)
+
+
+def make_qr_code(text, qr_code_args, embedded):
+    cache_enabled = DEFAULT_CACHE_ENABLED
+    if 'cache_enabled' in qr_code_args:
+        cache_enabled = qr_code_args.pop('cache_enabled')
+
+    options = QRCodeOptions(**qr_code_args)
+    if embedded:
+        return make_embedded_qr_code(text, options)
+    else:
+        return make_qr_code_url(text, options, cache_enabled=cache_enabled)
