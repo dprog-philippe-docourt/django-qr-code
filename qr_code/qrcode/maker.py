@@ -87,5 +87,5 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
         html_fragment = (str(stream.getvalue(), 'utf-8'))
     else:
         img.save(stream, format=PNG_FORMAT_NAME.upper())
-        html_fragment = '<img src="data:image/png;base64, %s" alt="%s"' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
+        html_fragment = '<img src="data:image/png;base64, %s" alt="%s">' % (str(base64.b64encode(stream.getvalue()), encoding='ascii'), escape(text))
     return mark_safe(html_fragment)

@@ -15,6 +15,8 @@ from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
+
+BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64, %salt="Hello World!">'
 TEST_TEXT = 'Hello World!'
 COMPLEX_TEST_TEXT = '/%+¼@#=<>àé'
 OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
@@ -256,7 +258,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size, image_format='png'))
             qr2 = qr_from_text(TEST_TEXT, size=size, image_format='png')
             self.assertEqual(qr1, qr2)
-            self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
+            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
@@ -280,8 +282,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='PNG')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
-            # print('<img src="data:image/png;base64, %salt="Hello World!"' % result)
-            self.assertEqual(qr1, '<img src="data:image/png;base64, %salt="Hello World!"' % result)
+            # print(BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
 
