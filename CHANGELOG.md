@@ -1,6 +1,7 @@
 # Change Log
 
 ## 0.5.0 (under development)
+* Fixed non-closed <img> tag when generating embedded PNG image.
 * QR code options have been factorized and now use the `QRCodeOptions` class.
 * The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
 * The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
