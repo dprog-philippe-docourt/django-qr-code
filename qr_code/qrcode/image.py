@@ -4,10 +4,11 @@ format when the Pillow library is not available.
 """
 import logging
 from qrcode.image.svg import SvgPathImage as _SvgPathImage
+
 logger = logging.getLogger('django')
 try:
     from qrcode.image.pil import PilImage as _PilImageOrFallback
-except ImportError:
+except ImportError:  # pragma: no cover
     logger.info("Pillow is not installed. No support available for PNG format.")
     from qrcode.image.svg import SvgPathImage as _PilImageOrFallback
 
@@ -28,6 +29,7 @@ def get_supported_image_format(image_format):
         logger.warning('Unknown image format: %s' % image_format)
         image_format = SVG_FORMAT_NAME
     elif image_format == PNG_FORMAT_NAME and not has_png_support():
-        logger.warning("No support available for PNG format, SVG will be used instead. Please install Pillow for PNG support.")
+        logger.warning(
+            "No support available for PNG format, SVG will be used instead. Please install Pillow for PNG support.")
         image_format = SVG_FORMAT_NAME
     return image_format
