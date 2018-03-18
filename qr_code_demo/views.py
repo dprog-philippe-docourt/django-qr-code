@@ -4,15 +4,8 @@ from django.shortcuts import render
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates
 
 
-def index(request):
-    """
-    Build the home page of this demo app.
-
-    :param request:
-    :return: HTTP response providing the home page of thisd emo app.
-    """
-    # Use a ContactDetail instance to encapsulate the detail of the contact.
-    contact_detail = ContactDetail(
+# Use a ContactDetail instance to encapsulate the detail of the contact.
+DEMO_CONTACT = ContactDetail(
         first_name='John',
         last_name='Doe',
         first_name_reading='jAAn',
@@ -26,24 +19,31 @@ def index(request):
         org='Company Ltd',
     )
 
-    # Use a WifiConfig instance to encapsulate the detail of the connexion.
-    wifi_config = WifiConfig(
+# Use a WifiConfig instance to encapsulate the configuration of the connexion.
+DEMO_WIFI = WifiConfig(
         ssid='my-wifi',
         authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
 
-    # Build coordinates instances.
-    google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
-    geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
+DEMO_COORDINATES = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
+
+
+def index(request):
+    """
+    Build the home page of this demo app.
+
+    :param request:
+    :return: HTTP response providing the home page of this demo app.
+    """
 
     # Build context for rendering QR codes.
     context = dict(
-        contact_detail=contact_detail,
-        wifi_config=wifi_config,
+        contact_detail=DEMO_CONTACT,
+        wifi_config=DEMO_WIFI,
         video_id='J9go2nj6b3M',
-        google_maps_coordinates=google_maps_coordinates,
-        geolocation_coordinates=geolocation_coordinates,
+        google_maps_coordinates=DEMO_COORDINATES,
+        geolocation_coordinates=DEMO_COORDINATES,
     )
 
     # Render the index page.

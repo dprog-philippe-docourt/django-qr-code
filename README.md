@@ -195,7 +195,7 @@ def index(request):
         org='Company Ltd',
     )
 
-    # Use a WifiConfig instance to encapsulate the detail of the connexion.
+    # Use a WifiConfig instance to encapsulate the configuration of the connexion.
     wifi_config = WifiConfig(
         ssid='my-wifi',
         authentication=WifiConfig.AUTHENTICATION.WPA,

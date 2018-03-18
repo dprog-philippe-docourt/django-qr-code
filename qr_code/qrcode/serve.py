@@ -1,5 +1,6 @@
 import base64
 import urllib.parse
+from collections import Mapping
 
 from django.conf import settings
 from django.core.signing import Signer
@@ -7,7 +8,8 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.constants import QR_CODE_GENERATION_VERSION_DATE, DEFAULT_CACHE_ENABLED
+from qr_code.qrcode.constants import QR_CODE_GENERATION_VERSION_DATE, DEFAULT_CACHE_ENABLED, \
+    ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER
 from qr_code.qrcode.utils import QRCodeOptions
 
 
@@ -16,22 +18,34 @@ def _get_default_url_protection_options():
         'TOKEN_LENGTH': 20,
         'SIGNING_KEY': settings.SECRET_KEY,
         'SIGNING_SALT': 'qr_code_url_protection_salt',
-        'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False,
+        ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False,
         'ALLOWS_EXTERNAL_REQUESTS': False
     }
 
 
+def _get_url_protection_settings():
+    if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
+        return settings.QR_CODE_URL_PROTECTION
+    return None
+
+
+def _options_allow_external_request(url_protection_options, user):
+    # Evaluate the callable if required.
+    if callable(url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
+        allows_external_request = user and url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user)
+    elif url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER] is True and user:
+        allows_external_request = user.is_authenticated
+    else:
+        allows_external_request = False
+    return allows_external_request
+
+
 def get_url_protection_options(user=None):
     options = _get_default_url_protection_options()
-    if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, dict):
+    settings_options = _get_url_protection_settings()
+    if settings_options is not None:
         options.update(settings.QR_CODE_URL_PROTECTION)
-        # Evaluate the callable if required.
-        if callable(options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER']):
-            options['ALLOWS_EXTERNAL_REQUESTS'] = user and options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'](user)
-        elif options['ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER'] is True and user:
-            options['ALLOWS_EXTERNAL_REQUESTS'] = user.is_authenticated
-        else:
-            options['ALLOWS_EXTERNAL_REQUESTS'] = False
+        options['ALLOWS_EXTERNAL_REQUESTS'] = _options_allow_external_request(options, user)
     return options
 
 
