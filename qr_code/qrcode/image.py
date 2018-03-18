@@ -28,7 +28,7 @@ def get_supported_image_format(image_format):
     if image_format not in [SVG_FORMAT_NAME, PNG_FORMAT_NAME]:
         logger.warning('Unknown image format: %s' % image_format)
         image_format = SVG_FORMAT_NAME
-    elif image_format == PNG_FORMAT_NAME and not has_png_support():
+    elif image_format == PNG_FORMAT_NAME and not has_png_support():  # pragma: no cover
         logger.warning(
             "No support available for PNG format, SVG will be used instead. Please install Pillow for PNG support.")
         image_format = SVG_FORMAT_NAME

@@ -26,7 +26,6 @@ def _get_default_url_protection_options():
 def _get_url_protection_settings():
     if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
         return settings.QR_CODE_URL_PROTECTION
-    return None
 
 
 def _options_allow_external_request(url_protection_options, user):

@@ -12,7 +12,8 @@ from django.utils.html import escape
 
 from qr_code.qrcode.image import SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.maker import make_embedded_qr_code
-from qr_code.qrcode.constants import ERROR_CORRECTION_DICT
+from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
+    DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
@@ -63,6 +64,20 @@ class TestApps(SimpleTestCase):
         self.assertEqual(QrCodeConfig.verbose_name, 'Django QR code')
 
 
+class TestQRCodeOptions(SimpleTestCase):
+    def test_qr_code_options(self):
+        with self.assertRaises(ValueError):
+            QRCodeOptions(foo='bar')
+        options = QRCodeOptions()
+        self.assertEqual(options.border, 4)
+        self.assertEqual(options.size, DEFAULT_MODULE_SIZE)
+        self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
+        self.assertEqual(options.version, DEFAULT_VERSION)
+        self.assertEqual(options.error_correction, DEFAULT_ERROR_CORRECTION)
+        options = QRCodeOptions(image_format='invalid-image-format')
+        self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
+
+
 class TestContactDetail(SimpleTestCase):
     def test_make_qr_code_text(self):
         data = dict(**TEST_CONTACT_DETAIL)
@@ -72,10 +87,14 @@ class TestContactDetail(SimpleTestCase):
         data['last_name'] = "O'Hara;,:"
         data['tel_av'] = 'n/a'
         c3 = ContactDetail(**data)
+        del data['last_name']
+        c4 = ContactDetail(**data)
         self.assertEqual(c1.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
         self.assertEqual(c2.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
         self.assertEqual(c3.make_qr_code_text(),
                          r"MECARD:N:O'Hara\;\,\:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+        self.assertEqual(c4.make_qr_code_text(),
+                         r"MECARD:N:John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
 
 
 class TestWifiConfig(SimpleTestCase):
@@ -94,6 +113,7 @@ class TestCoordinates(SimpleTestCase):
         self.assertEqual(c2.__str__(), 'latitude: 586000.32, longitude: 250954.19, altitude: 500')
 
 
+@override_settings()
 class TestQRUrlFromTextResult(SimpleTestCase):
     """
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
@@ -103,7 +123,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     svg_result = b'<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<svg height="2.9mm" version="1.1" viewBox="0 0 2.9 2.9" width="2.9mm" xmlns="http://www.w3.org/2000/svg"><path d="M 2 1 L 2 1.1 L 2.1 1.1 L 2.1 1 z M 1.8 2.1 L 1.8 2.2 L 1.9 2.2 L 1.9 2.1 z M 1.6 0.5 L 1.6 0.6 L 1.7 0.6 L 1.7 0.5 z M 1.4 2.1 L 1.4 2.2 L 1.5 2.2 L 1.5 2.1 z M 0.4 2.4 L 0.4 2.5 L 0.5 2.5 L 0.5 2.4 z M 2 1.3 L 2 1.4 L 2.1 1.4 L 2.1 1.3 z M 1.8 0.8 L 1.8 0.9 L 1.9 0.9 L 1.9 0.8 z M 2.2 0.8 L 2.2 0.9 L 2.3 0.9 L 2.3 0.8 z M 1.7 2.1 L 1.7 2.2 L 1.8 2.2 L 1.8 2.1 z M 0.5 1 L 0.5 1.1 L 0.6 1.1 L 0.6 1 z M 0.4 1.4 L 0.4 1.5 L 0.5 1.5 L 0.5 1.4 z M 2.2 2.3 L 2.2 2.4 L 2.3 2.4 L 2.3 2.3 z M 1.2 0.9 L 1.2 1.0 L 1.3 1.0 L 1.3 0.9 z M 0.9 1.2 L 0.9 1.3 L 1.0 1.3 L 1.0 1.2 z M 0.8 0.4 L 0.8 0.5 L 0.9 0.5 L 0.9 0.4 z M 1.4 1.2 L 1.4 1.3 L 1.5 1.3 L 1.5 1.2 z M 1.3 0.4 L 1.3 0.5 L 1.4 0.5 L 1.4 0.4 z M 1.4 1.1 L 1.4 1.2 L 1.5 1.2 L 1.5 1.1 z M 2 0.7 L 2 0.8 L 2.1 0.8 L 2.1 0.7 z M 1 1.4 L 1 1.5 L 1.1 1.5 L 1.1 1.4 z M 1.6 1 L 1.6 1.1 L 1.7 1.1 L 1.7 1 z M 2.3 1.8 L 2.3 1.9 L 2.4 1.9 L 2.4 1.8 z M 2.1 0.6 L 2.1 0.7 L 2.2 0.7 L 2.2 0.6 z M 0.4 2.1 L 0.4 2.2 L 0.5 2.2 L 0.5 2.1 z M 1.8 0.5 L 1.8 0.6 L 1.9 0.6 L 1.9 0.5 z M 2.4 1.3 L 2.4 1.4 L 2.5 1.4 L 2.5 1.3 z M 2.2 1.3 L 2.2 1.4 L 2.3 1.4 L 2.3 1.3 z M 0.4 0.8 L 0.4 0.9 L 0.5 0.9 L 0.5 0.8 z M 2.4 0.8 L 2.4 0.9 L 2.5 0.9 L 2.5 0.8 z M 1.2 1.9 L 1.2 2.0 L 1.3 2.0 L 1.3 1.9 z M 0.8 1.4 L 0.8 1.5 L 0.9 1.5 L 0.9 1.4 z M 0.7 0.6 L 0.7 0.7 L 0.8 0.7 L 0.8 0.6 z M 0.6 1 L 0.6 1.1 L 0.7 1.1 L 0.7 1 z M 1.3 1.8 L 1.3 1.9 L 1.4 1.9 L 1.4 1.8 z M 1.2 0.6 L 1.2 0.7 L 1.3 0.7 L 1.3 0.6 z M 1 0.4 L 1 0.5 L 1.1 0.5 L 1.1 0.4 z M 0.8 2 L 0.8 2.1 L 0.9 2.1 L 0.9 2 z M 1.5 0.4 L 1.5 0.5 L 1.6 0.5 L 1.6 0.4 z M 1.3 2 L 1.3 2.1 L 1.4 2.1 L 1.4 2 z M 2 0.4 L 2 0.5 L 2.1 0.5 L 2.1 0.4 z M 2.1 1.7 L 2.1 1.8 L 2.2 1.8 L 2.2 1.7 z M 2 2.3 L 2 2.4 L 2.1 2.4 L 2.1 2.3 z M 1.8 0.6 L 1.8 0.7 L 1.9 0.7 L 1.9 0.6 z M 1.7 1.4 L 1.7 1.5 L 1.8 1.5 L 1.8 1.4 z M 0.6 2.1 L 0.6 2.2 L 0.7 2.2 L 0.7 2.1 z M 2.2 1.4 L 2.2 1.5 L 2.3 1.5 L 2.3 1.4 z M 0.4 0.5 L 0.4 0.6 L 0.5 0.6 L 0.5 0.5 z M 0.5 1.6 L 0.5 1.7 L 0.6 1.7 L 0.6 1.6 z M 1.2 1.6 L 1.2 1.7 L 1.3 1.7 L 1.3 1.6 z M 0.9 1.8 L 0.9 1.9 L 1.0 1.9 L 1.0 1.8 z M 0.7 2.2 L 0.7 2.3 L 0.8 2.3 L 0.8 2.2 z M 1.2 2.2 L 1.2 2.3 L 1.3 2.3 L 1.3 2.2 z M 1.5 1.9 L 1.5 2.0 L 1.6 2.0 L 1.6 1.9 z M 1.3 2.3 L 1.3 2.4 L 1.4 2.4 L 1.4 2.3 z M 1.9 2 L 1.9 2.1 L 2.0 2.1 L 2.0 2 z M 1.8 1.2 L 1.8 1.3 L 1.9 1.3 L 1.9 1.2 z M 1 2 L 1 2.1 L 1.1 2.1 L 1.1 2 z M 1.6 1.2 L 1.6 1.3 L 1.7 1.3 L 1.7 1.2 z M 2.4 2 L 2.4 2.1 L 2.5 2.1 L 2.5 2 z M 2.2 0.4 L 2.2 0.5 L 2.3 0.5 L 2.3 0.4 z M 2.1 1.2 L 2.1 1.3 L 2.2 1.3 L 2.2 1.2 z M 2.4 0.7 L 2.4 0.8 L 2.5 0.8 L 2.5 0.7 z M 0.6 2.2 L 0.6 2.3 L 0.7 2.3 L 0.7 2.2 z M 2.2 1.9 L 2.2 2.0 L 2.3 2.0 L 2.3 1.9 z M 0.4 1.8 L 0.4 1.9 L 0.5 1.9 L 0.5 1.8 z M 0.6 1.6 L 0.6 1.7 L 0.7 1.7 L 0.7 1.6 z M 0.7 2.1 L 0.7 2.2 L 0.8 2.2 L 0.8 2.1 z M 1 1.8 L 1 1.9 L 1.1 1.9 L 1.1 1.8 z M 1.5 1.4 L 1.5 1.5 L 1.6 1.5 L 1.6 1.4 z M 2.1 1 L 2.1 1.1 L 2.2 1.1 L 2.2 1 z M 1.8 0.9 L 1.8 1.0 L 1.9 1.0 L 1.9 0.9 z M 1.6 1.7 L 1.6 1.8 L 1.7 1.8 L 1.7 1.7 z M 2.1 1.5 L 2.1 1.6 L 2.2 1.6 L 2.2 1.5 z M 1.9 0.4 L 1.9 0.5 L 2.0 0.5 L 2.0 0.4 z M 2.4 0.4 L 2.4 0.5 L 2.5 0.5 L 2.5 0.4 z M 0.4 1.5 L 0.4 1.6 L 0.5 1.6 L 0.5 1.5 z M 0.7 1 L 0.7 1.1 L 0.8 1.1 L 0.8 1 z M 0.6 0.6 L 0.6 0.7 L 0.7 0.7 L 0.7 0.6 z M 0.5 1.4 L 0.5 1.5 L 0.6 1.5 L 0.6 1.4 z M 1.2 1 L 1.2 1.1 L 1.3 1.1 L 1.3 1 z M 1.3 1.1 L 1.3 1.2 L 1.4 1.2 L 1.4 1.1 z M 1 0.8 L 1 0.9 L 1.1 0.9 L 1.1 0.8 z M 1.5 0.8 L 1.5 0.9 L 1.6 0.9 L 1.6 0.8 z M 1.4 0.8 L 1.4 0.9 L 1.5 0.9 L 1.5 0.8 z M 1.3 2.4 L 1.3 2.5 L 1.4 2.5 L 1.4 2.4 z M 2 0.8 L 2 0.9 L 2.1 0.9 L 2.1 0.8 z M 1.6 1.1 L 1.6 1.2 L 1.7 1.2 L 1.7 1.1 z M 0.4 2.2 L 0.4 2.3 L 0.5 2.3 L 0.5 2.2 z M 1.8 1 L 1.8 1.1 L 1.9 1.1 L 1.9 1 z M 1.6 2.2 L 1.6 2.3 L 1.7 2.3 L 1.7 2.2 z M 2.2 1 L 2.2 1.1 L 2.3 1.1 L 2.3 1 z M 0.4 0.9 L 0.4 1.0 L 0.5 1.0 L 0.5 0.9 z M 1.7 2.3 L 1.7 2.4 L 1.8 2.4 L 1.8 2.3 z M 2.4 0.9 L 2.4 1.0 L 2.5 1.0 L 2.5 0.9 z M 0.5 0.4 L 0.5 0.5 L 0.6 0.5 L 0.6 0.4 z M 0.4 1.2 L 0.4 1.3 L 0.5 1.3 L 0.5 1.2 z M 1.3 1.7 L 1.3 1.8 L 1.4 1.8 L 1.4 1.7 z M 1.2 0.7 L 1.2 0.8 L 1.3 0.8 L 1.3 0.7 z M 0.8 1 L 0.8 1.1 L 0.9 1.1 L 0.9 1 z M 1 0.5 L 1 0.6 L 1.1 0.6 L 1.1 0.5 z M 0.8 2.1 L 0.8 2.2 L 0.9 2.2 L 0.9 2.1 z M 1.8 1.6 L 1.8 1.7 L 1.9 1.7 L 1.9 1.6 z M 0.9 2.4 L 0.9 2.5 L 1.0 2.5 L 1.0 2.4 z M 1.6 0.8 L 1.6 0.9 L 1.7 0.9 L 1.7 0.8 z M 1 2.4 L 1 2.5 L 1.1 2.5 L 1.1 2.4 z M 1.4 2.4 L 1.4 2.5 L 1.5 2.5 L 1.5 2.4 z M 1.5 2.4 L 1.5 2.5 L 1.6 2.5 L 1.6 2.4 z M 1.9 1.3 L 1.9 1.4 L 2.0 1.4 L 2.0 1.3 z M 1.8 0.7 L 1.8 0.8 L 1.9 0.8 L 1.9 0.7 z M 1.7 1.3 L 1.7 1.4 L 1.8 1.4 L 1.8 1.3 z M 2 2.4 L 2 2.5 L 2.1 2.5 L 2.1 2.4 z M 2.2 1.5 L 2.2 1.6 L 2.3 1.6 L 2.3 1.5 z M 0.4 0.6 L 0.4 0.7 L 0.5 0.7 L 0.5 0.6 z M 2.1 2.1 L 2.1 2.2 L 2.2 2.2 L 2.2 2.1 z M 1.2 1.7 L 1.2 1.8 L 1.3 1.8 L 1.3 1.7 z M 0.8 1.2 L 0.8 1.3 L 0.9 1.3 L 0.9 1.2 z M 0.7 0.4 L 0.7 0.5 L 0.8 0.5 L 0.8 0.4 z M 0.6 1.2 L 0.6 1.3 L 0.7 1.3 L 0.7 1.2 z M 1.3 1.2 L 1.3 1.3 L 1.4 1.3 L 1.4 1.2 z M 1.4 1.9 L 1.4 2.0 L 1.5 2.0 L 1.5 1.9 z M 1 0.6 L 1 0.7 L 1.1 0.7 L 1.1 0.6 z M 1.3 2.2 L 1.3 2.3 L 1.4 2.3 L 1.4 2.2 z M 1.8 1.3 L 1.8 1.4 L 1.9 1.4 L 1.9 1.3 z M 1 2.1 L 1 2.2 L 1.1 2.2 L 1.1 2.1 z M 1.6 1.3 L 1.6 1.4 L 1.7 1.4 L 1.7 1.3 z M 0.5 2.4 L 0.5 2.5 L 0.6 2.5 L 0.6 2.4 z M 2.1 1.9 L 2.1 2.0 L 2.2 2.0 L 2.2 1.9 z M 2 2.1 L 2 2.2 L 2.1 2.2 L 2.1 2.1 z M 1.7 1.6 L 1.7 1.7 L 1.8 1.7 L 1.8 1.6 z M 2.4 1.6 L 2.4 1.7 L 2.5 1.7 L 2.5 1.6 z M 1.6 2.4 L 1.6 2.5 L 1.7 2.5 L 1.7 2.4 z M 0.4 1.9 L 0.4 2.0 L 0.5 2.0 L 0.5 1.9 z M 0.7 1.4 L 0.7 1.5 L 0.8 1.5 L 0.8 1.4 z M 0.5 1.8 L 0.5 1.9 L 0.6 1.9 L 0.6 1.8 z M 1.3 1.5 L 1.3 1.6 L 1.4 1.6 L 1.4 1.5 z M 0.9 0.4 L 0.9 0.5 L 1.0 0.5 L 1.0 0.4 z M 0.7 2 L 0.7 2.1 L 0.8 2.1 L 0.8 2 z M 1.4 0.4 L 1.4 0.5 L 1.5 0.5 L 1.5 0.4 z M 1.2 2 L 1.2 2.1 L 1.3 2.1 L 1.3 2 z M 1 1.9 L 1 2.0 L 1.1 2.0 L 1.1 1.9 z M 2 1.5 L 2 1.6 L 2.1 1.6 L 2.1 1.5 z M 1.8 1.4 L 1.8 1.5 L 1.9 1.5 L 1.9 1.4 z M 1 2.2 L 1 2.3 L 1.1 2.3 L 1.1 2.2 z M 1.6 1.8 L 1.6 1.9 L 1.7 1.9 L 1.7 1.8 z M 2.3 1 L 2.3 1.1 L 2.4 1.1 L 2.4 1 z M 2.2 0.6 L 2.2 0.7 L 2.3 0.7 L 2.3 0.6 z M 2.1 1.4 L 2.1 1.5 L 2.2 1.5 L 2.2 1.4 z M 1.7 1.9 L 1.7 2.0 L 1.8 2.0 L 1.8 1.9 z M 2.4 0.5 L 2.4 0.6 L 2.5 0.6 L 2.5 0.5 z M 0.6 2.4 L 0.6 2.5 L 0.7 2.5 L 0.7 2.4 z M 0.7 1.3 L 0.7 1.4 L 0.8 1.4 L 0.8 1.3 z M 0.6 0.7 L 0.6 0.8 L 0.7 0.8 L 0.7 0.7 z M 1.2 1.1 L 1.2 1.2 L 1.3 1.2 L 1.3 1.1 z M 0.8 0.6 L 0.8 0.7 L 0.9 0.7 L 0.9 0.6 z M 0.6 1.8 L 0.6 1.9 L 0.7 1.9 L 0.7 1.8 z M 1 0.9 L 1 1.0 L 1.1 1.0 L 1.1 0.9 z M 1.5 1.1 L 1.5 1.2 L 1.6 1.2 L 1.6 1.1 z M 1.4 0.9 L 1.4 1.0 L 1.5 1.0 L 1.5 0.9 z M 1 1.2 L 1 1.3 L 1.1 1.3 L 1.1 1.2 z M 1.8 2 L 1.8 2.1 L 1.9 2.1 L 1.9 2 z M 2.3 2 L 2.3 2.1 L 2.4 2.1 L 2.4 2 z M 2.1 0.4 L 2.1 0.5 L 2.2 0.5 L 2.2 0.4 z M 2 1.2 L 2 1.3 L 2.1 1.3 L 2.1 1.2 z M 0.4 2.3 L 0.4 2.4 L 0.5 2.4 L 0.5 2.3 z M 1.6 2.3 L 1.6 2.4 L 1.7 2.4 L 1.7 2.3 z M 0.4 1 L 0.4 1.1 L 0.5 1.1 L 0.5 1 z M 1.9 1 L 1.9 1.1 L 2.0 1.1 L 2.0 1 z M 2.4 1 L 2.4 1.1 L 2.5 1.1 L 2.5 1 z M 2.2 2.2 L 2.2 2.3 L 2.3 2.3 L 2.3 2.2 z M 0.7 0.8 L 0.7 0.9 L 0.8 0.9 L 0.8 0.8 z M 0.6 0.8 L 0.6 0.9 L 0.7 0.9 L 0.7 0.8 z M 1.3 1.6 L 1.3 1.7 L 1.4 1.7 L 1.4 1.6 z M 1.2 0.8 L 1.2 0.9 L 1.3 0.9 L 1.3 0.8 z M 1.4 1.5 L 1.4 1.6 L 1.5 1.6 L 1.5 1.5 z M 1 1 L 1 1.1 L 1.1 1.1 L 1.1 1 z M 0.9 1 L 0.9 1.1 L 1.0 1.1 L 1.0 1 z M 0.8 2.2 L 0.8 2.3 L 0.9 2.3 L 0.9 2.2 z M 1.5 0.6 L 1.5 0.7 L 1.6 0.7 L 1.6 0.6 z M 1.4 1 L 1.4 1.1 L 1.5 1.1 L 1.5 1 z M 2 0.6 L 2 0.7 L 2.1 0.7 L 2.1 0.6 z M 1.6 0.9 L 1.6 1.0 L 1.7 1.0 L 1.7 0.9 z M 2.1 0.7 L 2.1 0.8 L 2.2 0.8 L 2.2 0.7 z M 1.9 1.2 L 1.9 1.3 L 2.0 1.3 L 2.0 1.2 z M 1.8 0.4 L 1.8 0.5 L 1.9 0.5 L 1.9 0.4 z M 0.4 2 L 0.4 2.1 L 0.5 2.1 L 0.5 2 z M 1.6 2 L 1.6 2.1 L 1.7 2.1 L 1.7 2 z M 2.3 0.4 L 2.3 0.5 L 2.4 0.5 L 2.4 0.4 z M 2.2 1.2 L 2.2 1.3 L 2.3 1.3 L 2.3 1.2 z M 0.4 0.7 L 0.4 0.8 L 0.5 0.8 L 0.5 0.7 z M 0.7 1.8 L 0.7 1.9 L 0.8 1.9 L 0.8 1.8 z M 0.8 1.3 L 0.8 1.4 L 0.9 1.4 L 0.9 1.3 z M 0.7 0.7 L 0.7 0.8 L 0.8 0.8 L 0.8 0.7 z M 0.6 1.3 L 0.6 1.4 L 0.7 1.4 L 0.7 1.3 z M 1.3 1.9 L 1.3 2.0 L 1.4 2.0 L 1.4 1.9 z M 0.9 1.6 L 0.9 1.7 L 1.0 1.7 L 1.0 1.6 z M 0.8 0.8 L 0.8 0.9 L 0.9 0.9 L 0.9 0.8 z M 0.7 2.4 L 0.7 2.5 L 0.8 2.5 L 0.8 2.4 z M 1.4 1.6 L 1.4 1.7 L 1.5 1.7 L 1.5 1.6 z M 1.2 2.4 L 1.2 2.5 L 1.3 2.5 L 1.3 2.4 z M 1 0.7 L 1 0.8 L 1.1 0.8 L 1.1 0.7 z M 1.3 2.1 L 1.3 2.2 L 1.4 2.2 L 1.4 2.1 z M 1.9 2.2 L 1.9 2.3 L 2.0 2.3 L 2.0 2.2 z M 1.8 1.8 L 1.8 1.9 L 1.9 1.9 L 1.9 1.8 z M 2.3 1.4 L 2.3 1.5 L 2.4 1.5 L 2.4 1.4 z M 1.9 1.9 L 1.9 2.0 L 2.0 2.0 L 2.0 1.9 z M 1.7 1.5 L 1.7 1.6 L 1.8 1.6 L 1.8 1.5 z M 0.6 2 L 0.6 2.1 L 0.7 2.1 L 0.7 2 z M 0.4 0.4 L 0.4 0.5 L 0.5 0.5 L 0.5 0.4 z M 2.1 2.3 L 2.1 2.4 L 2.2 2.4 L 2.2 2.3 z M 0.8 1.8 L 0.8 1.9 L 0.9 1.9 L 0.9 1.8 z M 1.4 0.5 L 1.4 0.6 L 1.5 0.6 L 1.5 0.5 z M 1.2 2.1 L 1.2 2.2 L 1.3 2.2 L 1.3 2.1 z M 1 1.6 L 1 1.7 L 1.1 1.7 L 1.1 1.6 z M 1.8 2.4 L 1.8 2.5 L 1.9 2.5 L 1.9 2.4 z M 0.8 2.4 L 0.8 2.5 L 0.9 2.5 L 0.9 2.4 z M 1.5 1.6 L 1.5 1.7 L 1.6 1.7 L 1.6 1.6 z M 2.3 2.4 L 2.3 2.5 L 2.4 2.5 L 2.4 2.4 z M 2.1 0.8 L 2.1 0.9 L 2.2 0.9 L 2.2 0.8 z M 1.1 1.3 L 1.1 1.4 L 1.2 1.4 L 1.2 1.3 z M 1.9 2.1 L 1.9 2.2 L 2.0 2.2 L 2.0 2.1 z M 1 2.3 L 1 2.4 L 1.1 2.4 L 1.1 2.3 z M 1.6 1.9 L 1.6 2.0 L 1.7 2.0 L 1.7 1.9 z M 2.2 0.7 L 2.2 0.8 L 2.3 0.8 L 2.3 0.7 z M 2.1 1.3 L 2.1 1.4 L 2.2 1.4 L 2.2 1.3 z M 2.4 0.6 L 2.4 0.7 L 2.5 0.7 L 2.5 0.6 z M 2.2 1.8 L 2.2 1.9 L 2.3 1.9 L 2.3 1.8 z M 0.7 1.2 L 0.7 1.3 L 0.8 1.3 L 0.8 1.2 z M 0.6 0.4 L 0.6 0.5 L 0.7 0.5 L 0.7 0.4 z M 0.8 0.7 L 0.8 0.8 L 0.9 0.8 L 0.9 0.7 z M 1.3 0.9 L 1.3 1.0 L 1.4 1.0 L 1.4 0.9 z" id="qr-path" style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none" /></svg>'
     png_result = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x1d\x00\x00\x00\x1d\x01\x00\x00\x00\x00~\xe8Z\xa2\x00\x00\x00\x83IDATx\x9cm\xcd1\x0e\x01Q\x10\x80\xe1\x7f\xc6&:j\x07\x90,\x9db\x0f q\x0e\x8e \x91H\x88\x08\xb7\xa0\xd3ju.\xa0\xd7\x8aj[\x95e\x937\x13\xd6Sj4_\xfbI\x04W\x80\x1fI\x91\xee\x8fZ?\xed\xd0j>A\x11P\xaa5Z[6P\x1f\xe4\x10\xef+\xa3l\xf5\x8d\xf7Xf<\x86[#\xf8\xc1\xc47\xcd\x0b\xf1\xb90-\xd2\x1c\xc2\xb9cR\x8e^\xdd\x84O6U\xf4\x06\xe1\xda3\xf5\xac\x8d\xfc\xc9\xbfO\x8703\xef(\x96\xc2\x00\x00\x00\x00IEND\xaeB`\x82'
 
-    def test_svg_without_cache(self):
+    def test_svg_url(self):
         for cache_enabled in [True, False]:
             url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), cache_enabled=cache_enabled)
             url2 = qr_url_from_text(TEST_TEXT, size=1, cache_enabled=cache_enabled)
@@ -122,7 +142,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.content, TestQRUrlFromTextResult.svg_result)
 
-    def test_png_without_cache(self):
+    def test_png_url(self):
         for cache_enabled in [True, False]:
             url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(image_format='png', size=1), cache_enabled=cache_enabled)
             url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, cache_enabled=cache_enabled)
@@ -136,42 +156,46 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
 
-    @override_settings(CACHES=OVERRIDE_CACHES_SETTING)
-    def test_svg_with_cache(self):
-        self.test_svg_without_cache()
+    @override_settings(CACHES=OVERRIDE_CACHES_SETTING, QR_CODE_CACHE_ALIAS=None)
+    def test_svg_with_cache_but_no_alias(self):
+        self.test_svg_url()
 
     @override_settings(CACHES=OVERRIDE_CACHES_SETTING)
     def test_png_with_cache(self):
-        self.test_png_without_cache()
+        self.test_png_url()
+
+    @override_settings(CACHES=OVERRIDE_CACHES_SETTING, QR_CODE_CACHE_ALIAS=None)
+    def test_png_with_cache_but_no_alias(self):
+        self.test_png_url()
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(TOKEN_LENGTH=30, SIGNING_KEY='my-secret-signing-key',
                                                    SIGNING_SALT='my-signing-salt',
                                                    ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=True))
     def test_with_url_protection_settings_1(self):
-        self.test_svg_without_cache()
-        self.test_png_without_cache()
+        self.test_svg_url()
+        self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
         # Registered users can access the URL externally, but since we are not logged in, we must expect an HTTP 403.
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=False))
     def test_with_url_protection_settings_2(self):
-        self.test_svg_without_cache()
-        self.test_png_without_cache()
+        self.test_svg_url()
+        self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: False))
     def test_with_url_protection_settings_3(self):
-        self.test_svg_without_cache()
-        self.test_png_without_cache()
+        self.test_svg_url()
+        self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: True))
     def test_with_url_protection_settings_4(self):
-        self.test_svg_without_cache()
-        self.test_png_without_cache()
+        self.test_svg_url()
+        self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
         # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, event for anonymous user.
         # Therefore, we must expect an HTTP 403.
