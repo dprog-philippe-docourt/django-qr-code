@@ -12,7 +12,7 @@ from qr_code.qrcode.image import SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT
 from qr_code.qrcode.serve import make_qr_code_url
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 
@@ -347,6 +347,8 @@ class TestQRForApplications(SimpleTestCase):
         wifi_config2 = WifiConfig(
             **wifi_config1
         )
+        google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
+        geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         if image_format == SVG_FORMAT_NAME:
             ref_suffix = SVG_REF_SUFFIX
         else:
@@ -363,12 +365,15 @@ class TestQRForApplications(SimpleTestCase):
             ('tel', ' "+41769998877"', None),
             ('sms', ' "+41769998877"', None),
             ('geolocation', 'latitude=586000.32 longitude=250954.19 altitude=500', None),
+            ('geolocation', 'coordinates=coordinates', {'coordinates': geolocation_coordinates}),
             ('google_maps', 'latitude=586000.32 longitude=250954.19', None),
+            ('google_maps', 'coordinates=coordinates', {'coordinates': google_maps_coordinates}),
             ('wifi', 'wifi_config', {'wifi_config': wifi_config1}),
             ('wifi', 'wifi_config', {'wifi_config': wifi_config2}),
             ('contact', 'contact_detail', {'contact_detail': contact_detail1}),
             ('contact', 'contact_detail', {'contact_detail': contact_detail2}),
             ('youtube', '"J9go2nj6b3M"', None),
+            ('youtube', 'video_id', {'video_id': "J9go2nj6b3M"}),
             ('google_play', '"ch.admin.meteoswiss"', None),
         )
         tests_data = []

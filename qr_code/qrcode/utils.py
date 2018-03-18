@@ -227,6 +227,26 @@ class WifiConfig(object):
         return wifi_config
 
 
+class Coordinates(object):
+    def __init__(self, latitude, longitude, altitude=None):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
+
+    def __str__(self):
+        if self.altitude:
+            return 'latitude: %s, longitude: %s, altitude: %s' % (self.latitude, self.longitude, self.altitude)
+        return 'latitude: %s, longitude: %s' % (self.latitude, self.longitude)
+
+    def make_geolocation_text(coordinates):
+        return 'geo:%s,%s,%s' % (
+            escape(coordinates.latitude), escape(coordinates.longitude), escape(coordinates.altitude))
+
+    def make_google_maps_text(coordinates):
+        return 'https://maps.google.com/local?q=%s,%s' % (
+            escape(coordinates.latitude), escape(coordinates.longitude))
+
+
 def make_email_text(email):
     return 'mailto:%s' % email
 
@@ -237,14 +257,6 @@ def make_tel_text(phone_number):
 
 def make_sms_text(phone_number):
     return 'sms:%s' % phone_number
-
-
-def make_geolocation_text(coordinates):
-    return 'geo:%s,%s,%s' % (escape(coordinates.latitude), escape(coordinates.longitude), escape(coordinates.altitude))
-
-
-def make_google_maps_text(coordinates):
-    return 'https://maps.google.com/local?q=%s,%s' % (escape(coordinates.latitude), escape(coordinates.longitude))
 
 
 def make_youtube_text(video_id):

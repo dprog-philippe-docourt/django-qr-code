@@ -177,7 +177,7 @@ You could write a view like this:
 ```python
 from datetime import date
 from django.shortcuts import render    
-from qr_code.qrcode.utils import ContactDetail, WifiConfig
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates
 
 def index(request):
     # Use a ContactDetail instance to encapsulate the detail of the contact.
@@ -194,30 +194,47 @@ def index(request):
         memo='Development Manager',
         org='Company Ltd',
     )
+
     # Use a WifiConfig instance to encapsulate the detail of the connexion.
     wifi_config = WifiConfig(
         ssid='my-wifi',
         authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
+
+    # Build coordinates instances.
+    google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
+    geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
+
     # Build context for rendering QR codes.
     context = dict(
         contact_detail=contact_detail,
         wifi_config=wifi_config,
-        video_id='J9go2nj6b3M')
+        video_id='J9go2nj6b3M',
+        google_maps_coordinates=google_maps_coordinates,
+        geolocation_coordinates=geolocation_coordinates,
+    )
+
+    # Render the index page.
     return render(request, 'qr_code_demo/index.html', context=context)
 ```
 
 Then, in your template, you can render the appropriate QR codes for the given context:
 ```djangotemplate
-<h3>Add contact {{ contact_detail.first_name }} {{ contact_detail.last_name }}' to phone book</h3>
-{% qr_for_contact contact_detail %}
+<h3>Add contact '{{ contact_detail.first_name }} {{ contact_detail.last_name }}' to phone book</h3>
+{% qr_for_contact contact_detail=contact_detail %}
 
 <h3>Configure Wi-Fi connexion to '{{ wifi_config.ssid }}'</h3>
-{% qr_url_for_wifi wifi_config size='H' error_correction='Q' %}
+<img src="{% qr_url_for_wifi wifi_config=wifi_config size='T' error_correction='Q' %}">
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
-{% qr_for_youtube video_id image_format='png' %}
+{% qr_for_youtube video_id image_format='png' size='T' %}
+
+<h3>Open map at location: ({{ geolocation_coordinates }})</h3>
+<img src="{% qr_url_for_geolocation coordinates=geolocation_coordinates %}">
+
+<h3>Open Google Maps App at location: ({{ google_maps_coordinates }})</h3>
+{% qr_for_google_maps coordinates=google_maps_coordinates %}
 ```
 
 Please check-out the [demo application](#demo-application) to see more examples.

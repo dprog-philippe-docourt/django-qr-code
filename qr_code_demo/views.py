@@ -1,7 +1,7 @@
 from datetime import date
 from django.shortcuts import render
 
-from qr_code.qrcode.utils import ContactDetail, WifiConfig
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates
 
 
 def index(request):
@@ -25,11 +25,26 @@ def index(request):
         memo='Development Manager',
         org='Company Ltd',
     )
+
     # Use a WifiConfig instance to encapsulate the detail of the connexion.
     wifi_config = WifiConfig(
         ssid='my-wifi',
         authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
+
+    # Build coordinates instances.
+    google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
+    geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
+
     # Build context for rendering QR codes.
-    return render(request, 'qr_code_demo/index.html', context=dict(contact_detail=contact_detail, wifi_config=wifi_config))
+    context = dict(
+        contact_detail=contact_detail,
+        wifi_config=wifi_config,
+        video_id='J9go2nj6b3M',
+        google_maps_coordinates=google_maps_coordinates,
+        geolocation_coordinates=geolocation_coordinates,
+    )
+
+    # Render the index page.
+    return render(request, 'qr_code_demo/index.html', context=context)

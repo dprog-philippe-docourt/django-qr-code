@@ -5,8 +5,8 @@ from django import template
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import DEFAULT_CACHE_ENABLED
 from qr_code.qrcode.serve import make_qr_code_url
-from qr_code.qrcode.utils import QRCodeOptions, make_email_text, make_google_maps_text, make_geolocation_text, \
-    make_google_play_text, make_tel_text, make_sms_text, make_youtube_text, WifiConfig, ContactDetail
+from qr_code.qrcode.utils import QRCodeOptions, make_email_text, make_google_play_text, make_tel_text, make_sms_text, \
+    make_youtube_text, WifiConfig, ContactDetail, Coordinates
 
 register = template.Library()
 
@@ -23,13 +23,6 @@ def _make_qr_code(text, qr_code_args, embedded):
         return make_qr_code_url(text, options, cache_enabled=cache_enabled)
 
 
-class _Coordinates(object):
-    def __init__(self, latitude, longitude, altitude=None):
-        self.latitude = latitude
-        self.longitude = longitude
-        self.altitude = altitude
-
-
 def make_contact_or_wifi_qr_code(contact_or_wifi, expected_cls, embedded, qr_code_args):
     if not isinstance(contact_or_wifi, expected_cls):
         # For compatibility with existing views and templates, try to build from dict.
@@ -37,12 +30,20 @@ def make_contact_or_wifi_qr_code(contact_or_wifi, expected_cls, embedded, qr_cod
     return _make_qr_code(contact_or_wifi.make_qr_code_text(), qr_code_args=qr_code_args, embedded=embedded)
 
 
-def _make_google_maps_qr_code(coordinates, embedded, qr_code_args):
-    return _make_qr_code(make_google_maps_text(coordinates), qr_code_args=qr_code_args, embedded=embedded)
+def _make_google_maps_qr_code(embedded, **kwargs):
+    if 'coordinates' in kwargs:
+        coordinates = kwargs.pop('coordinates')
+    else:
+        coordinates = Coordinates(kwargs.pop('latitude'), kwargs.pop('longitude'))
+    return _make_qr_code(coordinates.make_google_maps_text(), qr_code_args=kwargs, embedded=embedded)
 
 
-def _make_geolocation_qr_code(coordinates, embedded, qr_code_args):
-    return _make_qr_code(make_geolocation_text(coordinates), qr_code_args=qr_code_args, embedded=embedded)
+def _make_geolocation_qr_code(embedded, **kwargs):
+    if 'coordinates' in kwargs:
+        coordinates = kwargs.pop('coordinates')
+    else:
+        coordinates = Coordinates(kwargs.pop('latitude'), kwargs.pop('longitude'), kwargs.pop('altitude'))
+    return _make_qr_code(coordinates.make_geolocation_text(), qr_code_args=kwargs, embedded=embedded)
 
 
 @register.simple_tag()
@@ -66,13 +67,15 @@ def qr_for_sms(phone_number, **kwargs):
 
 
 @register.simple_tag()
-def qr_for_geolocation(latitude, longitude, altitude, **kwargs):
-    return _make_geolocation_qr_code(_Coordinates(latitude, longitude, altitude), qr_code_args=kwargs, embedded=True)
+def qr_for_geolocation(**kwargs):
+    """Accepts a *'coordinates'* keyword argument or a triplet *'latitude'*, *'longitude'*, and *'altitude'*."""
+    return _make_geolocation_qr_code(embedded=True, **kwargs)
 
 
 @register.simple_tag()
-def qr_for_google_maps(latitude, longitude, **kwargs):
-    return _make_google_maps_qr_code(_Coordinates(latitude, longitude), embedded=True, qr_code_args=kwargs)
+def qr_for_google_maps(**kwargs):
+    """Accepts a *'coordinates'* keyword argument or a pair *'latitude'* and *'longitude'*."""
+    return _make_google_maps_qr_code(embedded=True, **kwargs)
 
 
 @register.simple_tag()
@@ -116,13 +119,15 @@ def qr_url_for_sms(phone_number, **kwargs):
 
 
 @register.simple_tag()
-def qr_url_for_geolocation(latitude, longitude, altitude, **kwargs):
-    return _make_geolocation_qr_code(_Coordinates(latitude, longitude, altitude), qr_code_args=kwargs, embedded=False)
+def qr_url_for_geolocation(**kwargs):
+    """Accepts a *'coordinates'* keyword argument or a triplet *'latitude'*, *'longitude'*, and *'altitude'*."""
+    return _make_geolocation_qr_code(embedded=False, **kwargs)
 
 
 @register.simple_tag()
-def qr_url_for_google_maps(latitude, longitude, **kwargs):
-    return _make_google_maps_qr_code(_Coordinates(latitude, longitude), qr_code_args=kwargs, embedded=False)
+def qr_url_for_google_maps(**kwargs):
+    """Accepts a *'coordinates'* keyword argument or a pair *'latitude'* and *'longitude'*."""
+    return _make_google_maps_qr_code(embedded=False, **kwargs)
 
 
 @register.simple_tag()

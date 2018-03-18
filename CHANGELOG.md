@@ -1,14 +1,21 @@
 # Change Log
 
-## 0.5.0 (under development)
-* Fixed non-closed <img> tag when generating embedded PNG image.
-* QR code options have been factorized and now use the `QRCodeOptions` class.
-* The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
-* The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
-* Reorganize code and split qr_code.py into several modules.
-* BREAKING CHANGES: The changes mentioned above might break the compatibility with code using qr_code.py's API directly, but template tags are not impacted.
-* Added support for `error_correction` parameter when generating a QR code.
-* Additions to documentation.
+## 1.0.0 (under development)
+* BREAKING CHANGES:
+    * QR code options have been factorized and now use the `QRCodeOptions` class.
+    * The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
+    * The context for rendering a QR code encoding a contact detail uses the dedicated `ContactDetail` class.
+    * `qr_for_contact` and `qr_url_for_contact` keyword arg has been renamed from `contact_dict` to `contact_detail`.
+    * `qr_for_wifi` and `qr_url_for_wifi` keyword arg has been renamed from `wifi_dict` to `wifi_config`.
+    * Reorganize code and split qr_code.py into several modules.
+
+The changes mentioned above might break the compatibility with code using qr_code.py's API directly, but template tags are not impacted, except for `qr_for_contact`, `qr_url_for_contact`, `qr_for_wifi`, and `qr_url_for_wifi`.
+* Other changes:
+    * Added support for `error_correction` parameter when generating a QR code.
+    * Added support for `coordinates` keyword argument to `qr_for_geolocation`, `qr_for_google_maps`, `qr_url_for_geolocation`, and `qr_url_for_google_maps`.
+    * Additions to documentation.
+* Bug fixes:
+    * Fixed non-closed <img> tag when generating embedded PNG image.
 
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.
