@@ -3,6 +3,8 @@ import base64
 import re
 
 import os
+from datetime import date
+
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
@@ -19,6 +21,24 @@ from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64, %salt="Hello World!">'
 TEST_TEXT = 'Hello World!'
 COMPLEX_TEST_TEXT = '/%+¼@#=<>àé'
+TEST_CONTACT_DETAIL = dict(
+            first_name='John',
+            last_name='Doe',
+            first_name_reading='jAAn',
+            last_name_reading='dOH',
+            tel='+41769998877',
+            email='j.doe@company.com',
+            url='http://www.company.com',
+            birthday=date(year=1985, month=10, day=2),
+            address='Cras des Fourches 987, 2800 Delémont, Jura, Switzerland',
+            memo='Development Manager',
+            org='Company Ltd',
+        )
+TEST_WIFI_CONFIG = dict(
+            ssid='my-wifi',
+            authentication=WifiConfig.AUTHENTICATION.WPA,
+            password='wifi-password'
+        )
 OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
                            'qr-code': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                                        'LOCATION': 'qr-code-cache', 'TIMEOUT': 3600}}
@@ -36,6 +56,44 @@ def _make_closing_path_tag(svg):
     return svg.replace(' /></svg>', '></path></svg>')
 
 
+class TestApps(SimpleTestCase):
+    def test_apps_attributes(self):
+        from qr_code.apps import QrCodeConfig
+        self.assertEqual(QrCodeConfig.name, 'qr_code')
+        self.assertEqual(QrCodeConfig.verbose_name, 'Django QR code')
+
+
+class TestContactDetail(SimpleTestCase):
+    def test_make_qr_code_text(self):
+        data = dict(**TEST_CONTACT_DETAIL)
+        c1 = ContactDetail(**data)
+        data['nickname'] = 'buddy'
+        c2 = ContactDetail(**data)
+        data['last_name'] = "O'Hara;,:"
+        data['tel_av'] = 'n/a'
+        c3 = ContactDetail(**data)
+        self.assertEqual(c1.make_qr_code_text(), 'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;ORG:Company Ltd;;')
+        self.assertEqual(c2.make_qr_code_text(), 'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+        self.assertEqual(c3.make_qr_code_text(),
+                         r"MECARD:N:O'Hara\;\,:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+
+
+class TestWifiConfig(SimpleTestCase):
+    def test_make_qr_code_text(self):
+        wifi1 = WifiConfig(**TEST_WIFI_CONFIG)
+        wifi2 = WifiConfig(hidden=True, **TEST_WIFI_CONFIG)
+        self.assertEqual(wifi1.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;')
+        self.assertEqual(wifi2.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;')
+
+
+class TestCoordinates(SimpleTestCase):
+    def test_coordinates(self):
+        c1 = Coordinates(latitude=586000.32, longitude=250954.19)
+        c2 = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
+        self.assertEqual(c1.__str__(), 'latitude: 586000.32, longitude: 250954.19')
+        self.assertEqual(c2.__str__(), 'latitude: 586000.32, longitude: 250954.19, altitude: 500')
+
+
 class TestQRUrlFromTextResult(SimpleTestCase):
     """
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
@@ -51,12 +109,15 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url2 = qr_url_from_text(TEST_TEXT, size=1, cache_enabled=cache_enabled)
             url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, cache_enabled=cache_enabled)
             url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, cache_enabled=cache_enabled)
+            # Using an invalid image format should fallback to SVG.
+            url5 = qr_url_from_text(TEST_TEXT, image_format='invalid-format-name', size=1, cache_enabled=cache_enabled)
             url = url1
             token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5)))
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.content, TestQRUrlFromTextResult.svg_result)
@@ -123,12 +184,15 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url2 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, cache_enabled=False)
             url3 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='svg', cache_enabled=False)
             url4 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='SVG', cache_enabled=False)
+            # Using an invalid image format should fallback to SVG.
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='invalid-format-name', cache_enabled=False)
             url = url1
             token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5)))
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode('utf-8')
@@ -182,8 +246,10 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size))
             qr2 = qr_from_text(TEST_TEXT, size=size)
             qr3 = qr_from_text(TEST_TEXT, size=size, image_format='svg')
+            qr4 = qr_from_text(TEST_TEXT, size=size, image_format='invalid-format-name')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, qr4)
             self.assertEqual(qr1, result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
@@ -207,9 +273,11 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr2 = qr_from_text(TEST_TEXT, version=version)
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format='svg')
             qr4 = qr_from_text(TEST_TEXT, version=version, image_format='SVG')
+            qr5 = qr_from_text(TEST_TEXT, version=version, image_format='invalid-format-name')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
+            self.assertEqual(qr1, qr5)
             self.assertEqual(qr1, result)
             # print("\"\"\"%s\"\"\"," % qr1)
             # print("\"\"\"{%% qr_from_text '%s' %%}\"\"\"," % qr1)
@@ -322,28 +390,11 @@ class TestQRForApplications(SimpleTestCase):
 
     @staticmethod
     def _make_tests_data(embedded=True, image_format=SVG_FORMAT_NAME):
-        from datetime import date
-        contact_detail1 = dict(
-            first_name='John',
-            last_name='Doe',
-            first_name_reading='jAAn',
-            last_name_reading='dOH',
-            tel='+41769998877',
-            email='j.doe@company.com',
-            url='http://www.company.com',
-            birthday=date(year=1985, month=10, day=2),
-            address='Cras des Fourches 987, 2800 Delémont, Jura, Switzerland',
-            memo='Development Manager',
-            org='Company Ltd',
-        )
+        contact_detail1 = dict(**TEST_CONTACT_DETAIL)
         contact_detail2 = ContactDetail(
             **contact_detail1
         )
-        wifi_config1 = dict(
-            ssid='my-wifi',
-            authentication=WifiConfig.AUTHENTICATION.WPA,
-            password='wifi-password'
-        )
+        wifi_config1 = dict(**TEST_WIFI_CONFIG)
         wifi_config2 = WifiConfig(
             **wifi_config1
         )
@@ -457,11 +508,12 @@ def get_png_content_from_file_name(file_name):
     return None
 
 
-def write_png_content_to_file(file_name, image_content):
-    with open(os.path.join(get_resources_path(), file_name), 'wb') as file:
-        file.write(image_content)
-
-
-def write_svg_content_to_file(file_name, image_content):
-    with open(os.path.join(get_resources_path(), file_name), 'wt', encoding='utf-8') as file:
-        file.write(image_content)
+# Uncomment in order to renew some of the reference files.
+# def write_png_content_to_file(file_name, image_content):
+#     with open(os.path.join(get_resources_path(), file_name), 'wb') as file:
+#         file.write(image_content)
+#
+#
+# def write_svg_content_to_file(file_name, image_content):
+#     with open(os.path.join(get_resources_path(), file_name), 'wt', encoding='utf-8') as file:
+#         file.write(image_content)

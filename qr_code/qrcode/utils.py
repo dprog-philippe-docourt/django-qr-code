@@ -191,7 +191,7 @@ class WifiConfig(object):
         * ssid: the name of the SSID
         * authentication: the authentication type for the SSID; can be AUTHENTICATION.wep or AUTHENTICATION.wpa, or AUTHENTICATION.nopass for no password. Or, omit for no password.
         * password: the password, ignored if "authentsication" is 'nopass' (in which case it may be omitted).
-        * hidden: tells whether the SSID is hidden or not; can be True or Fals
+        * hidden: tells whether the SSID is hidden or not; can be True or False.
     """
     AUTHENTICATION = namedtuple('AUTHENTICATION', 'nopass WEP WPA')._make(range(3))
     AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, 'nopass'), (AUTHENTICATION.WEP, 'WEP'), (AUTHENTICATION.WPA, 'WPA'))
@@ -224,6 +224,7 @@ class WifiConfig(object):
             wifi_config += 'P:%s;' % self.escaped_password
         if self.hidden:
             wifi_config += 'H:%s;' % str(self.hidden).lower()
+        # wifi_config += ';'
         return wifi_config
 
 
