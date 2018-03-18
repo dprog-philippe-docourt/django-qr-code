@@ -16,6 +16,8 @@ The changes mentioned above might break the compatibility with code using qr_cod
     * Additions to documentation.
 * Bug fixes:
     * Fixed non-closed <img> tag when generating embedded PNG image.
+    * Escape colon char (':') if it appears within a contact detail or a wifi configuration.
+    * Add a second terminal semi-colon at the end of the text representing a wifi configuration, as recommended in some sources.
 
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.

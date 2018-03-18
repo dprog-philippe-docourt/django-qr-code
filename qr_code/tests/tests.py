@@ -72,18 +72,18 @@ class TestContactDetail(SimpleTestCase):
         data['last_name'] = "O'Hara;,:"
         data['tel_av'] = 'n/a'
         c3 = ContactDetail(**data)
-        self.assertEqual(c1.make_qr_code_text(), 'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;ORG:Company Ltd;;')
-        self.assertEqual(c2.make_qr_code_text(), 'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+        self.assertEqual(c1.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
+        self.assertEqual(c2.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
         self.assertEqual(c3.make_qr_code_text(),
-                         r"MECARD:N:O'Hara\;\,:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+                         r"MECARD:N:O'Hara\;\,\:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
 
 
 class TestWifiConfig(SimpleTestCase):
     def test_make_qr_code_text(self):
         wifi1 = WifiConfig(**TEST_WIFI_CONFIG)
         wifi2 = WifiConfig(hidden=True, **TEST_WIFI_CONFIG)
-        self.assertEqual(wifi1.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;')
-        self.assertEqual(wifi2.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;')
+        self.assertEqual(wifi1.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;;')
+        self.assertEqual(wifi2.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;;')
 
 
 class TestCoordinates(SimpleTestCase):
@@ -465,6 +465,7 @@ class TestQRForApplications(SimpleTestCase):
             source_image_data = match.group('data')
             source_image_data = base64.b64decode(source_image_data)
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
+            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_svg_format(self):
@@ -480,6 +481,7 @@ class TestQRForApplications(SimpleTestCase):
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
+            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             self.assertEqual(source_image_data, ref_image_data)
 
     def _check_url_for_test_data(self, test_data):
@@ -498,14 +500,12 @@ def get_svg_content_from_file_name(file_name, skip_header=True):
             file.readline()
         image_data = file.read().strip()
         return image_data
-    return None
 
 
 def get_png_content_from_file_name(file_name):
     with open(os.path.join(get_resources_path(), file_name), 'rb') as file:
         image_data = file.read()
         return image_data
-    return None
 
 
 # Uncomment in order to renew some of the reference files.

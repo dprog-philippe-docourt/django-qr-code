@@ -147,7 +147,7 @@ class ContactDetail(object):
         :return: the MeCARD contact description.
         """
 
-        _escape_mecard_special_chars_in_object_fields(self, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel_av', 'email', 'memo', 'nickname', 'org'))
+        _escape_mecard_special_chars_in_object_fields(self, ('first_name', 'last_name', 'first_name_reading', 'last_name_reading', 'tel', 'tel_av', 'email', 'memo', 'url', 'nickname', 'org'))
 
         # See this for an archive of the format specifications:
         # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
@@ -173,7 +173,7 @@ class ContactDetail(object):
         if self.address:
             contact_text += 'ADR:%s;' % self.address
         if self.url:
-            contact_text += 'URL:%s;' % self.url
+            contact_text += 'URL:%s;' % self.escaped_url
         if self.nickname:
             contact_text += 'NICKNAME:%s;' % self.escaped_nickname
         # Not standard, but recognized by several readers.
@@ -224,7 +224,7 @@ class WifiConfig(object):
             wifi_config += 'P:%s;' % self.escaped_password
         if self.hidden:
             wifi_config += 'H:%s;' % str(self.hidden).lower()
-        # wifi_config += ';'
+        wifi_config += ';'
         return wifi_config
 
 
@@ -271,7 +271,7 @@ def make_google_play_text(package_id):
 def _escape_mecard_special_chars(string_to_escape):
     if not string_to_escape:
         return string_to_escape
-    special_chars = ['\\', '"', ';', ',']
+    special_chars = ['\\', '"', ';', ',', ':']
     for sc in special_chars:
         string_to_escape = string_to_escape.replace(sc, '\\%s' % sc)
     return string_to_escape
