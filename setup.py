@@ -9,7 +9,7 @@ with open('qr_code/__init__.py', 'rb') as f:
 setup(
     name='django-qr-code',
     version=VERSION,
-    packages=['qr_code', 'qr_code.templatetags'],
+    packages=['qr_code', 'qr_code.qrcode', 'qr_code.templatetags'],
     url='https://github.com/dprog-philippe-docourt/django-qr-code',
     license='BSD 3-clause',
     author='Philippe Docourt',

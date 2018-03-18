@@ -222,19 +222,27 @@ def index(request):
 Then, in your template, you can render the appropriate QR codes for the given context:
 ```djangotemplate
 <h3>Add contact '{{ contact_detail.first_name }} {{ contact_detail.last_name }}' to phone book</h3>
-{% qr_for_contact contact_detail=contact_detail %}
+{% qr_for_contact contact_detail=contact_detail size='S' %}
+<p>or:</p>
+{% qr_for_contact contact_detail size='S' %}
 
 <h3>Configure Wi-Fi connexion to '{{ wifi_config.ssid }}'</h3>
 <img src="{% qr_url_for_wifi wifi_config=wifi_config size='T' error_correction='Q' %}">
+<p>or:</p>
+<img src="{% qr_url_for_wifi wifi_config size='T' error_correction='Q' %}">
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
 {% qr_for_youtube video_id image_format='png' size='T' %}
 
 <h3>Open map at location: ({{ geolocation_coordinates }})</h3>
 <img src="{% qr_url_for_geolocation coordinates=geolocation_coordinates %}">
+<p>or:</p>
+<img src="{% qr_url_for_geolocation latitude=geolocation_coordinates.latitude longitude=geolocation_coordinates.longitude altitude=geolocation_coordinates.altitude %}">
 
 <h3>Open Google Maps App at location: ({{ google_maps_coordinates }})</h3>
 {% qr_for_google_maps coordinates=google_maps_coordinates %}
+<p>or:</p>
+{% qr_for_google_maps latitude=google_maps_coordinates.latitude longitude=google_maps_coordinates.longitude %}
 ```
 
 Please check-out the [demo application](#demo-application) to see more examples.
