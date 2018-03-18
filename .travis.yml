@@ -10,5 +10,9 @@ env:
 install:
   - pip install django~=$DJANGO_VERSION
   - pip install -r requirements.txt
+  - pip install python-coveralls coverage
 # command to run tests
-script: python manage.py test
+script:
+  - coverage run --source='qr_code' manage.py test
+after_success:
+  - coveralls
