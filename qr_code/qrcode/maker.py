@@ -34,13 +34,13 @@ def make_qr_code_image(text, image_factory, qr_code_options=QRCodeOptions()):
     valid_error_correction = _get_valid_error_correction_or_default(qr_code_options.error_correction)
     import qrcode
     qr = qrcode.QRCode(
-        version=valid_version if valid_version != 0 else 1,
+        version=valid_version,
         error_correction=valid_error_correction,
         box_size=valid_size,
         border=qr_code_options.border
     )
     qr.add_data(text)
-    if valid_version == 0:
+    if valid_version is None:
         qr.make(fit=True)
     return qr.make_image(image_factory=image_factory)
 
