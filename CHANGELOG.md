@@ -14,6 +14,7 @@ The changes mentioned above might break the compatibility with code using qr_cod
     * Added support for `error_correction` parameter when generating a QR code.
     * Added support for `coordinates` keyword argument to `qr_for_geolocation`, `qr_for_google_maps`, `qr_url_for_geolocation`, and `qr_url_for_google_maps`.
     * Additions to documentation.
+    * Added ability to use a `QRCodeOptions` instance with `options` keyword argument in all tags.
 * Bug fixes:
     * Fixed non-closed <img> tag when generating embedded PNG image.
     * Escape colon char (':') if it appears within a contact detail or a wifi configuration.

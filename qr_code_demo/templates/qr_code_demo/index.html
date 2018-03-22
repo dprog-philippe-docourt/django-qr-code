@@ -121,6 +121,9 @@
             <td width="33%">
                 <h3>A custom "hello world" QR code with size <em>10</em> and border <em>6</em></h3>
             </td>
+            <td width="33%">
+                <h3>A custom "hello world" QR code using a <em>QRCodeoptions</em> instance. Here the <em>QRCodeoptions</em> instance has a size <em>t</em>, a border of 6 modules, and a level L of error correction (up to 7% damage).</h3>
+            </td>
         </tr>
         <tr>
             <td>Template code:</td>
@@ -132,6 +135,9 @@
             <td width="33%">
                 <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></strong>
             </td>
+            <td width="33%">
+                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" options=options_example {% templatetag closeblock %}</code></strong>
+            </td>
         </tr>
         <tr>
             <td width="33%">
@@ -139,6 +145,9 @@
             </td>
             <td width="33%">
                 <div>{% qr_from_text "Hello World!" size=10 border=6 %}</div>
+            </td>
+            <td width="33%">
+                <div>{% qr_from_text "Hello World!" options=options_example %}</div>
             </td>
         </tr>
     </table>
@@ -392,6 +401,25 @@
                 <div><img src="{% qr_url_for_wifi wifi_config=wifi_config %}"></div>
             </td>
         </tr>
+        <tr>
+            <td>Template code:</td>
+        </tr>
+        <tr>
+            <td width="33%">
+                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config options=options_example {% templatetag closeblock %}</code></strong>
+            </td>
+            <td width="33%">
+                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config options=options_example {% templatetag closeblock %}"</code></strong>
+            </td>
+        </tr>
+        <tr>
+            <td width="33%">
+                <div>{% qr_for_wifi wifi_config options=options_example %}</div>
+            </td>
+            <td width="33%">
+                <div><img src="{% qr_url_for_wifi wifi_config options=options_example %}"></div>
+            </td>
+        </tr>
     </table>
 
     <h3>Add contact to phone book</h3>
@@ -497,6 +525,25 @@
             </td>
             <td width="33%">
                 <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' %}"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>Template code:</td>
+        </tr>
+        <tr>
+            <td width="33%">
+                <strong><code>{% templatetag openblock %} qr_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}</code></strong>
+            </td>
+            <td width="33%">
+                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}"</code></strong>
+            </td>
+        </tr>
+        <tr>
+            <td width="33%">
+                <div>{% qr_for_google_play 'ch.admin.meteoswiss' options=options_example  %}</div>
+            </td>
+            <td width="33%">
+                <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example %}"></div>
             </td>
         </tr>
     </table>

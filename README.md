@@ -87,7 +87,27 @@ error correction may be required. The correction level can be configured with th
 * m or M: error correction level M – up to 15% damage
 * q or Q: error correction level Q – up to 25% damage
 * h or H: error correction level H – up to 30% damage
-        
+
+Alternatively, you may use the `options` keyword argument with an instance of `QRCodeOptions` as value instead of listing every requested options. Here is a example of view: 
+```python
+from django.shortcuts import render
+from qr_code.qrcode.utils import QRCodeOptions
+
+def myview(request):
+    # Build context for rendering QR codes.
+    context = dict(
+        my_options=QRCodeOptions(size='t', border=6, error_correction='L'),
+    )
+
+    # Render the view.
+    return render(request, 'myapp/myview.html', context=context)
+```
+
+and an example of template for the view above:
+```djangotemplate
+{% qr_from_text "Hello World!" options=my_options %}
+```
+
 ### qr_url_from_text
 The `qr_url_from_text` tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option **cache_enabled** to disable caching of served image.
 
@@ -178,7 +198,7 @@ You could write a view like this:
 ```python
 from datetime import date
 from django.shortcuts import render    
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates, QRCodeOptions
 
 def index(request):
     # Use a ContactDetail instance to encapsulate the detail of the contact.
@@ -214,6 +234,7 @@ def index(request):
         video_id='J9go2nj6b3M',
         google_maps_coordinates=google_maps_coordinates,
         geolocation_coordinates=geolocation_coordinates,
+        options_example=QRCodeOptions(size='t', border=6, error_correction='L'),
     )
 
     # Render the index page.
@@ -226,24 +247,34 @@ Then, in your template, you can render the appropriate QR codes for the given co
 {% qr_for_contact contact_detail=contact_detail size='S' %}
 <p>or:</p>
 {% qr_for_contact contact_detail size='S' %}
+<p>or:</p>
+{% qr_for_contact contact_detail options=options_example %}
 
 <h3>Configure Wi-Fi connexion to '{{ wifi_config.ssid }}'</h3>
 <img src="{% qr_url_for_wifi wifi_config=wifi_config size='T' error_correction='Q' %}">
 <p>or:</p>
 <img src="{% qr_url_for_wifi wifi_config size='T' error_correction='Q' %}">
+<p>or:</p>
+<img src="{% qr_url_for_wifi wifi_config options=options_example %}">
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
 {% qr_for_youtube video_id image_format='png' size='T' %}
+<p>or:</p>
+{% qr_for_youtube video_id options=options_example %}
 
 <h3>Open map at location: ({{ geolocation_coordinates }})</h3>
 <img src="{% qr_url_for_geolocation coordinates=geolocation_coordinates %}">
 <p>or:</p>
 <img src="{% qr_url_for_geolocation latitude=geolocation_coordinates.latitude longitude=geolocation_coordinates.longitude altitude=geolocation_coordinates.altitude %}">
+<p>or:</p>
+<img src="{% qr_url_for_geolocation latitude=geolocation_coordinates.latitude longitude=geolocation_coordinates.longitude altitude=geolocation_coordinates.altitude options=options_example %}">
 
 <h3>Open Google Maps App at location: ({{ google_maps_coordinates }})</h3>
 {% qr_for_google_maps coordinates=google_maps_coordinates %}
 <p>or:</p>
 {% qr_for_google_maps latitude=google_maps_coordinates.latitude longitude=google_maps_coordinates.longitude %}
+<p>or:</p>
+{% qr_for_google_maps latitude=google_maps_coordinates.latitude longitude=google_maps_coordinates.longitude options=options_example %}
 ```
 
 Please check-out the [demo application](#demo-application) to see more examples.

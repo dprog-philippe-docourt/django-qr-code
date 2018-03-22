@@ -1,8 +1,7 @@
 from datetime import date
 from django.shortcuts import render
 
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates
-
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates, QRCodeOptions
 
 # Use a ContactDetail instance to encapsulate the detail of the contact.
 DEMO_CONTACT = ContactDetail(
@@ -28,6 +27,8 @@ DEMO_WIFI = WifiConfig(
 
 DEMO_COORDINATES = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
 
+DEMO_OPTIONS = QRCodeOptions(size='t', border=6, error_correction='L')
+
 
 def index(request):
     """
@@ -44,6 +45,7 @@ def index(request):
         video_id='J9go2nj6b3M',
         google_maps_coordinates=DEMO_COORDINATES,
         geolocation_coordinates=DEMO_COORDINATES,
+        options_example=DEMO_OPTIONS
     )
 
     # Render the index page.

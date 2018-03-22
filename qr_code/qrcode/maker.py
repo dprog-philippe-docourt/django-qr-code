@@ -97,8 +97,12 @@ def make_qr_code(text, qr_code_args, embedded):
     cache_enabled = DEFAULT_CACHE_ENABLED
     if 'cache_enabled' in qr_code_args:
         cache_enabled = qr_code_args.pop('cache_enabled')
-
-    options = QRCodeOptions(**qr_code_args)
+    options = qr_code_args.get('options')
+    if options:
+        if not isinstance(options, QRCodeOptions):
+            raise TypeError('The options argument must be of type QRCodeOptions.')
+    else:
+        options = QRCodeOptions(**qr_code_args)
     if embedded:
         return make_embedded_qr_code(text, options)
     else:
