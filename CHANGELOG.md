@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.0.0 (under development)
+## 1.0.0 (2018-03-23)
 * BREAKING CHANGES:
     * QR code options have been factorized and now use the `QRCodeOptions` class.
     * The context for rendering a QR code encoding a Wi-Fi configuration uses the dedicated `WifiConfig` class.
