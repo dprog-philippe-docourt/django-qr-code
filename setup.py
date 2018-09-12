@@ -22,7 +22,7 @@ This application depends on the `qrcode <https://github.com/lincolnloop/python-q
 
 This app makes no usage of the Django models and therefore do not use any database.
 
-Only Python >= 3.4 is supported.""",
+Only Python >= 3.5 is supported.""",
     install_requires=['qrcode', 'django'],
     python_requires='>=3',
     classifiers=[
