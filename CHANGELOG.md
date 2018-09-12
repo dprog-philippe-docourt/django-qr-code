@@ -1,6 +1,7 @@
 # Change Log
 
 ## 1.0.1 (???)
+* Ensures compatibility with Django 2.1.
 * Fixed error when generating qr code from lazy text (#1)
 
 ## 1.0.0 (2018-03-23)
