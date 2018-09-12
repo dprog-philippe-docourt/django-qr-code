@@ -533,6 +533,19 @@ class TestQRForApplications(SimpleTestCase):
         return response
 
 
+class TestIssues(SimpleTestCase):
+    def test_reverse_lazy_url(self):
+        from django.urls import reverse, reverse_lazy
+        options = QRCodeOptions(image_format='svg', size=1)
+        url1 = make_qr_code_url(reverse('qr_code:serve_qr_code_image'), options)
+        url2 = make_qr_code_url(reverse_lazy('qr_code:serve_qr_code_image'), options)
+        self.assertEqual(url1, url2)
+
+        svg1 = make_embedded_qr_code(reverse('qr_code:serve_qr_code_image'), options)
+        svg2 = make_embedded_qr_code(reverse_lazy('qr_code:serve_qr_code_image'), options)
+        self.assertEqual(svg1, svg2)
+
+
 def get_svg_content_from_file_name(file_name, skip_header=True):
     with open(os.path.join(get_resources_path(), file_name), 'r', encoding='utf-8') as file:
         if skip_header:

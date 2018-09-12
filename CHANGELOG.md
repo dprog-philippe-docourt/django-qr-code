@@ -1,5 +1,8 @@
 # Change Log
 
+## 1.0.1 (???)
+* Fixed error when generating qr code from lazy text (#1)
+
 ## 1.0.0 (2018-03-23)
 * BREAKING CHANGES:
     * QR code options have been factorized and now use the `QRCodeOptions` class.

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.signing import Signer
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode.constants import QR_CODE_GENERATION_VERSION_DATE, DEFAULT_CACHE_ENABLED, \
@@ -93,7 +94,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAUL
     The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against
     external requests is added to the returned URL. It defaults to *True*.
     """
-    encoded_text = str(base64.urlsafe_b64encode(bytes(text, encoding='utf-8')), encoding='utf-8')
+    encoded_text = str(base64.urlsafe_b64encode(bytes(force_text(text), encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
     params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
