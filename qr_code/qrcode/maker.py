@@ -10,7 +10,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE, \
-    DEFAULT_CACHE_ENABLED
+    DEFAULT_CACHE_ENABLED, DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
@@ -96,8 +96,11 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
 
 def make_qr_code(text, qr_code_args, embedded):
     cache_enabled = DEFAULT_CACHE_ENABLED
+    include_url_protection_token = DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
     if 'cache_enabled' in qr_code_args:
-        cache_enabled = qr_code_args.pop('cache_enabled')
+        cache_enabled = bool(qr_code_args.pop('cache_enabled'))
+    if 'include_url_protection_token' in qr_code_args:
+        include_url_protection_token = bool(qr_code_args.pop('include_url_protection_token'))
     options = qr_code_args.get('options')
     if options:
         if not isinstance(options, QRCodeOptions):
@@ -107,4 +110,4 @@ def make_qr_code(text, qr_code_args, embedded):
     if embedded:
         return make_embedded_qr_code(text, options)
     else:
-        return make_qr_code_url(text, options, cache_enabled=cache_enabled)
+        return make_qr_code_url(text, options, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token)

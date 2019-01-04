@@ -4,6 +4,7 @@ import re
 
 import os
 from datetime import date
+from itertools import product
 
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
@@ -14,7 +15,7 @@ from qr_code.qrcode.image import SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION
-from qr_code.qrcode.serve import make_qr_code_url
+from qr_code.qrcode.serve import make_qr_code_url, get_url_protection_options, requires_url_protection_token
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
@@ -124,41 +125,68 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     png_result = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x1d\x00\x00\x00\x1d\x01\x00\x00\x00\x00~\xe8Z\xa2\x00\x00\x00\x83IDATx\x9cm\xcd1\x0e\x01Q\x10\x80\xe1\x7f\xc6&:j\x07\x90,\x9db\x0f q\x0e\x8e \x91H\x88\x08\xb7\xa0\xd3ju.\xa0\xd7\x8aj[\x95e\x937\x13\xd6Sj4_\xfbI\x04W\x80\x1fI\x91\xee\x8fZ?\xed\xd0j>A\x11P\xaa5Z[6P\x1f\xe4\x10\xef+\xa3l\xf5\x8d\xf7Xf<\x86[#\xf8\xc1\xc47\xcd\x0b\xf1\xb90-\xd2\x1c\xc2\xb9cR\x8e^\xdd\x84O6U\xf4\x06\xe1\xda3\xf5\xac\x8d\xfc\xc9\xbfO\x8703\xef(\x96\xc2\x00\x00\x00\x00IEND\xaeB`\x82'
 
     def test_svg_url(self):
-        for cache_enabled in [True, False]:
-            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), cache_enabled=cache_enabled)
-            url2 = qr_url_from_text(TEST_TEXT, size=1, cache_enabled=cache_enabled)
-            url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, cache_enabled=cache_enabled)
-            url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, cache_enabled=cache_enabled)
-            url5 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='SVG', size=1), cache_enabled=cache_enabled)
+        for url_options in product([True, False, None], [True, False, None]):
+            cache_enabled = url_options[0]
+            include_url_protection_token = url_options[1]
+            url_options_kwargs = dict()
+            if cache_enabled is not None:
+                url_options_kwargs['cache_enabled'] = cache_enabled
+            if include_url_protection_token is not None:
+                url_options_kwargs['include_url_protection_token'] = include_url_protection_token
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), **url_options_kwargs)
+            url2 = qr_url_from_text(TEST_TEXT, size=1, **url_options_kwargs)
+            url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, **url_options_kwargs)
+            url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, **url_options_kwargs)
+            url5 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='SVG', size=1), **url_options_kwargs)
             # Using an invalid image format should fallback to SVG.
-            url6 = qr_url_from_text(TEST_TEXT, image_format='invalid-format-name', size=1, cache_enabled=cache_enabled)
+            url6 = qr_url_from_text(TEST_TEXT, image_format='invalid-format-name', size=1, **url_options_kwargs)
             url = url1
-            token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5, url6)))
+            if include_url_protection_token is not False:
+                token_regex = re.compile(r"token=.+&?")
+                urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5, url6)))
+            else:
+                urls = [url1, url2, url3, url4, url5, url6]
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
             self.assertEqual(urls[0], urls[4])
             self.assertEqual(urls[0], urls[5])
             response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.content, TestQRUrlFromTextResult.svg_result)
+            print("\t - cache_enabled=%s, include_url_protection_token=%s" % (cache_enabled, include_url_protection_token))
+            expected_status_code = 200 if include_url_protection_token is not False or not requires_url_protection_token(response.wsgi_request.user) else 403
+            self.assertEqual(response.status_code, expected_status_code)
+            if expected_status_code == 200:
+                self.assertEqual(response.content, TestQRUrlFromTextResult.svg_result)
 
     def test_png_url(self):
-        for cache_enabled in [True, False]:
-            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(image_format='png', size=1), cache_enabled=cache_enabled)
-            url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, cache_enabled=cache_enabled)
-            url3 = qr_url_from_text(TEST_TEXT, image_format='PNG', size=1, cache_enabled=cache_enabled)
-            url4 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='PNG', size=1), cache_enabled=cache_enabled)
+        for url_options in product([True, False, None], [True, False, None]):
+            cache_enabled = url_options[0]
+            include_url_protection_token = url_options[1]
+            url_options_kwargs = dict()
+            if cache_enabled is not None:
+                url_options_kwargs['cache_enabled'] = cache_enabled
+            if include_url_protection_token is not None:
+                url_options_kwargs['include_url_protection_token'] = include_url_protection_token
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(image_format='png', size=1), **url_options_kwargs)
+            url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, **url_options_kwargs)
+            url3 = qr_url_from_text(TEST_TEXT, image_format='PNG', size=1, **url_options_kwargs)
+            url4 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='PNG', size=1), **url_options_kwargs)
             url = url1
-            token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            if include_url_protection_token is not False:
+                token_regex = re.compile(r"token=.+&?")
+                urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+            else:
+                urls = [url1, url2, url3, url4]
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
             response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
+            print("\t - cache_enabled=%s, include_url_protection_token=%s" % (cache_enabled, include_url_protection_token))
+            expected_status_code = 200 if include_url_protection_token is not False or not \
+                                          requires_url_protection_token(response.wsgi_request.user) else 403
+            self.assertEqual(response.status_code, expected_status_code)
+            if expected_status_code == 200:
+                self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
 
     @override_settings(CACHES=OVERRIDE_CACHES_SETTING, QR_CODE_CACHE_ALIAS=None)
     def test_svg_with_cache_but_no_alias(self):
@@ -200,9 +228,14 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     def test_with_url_protection_settings_4(self):
         self.test_svg_url()
         self.test_png_url()
+        # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, even for anonymous user.
+        # Therefore, we must expect an HTTP 200.
+        # We test with different values of include_url_protection_token.
+        response = self.client.get(make_qr_code_url(TEST_TEXT, cache_enabled=False))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=True, cache_enabled=False))
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
-        # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, event for anonymous user.
-        # Therefore, we must expect an HTTP 403.
         self.assertEqual(response.status_code, 200)
 
     def test_svg_error_correction(self):

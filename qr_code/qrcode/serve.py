@@ -40,6 +40,10 @@ def _options_allow_external_request(url_protection_options, user):
     return allows_external_request
 
 
+def requires_url_protection_token(user=None):
+    return not get_url_protection_options(user=user)['ALLOWS_EXTERNAL_REQUESTS']
+
+
 def get_url_protection_options(user=None):
     options = _get_default_url_protection_options()
     settings_options = _get_url_protection_settings()
