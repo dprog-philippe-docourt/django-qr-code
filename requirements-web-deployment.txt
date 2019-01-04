@@ -1,2 +1,2 @@
-gunicorn==19.7.1
-brotlipy==0.7.0
+gunicorn==19.9.0
+brotli==1.0.7
