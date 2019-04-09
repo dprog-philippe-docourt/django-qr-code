@@ -91,7 +91,7 @@ def qr_code_last_modified(request):
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, include_url_protection_token=None):
+def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, url_signature_enabled=None):
     """
     Build an URL to a view that handle serving QR code image from the given parameters. Any invalid argument related
     to the size or the format of the image is silently converted into the default value for that argument.
@@ -99,11 +99,11 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, 
     The parameter *cache_enabled (bool)* allows to skip caching the QR code (when set to *False*) when caching has
     been enabled.
 
-    The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against
+    The parameter *url_signature_enabled (bool)* tells whether the random token for protecting the URL against
     external requests is added to the returned URL. It defaults to *True*.
     """
-    if include_url_protection_token is None:
-        include_url_protection_token = constants.DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
+    if url_signature_enabled is None:
+        url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
     encoded_text = str(base64.urlsafe_b64encode(bytes(force_text(text), encoding='utf-8')), encoding='utf-8')
@@ -112,7 +112,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, 
     params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
     path = reverse('qr_code:serve_qr_code_image')
 
-    if include_url_protection_token:
+    if url_signature_enabled:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace
         # existing plain text query arguments in order to allow usage of the URL as an API (without token since external
         # users cannot generate the signed token!).

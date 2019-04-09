@@ -135,16 +135,16 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         users = [None, AnonymousUser(), User(username='test')]
         for url_options in product([True, False, None], [True, False, None], users):
             cache_enabled = url_options[0]
-            include_url_protection_token = url_options[1]
+            url_signature_enabled = url_options[1]
             user = url_options[2]
-            print("\t - cache_enabled=%s, include_url_protection_token=%s, user=%s" % (cache_enabled, include_url_protection_token, user))
+            print("\t - cache_enabled=%s, url_signature_enabled=%s, user=%s" % (cache_enabled, url_signature_enabled, user))
             url_options_kwargs = dict()
-            url0 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), **dict(**url_options_kwargs, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token))
+            url0 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), **dict(**url_options_kwargs, cache_enabled=cache_enabled, url_signature_enabled=url_signature_enabled))
             if cache_enabled is not None:
                 url_options_kwargs['cache_enabled'] = cache_enabled
-            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1),  **dict(**url_options_kwargs, include_url_protection_token=include_url_protection_token))
-            if include_url_protection_token is not None:
-                url_options_kwargs['include_url_protection_token'] = include_url_protection_token
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1),  **dict(**url_options_kwargs, url_signature_enabled=url_signature_enabled))
+            if url_signature_enabled is not None:
+                url_options_kwargs['url_signature_enabled'] = url_signature_enabled
             url2 = qr_url_from_text(TEST_TEXT, size=1, **url_options_kwargs)
             url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, **url_options_kwargs)
             url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, **url_options_kwargs)
@@ -152,7 +152,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             # Using an invalid image format should fallback to SVG.
             url6 = qr_url_from_text(TEST_TEXT, image_format='invalid-format-name', size=1, **url_options_kwargs)
             url = url1
-            if include_url_protection_token is not False:
+            if url_signature_enabled is not False:
                 urls = get_urls_without_token_for_comparison(url0, url1, url2, url3, url4, url5, url6)
             else:
                 urls = [url0, url1, url2, url3, url4, url5, url6]
@@ -163,7 +163,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(urls[0], urls[5])
             response = self.client.get(url)
             expected_status_code = 200
-            if include_url_protection_token is False and not allows_external_request_from_user(user):
+            if url_signature_enabled is False and not allows_external_request_from_user(user):
                 expected_status_code = 403
             self.assertEqual(response.status_code, expected_status_code)
             if expected_status_code == 200:
@@ -172,18 +172,18 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     def test_png_url(self):
         for url_options in product([True, False, None], [True, False, None]):
             cache_enabled = url_options[0]
-            include_url_protection_token = url_options[1]
+            url_signature_enabled = url_options[1]
             url_options_kwargs = dict()
             if cache_enabled is not None:
                 url_options_kwargs['cache_enabled'] = cache_enabled
-            if include_url_protection_token is not None:
-                url_options_kwargs['include_url_protection_token'] = include_url_protection_token
+            if url_signature_enabled is not None:
+                url_options_kwargs['url_signature_enabled'] = url_signature_enabled
             url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(image_format='png', size=1), **url_options_kwargs)
             url2 = qr_url_from_text(TEST_TEXT, image_format='png', size=1, **url_options_kwargs)
             url3 = qr_url_from_text(TEST_TEXT, image_format='PNG', size=1, **url_options_kwargs)
             url4 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='PNG', size=1), **url_options_kwargs)
             url = url1
-            if include_url_protection_token is not False:
+            if url_signature_enabled is not False:
                 urls = get_urls_without_token_for_comparison(url1, url2, url3, url4)
             else:
                 urls = [url1, url2, url3, url4]
@@ -191,9 +191,9 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
             response = self.client.get(url)
-            print("\t - cache_enabled=%s, include_url_protection_token=%s" % (cache_enabled, include_url_protection_token))
+            print("\t - cache_enabled=%s, url_signature_enabled=%s" % (cache_enabled, url_signature_enabled))
             expected_status_code = 200
-            if include_url_protection_token is False and not allows_external_request_from_user(None):
+            if url_signature_enabled is False and not allows_external_request_from_user(None):
                 expected_status_code = 403
             self.assertEqual(response.status_code, expected_status_code)
             if expected_status_code == 200:
@@ -217,7 +217,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     def test_with_url_protection_settings_1(self):
         self.test_svg_url()
         self.test_png_url()
-        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         # Registered users can access the URL externally, but since we are not logged in, we must expect an HTTP 403.
         self.assertEqual(response.status_code, 403)
 
@@ -225,14 +225,14 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     def test_with_url_protection_settings_2(self):
         self.test_svg_url()
         self.test_png_url()
-        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: False))
     def test_with_url_protection_settings_3(self):
         self.test_svg_url()
         self.test_png_url()
-        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: True))
@@ -241,12 +241,12 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.test_png_url()
         # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, even for anonymous user.
         # Therefore, we must expect an HTTP 200.
-        # We test with different values of include_url_protection_token.
+        # We test with different values of url_signature_enabled.
         response = self.client.get(make_qr_code_url(TEST_TEXT, cache_enabled=False))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=True, cache_enabled=False))
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=True, cache_enabled=False))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(make_qr_code_url(TEST_TEXT, include_url_protection_token=False, cache_enabled=False))
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 200)
 
     def test_svg_error_correction(self):

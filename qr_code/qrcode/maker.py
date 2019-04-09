@@ -10,7 +10,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode.constants import SIZE_DICT, ERROR_CORRECTION_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_MODULE_SIZE, \
-    DEFAULT_CACHE_ENABLED, DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
+    DEFAULT_CACHE_ENABLED, DEFAULT_URL_SIGNATURE_ENABLED
 from qr_code.qrcode.image import SvgPathImage, PilImageOrFallback, SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
@@ -108,13 +108,13 @@ def make_qr_code_url_with_args(text, qr_code_args):
     cache_enabled = DEFAULT_CACHE_ENABLED
     if 'cache_enabled' in qr_code_args:
         cache_enabled = qr_code_args.pop('cache_enabled')
-    include_url_protection_token = DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
-    if 'include_url_protection_token' in qr_code_args:
-        include_url_protection_token = qr_code_args.pop('include_url_protection_token')
+    url_signature_enabled = DEFAULT_URL_SIGNATURE_ENABLED
+    if 'url_signature_enabled' in qr_code_args:
+        url_signature_enabled = qr_code_args.pop('url_signature_enabled')
     options = qr_code_args.get('options')
     if options:
         if not isinstance(options, QRCodeOptions):
             raise TypeError('The options argument must be of type QRCodeOptions.')
     else:
         options = QRCodeOptions(**qr_code_args)
-    return make_qr_code_url(text, options, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token)
+    return make_qr_code_url(text, options, cache_enabled=cache_enabled, url_signature_enabled=url_signature_enabled)

@@ -31,7 +31,7 @@ def cache_qr_code():
                 # We found a cache alias for storing the generate qr code and cache is enabled, use it to cache the
                 # page.
                 timeout = settings.CACHES[settings.QR_CODE_CACHE_ALIAS]['TIMEOUT']
-                key_prefix = 'token=%s.user_pk=%s' % (request.GET.get('include_url_protection_token') or constants.DEFAULT_INCLUDE_URL_PROTECTION_TOKEN, request.user.pk)
+                key_prefix = 'token=%s.user_pk=%s' % (request.GET.get('url_signature_enabled') or constants.DEFAULT_URL_SIGNATURE_ENABLED, request.user.pk)
                 response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS, key_prefix=key_prefix)(view_func)(request, *view_args, **view_kwargs)
             else:
                 # No cache alias for storing the generated qr code, call the view as is.

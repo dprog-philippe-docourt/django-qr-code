@@ -162,7 +162,7 @@ Here is a "hello world" QR code in version 20 with an error correction level Q (
 
 The default settings protect the URLs that serve images against external requests, and thus against possibly easy DOS attacks.
 However, if you are interested in providing those images as a service, there is a setting named `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to open access to some controlled users.
-This setting tells who can bypass the random token protection. It can be a boolean value used for any authenticated user, or a callable that takes a user as only parameter.
+This setting tells who can bypass the url signature token. It can be a boolean value used for any authenticated user, or a callable that takes a user as only parameter.
 Note that setting this option to `True` will only accept authenticated users. However, setting this option to a callable that always return `True` (even for anonymous users) will allow anyone to access those URLs from outside your Django app.
 
 Here are the available settings to manage the protection for served images:
@@ -172,9 +172,15 @@ QR_CODE_URL_PROTECTION = {
     constants.TOKEN_LENGTH: 30,                         # Optional random token length for URL protection. Defaults to 20.
     constants.SIGNING_KEY: 'my-secret-signing-key',     # Optional signing key for URL token. Uses SECRET_KEY if not defined.
     constants.SIGNING_SALT: 'my-signing-salt',          # Optional signing salt for URL token.
-    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the signature token).
 }
 ```
+
+Here is a "hello world" QR code that uses an URL to serve the image in SVG format, and disable against external requests:
+```djangotemplate
+<img src="{% qr_url_from_text "Hello World!" url_signature_enabled=False %}" alt="Hello World!">
+```
+The `token` argument will be removed from the query string, making possible to build a simpler, predictable URL. See the setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` for enabling certain users to access those unprotected link.
 
 ### QR Codes for Apps
 Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc.  See [this documentation](https://github.com/zxing/zxing/wiki/Barcode-Contents) about what a QR code can encode.
