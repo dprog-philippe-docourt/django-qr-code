@@ -6,6 +6,7 @@ import os
 from datetime import date
 from itertools import product
 
+from django.contrib.auth.models import AnonymousUser, User
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
@@ -15,7 +16,7 @@ from qr_code.qrcode.image import SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION
-from qr_code.qrcode.serve import make_qr_code_url, get_url_protection_options, requires_url_protection_token
+from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
@@ -46,6 +47,13 @@ OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.lo
                                        'LOCATION': 'qr-code-cache', 'TIMEOUT': 3600}}
 SVG_REF_SUFFIX = '.ref.svg'
 PNG_REF_SUFFIX = '.ref.png'
+
+
+def get_urls_without_token_for_comparison(*urls):
+    token_regex = re.compile(r"&?token=[^&]+")
+    simplified_urls = list(map(lambda x: token_regex.sub('', x), urls))
+    simplified_urls = list(map(lambda x: x.replace('?&', '?'), simplified_urls))
+    return simplified_urls
 
 
 def get_resources_path():
@@ -114,7 +122,6 @@ class TestCoordinates(SimpleTestCase):
         self.assertEqual(c2.__str__(), 'latitude: 586000.32, longitude: 250954.19, altitude: 500')
 
 
-@override_settings()
 class TestQRUrlFromTextResult(SimpleTestCase):
     """
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
@@ -125,15 +132,19 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     png_result = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x1d\x00\x00\x00\x1d\x01\x00\x00\x00\x00~\xe8Z\xa2\x00\x00\x00\x83IDATx\x9cm\xcd1\x0e\x01Q\x10\x80\xe1\x7f\xc6&:j\x07\x90,\x9db\x0f q\x0e\x8e \x91H\x88\x08\xb7\xa0\xd3ju.\xa0\xd7\x8aj[\x95e\x937\x13\xd6Sj4_\xfbI\x04W\x80\x1fI\x91\xee\x8fZ?\xed\xd0j>A\x11P\xaa5Z[6P\x1f\xe4\x10\xef+\xa3l\xf5\x8d\xf7Xf<\x86[#\xf8\xc1\xc47\xcd\x0b\xf1\xb90-\xd2\x1c\xc2\xb9cR\x8e^\xdd\x84O6U\xf4\x06\xe1\xda3\xf5\xac\x8d\xfc\xc9\xbfO\x8703\xef(\x96\xc2\x00\x00\x00\x00IEND\xaeB`\x82'
 
     def test_svg_url(self):
-        for url_options in product([True, False, None], [True, False, None]):
+        users = [None, AnonymousUser(), User(username='test')]
+        for url_options in product([True, False, None], [True, False, None], users):
             cache_enabled = url_options[0]
             include_url_protection_token = url_options[1]
+            user = url_options[2]
+            print("\t - cache_enabled=%s, include_url_protection_token=%s, user=%s" % (cache_enabled, include_url_protection_token, user))
             url_options_kwargs = dict()
+            url0 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), **dict(**url_options_kwargs, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token))
             if cache_enabled is not None:
                 url_options_kwargs['cache_enabled'] = cache_enabled
+            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1),  **dict(**url_options_kwargs, include_url_protection_token=include_url_protection_token))
             if include_url_protection_token is not None:
                 url_options_kwargs['include_url_protection_token'] = include_url_protection_token
-            url1 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=1), **url_options_kwargs)
             url2 = qr_url_from_text(TEST_TEXT, size=1, **url_options_kwargs)
             url3 = qr_url_from_text(TEST_TEXT, image_format='svg', size=1, **url_options_kwargs)
             url4 = qr_url_from_text(TEST_TEXT, image_format='SVG', size=1, **url_options_kwargs)
@@ -142,18 +153,18 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url6 = qr_url_from_text(TEST_TEXT, image_format='invalid-format-name', size=1, **url_options_kwargs)
             url = url1
             if include_url_protection_token is not False:
-                token_regex = re.compile(r"token=.+&?")
-                urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5, url6)))
+                urls = get_urls_without_token_for_comparison(url0, url1, url2, url3, url4, url5, url6)
             else:
-                urls = [url1, url2, url3, url4, url5, url6]
+                urls = [url0, url1, url2, url3, url4, url5, url6]
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
             self.assertEqual(urls[0], urls[4])
             self.assertEqual(urls[0], urls[5])
             response = self.client.get(url)
-            print("\t - cache_enabled=%s, include_url_protection_token=%s" % (cache_enabled, include_url_protection_token))
-            expected_status_code = 200 if include_url_protection_token is not False or not requires_url_protection_token(response.wsgi_request.user) else 403
+            expected_status_code = 200
+            if include_url_protection_token is False and not allows_external_request_from_user(user):
+                expected_status_code = 403
             self.assertEqual(response.status_code, expected_status_code)
             if expected_status_code == 200:
                 self.assertEqual(response.content, TestQRUrlFromTextResult.svg_result)
@@ -173,8 +184,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url4 = qr_url_from_text(TEST_TEXT, options=QRCodeOptions(image_format='PNG', size=1), **url_options_kwargs)
             url = url1
             if include_url_protection_token is not False:
-                token_regex = re.compile(r"token=.+&?")
-                urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4)))
+                urls = get_urls_without_token_for_comparison(url1, url2, url3, url4)
             else:
                 urls = [url1, url2, url3, url4]
             self.assertEqual(urls[0], urls[1])
@@ -182,8 +192,9 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(urls[0], urls[3])
             response = self.client.get(url)
             print("\t - cache_enabled=%s, include_url_protection_token=%s" % (cache_enabled, include_url_protection_token))
-            expected_status_code = 200 if include_url_protection_token is not False or not \
-                                          requires_url_protection_token(response.wsgi_request.user) else 403
+            expected_status_code = 200
+            if include_url_protection_token is False and not allows_external_request_from_user(None):
+                expected_status_code = 403
             self.assertEqual(response.status_code, expected_status_code)
             if expected_status_code == 200:
                 self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
@@ -249,8 +260,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             # Using an invalid image format should fallback to SVG.
             url6 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='invalid-format-name', cache_enabled=False)
             url = url1
-            token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5, url6)))
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
@@ -274,8 +284,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             url4 = qr_url_from_text(COMPLEX_TEST_TEXT, error_correction=correction_level, image_format='PNG', cache_enabled=False)
             url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(error_correction=correction_level, image_format='PNG'), cache_enabled=False)
             url = url1
-            token_regex = re.compile(r"token=.+&?")
-            urls = list(map(lambda x: token_regex.sub('', x), (url1, url2, url3, url4, url5)))
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
             self.assertEqual(urls[0], urls[1])
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])

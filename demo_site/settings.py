@@ -15,6 +15,8 @@ from distutils.version import StrictVersion
 import django
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from qr_code.qrcode import constants
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -141,8 +143,8 @@ CACHES = {
 # Django QR Code specific options.
 QR_CODE_CACHE_ALIAS = 'qr-code'
 QR_CODE_URL_PROTECTION = {
-    'TOKEN_LENGTH': 30,  # Optional random token length for URL protection. Defaults to 20.
-    'SIGNING_KEY': 'my-secret-signing-key',  # Optional signing key for URL token. Uses SECRET_KEY if not defined.
-    'SIGNING_SALT': 'my-signing-salt',  # Optional signing salt for URL token.
-    'ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER': False   # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+    constants.TOKEN_LENGTH: 30,  # Optional random token length for URL protection. Defaults to 20.
+    constants.SIGNING_KEY: 'my-secret-signing-key',  # Optional signing key for URL token. Uses SECRET_KEY if not defined.
+    constants.SIGNING_SALT: 'my-signing-salt',  # Optional signing salt for URL token.
+    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False   # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }

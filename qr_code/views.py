@@ -1,8 +1,9 @@
 import base64
+import binascii
 from io import BytesIO
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
 from django.utils.decorators import available_attrs
@@ -10,6 +11,7 @@ from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
+from qr_code.qrcode import constants
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import get_url_protection_options, get_qr_url_protection_token, qr_code_etag, \
@@ -29,7 +31,8 @@ def cache_qr_code():
                 # We found a cache alias for storing the generate qr code and cache is enabled, use it to cache the
                 # page.
                 timeout = settings.CACHES[settings.QR_CODE_CACHE_ALIAS]['TIMEOUT']
-                response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS)(view_func)(request, *view_args, **view_kwargs)
+                key_prefix = 'token=%s.user_pk=%s' % (request.GET.get('include_url_protection_token') or constants.DEFAULT_INCLUDE_URL_PROTECTION_TOKEN, request.user.pk)
+                response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS, key_prefix=key_prefix)(view_func)(request, *view_args, **view_kwargs)
             else:
                 # No cache alias for storing the generated qr code, call the view as is.
                 response = (view_func)(request, *view_args, **view_kwargs)
@@ -47,7 +50,10 @@ def serve_qr_code_image(request):
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
 
-    text = base64.urlsafe_b64decode(request.GET.get('text', ''))
+    try:
+        text = base64.urlsafe_b64decode(request.GET.get('text', ''))
+    except binascii.Error:
+        raise SuspiciousOperation("Invalid base64 encoded string.")
     img = make_qr_code_image(text, image_factory=SvgPathImage if qr_code_options.image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
 
     # Warning: The largest QR codes, in version 40, with a border of 4 modules, and rendered in SVG format, are ~800
@@ -82,9 +88,9 @@ def get_qr_code_option_from_request(request):
 def check_image_access_permission(request, qr_code_options):
     """Handle image access protection (we do not allow external requests for anyone)."""
     url_protection_options = get_url_protection_options(request.user)
-    if not url_protection_options['ALLOWS_EXTERNAL_REQUESTS']:
-        token = request.GET.get('token', '')
-        signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
+    token = request.GET.get('token', '')
+    if token:
+        signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
         try:
             # Check signature.
             url_protection_string = signer.unsign(token)
@@ -94,3 +100,6 @@ def check_image_access_permission(request, qr_code_options):
                 raise PermissionDenied("Request query does not match protection token.")
         except BadSignature:
             raise PermissionDenied("Wrong token signature.")
+    else:
+        if not url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS]:
+            raise PermissionDenied("You are not allowed to access this QR code.")

@@ -94,20 +94,27 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     return mark_safe(html_fragment)
 
 
-def make_qr_code(text, qr_code_args, embedded):
-    cache_enabled = DEFAULT_CACHE_ENABLED
-    include_url_protection_token = DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
-    if 'cache_enabled' in qr_code_args:
-        cache_enabled = bool(qr_code_args.pop('cache_enabled'))
-    if 'include_url_protection_token' in qr_code_args:
-        include_url_protection_token = bool(qr_code_args.pop('include_url_protection_token'))
+def make_qr_code_with_args(text, qr_code_args):
     options = qr_code_args.get('options')
     if options:
         if not isinstance(options, QRCodeOptions):
             raise TypeError('The options argument must be of type QRCodeOptions.')
     else:
         options = QRCodeOptions(**qr_code_args)
-    if embedded:
-        return make_embedded_qr_code(text, options)
+    return make_embedded_qr_code(text, options)
+
+
+def make_qr_code_url_with_args(text, qr_code_args):
+    cache_enabled = DEFAULT_CACHE_ENABLED
+    if 'cache_enabled' in qr_code_args:
+        cache_enabled = qr_code_args.pop('cache_enabled')
+    include_url_protection_token = DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
+    if 'include_url_protection_token' in qr_code_args:
+        include_url_protection_token = qr_code_args.pop('include_url_protection_token')
+    options = qr_code_args.get('options')
+    if options:
+        if not isinstance(options, QRCodeOptions):
+            raise TypeError('The options argument must be of type QRCodeOptions.')
     else:
-        return make_qr_code_url(text, options, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token)
+        options = QRCodeOptions(**qr_code_args)
+    return make_qr_code_url(text, options, cache_enabled=cache_enabled, include_url_protection_token=include_url_protection_token)

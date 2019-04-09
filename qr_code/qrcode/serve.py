@@ -3,24 +3,24 @@ import urllib.parse
 from collections import Mapping
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.signing import Signer
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.constants import QR_CODE_GENERATION_VERSION_DATE, DEFAULT_CACHE_ENABLED, \
-    ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER
+from qr_code.qrcode import constants
 from qr_code.qrcode.utils import QRCodeOptions
 
 
 def _get_default_url_protection_options():
     return {
-        'TOKEN_LENGTH': 20,
-        'SIGNING_KEY': settings.SECRET_KEY,
-        'SIGNING_SALT': 'qr_code_url_protection_salt',
-        ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False,
-        'ALLOWS_EXTERNAL_REQUESTS': False
+        constants.TOKEN_LENGTH: 20,
+        constants.SIGNING_KEY: settings.SECRET_KEY,
+        constants.SIGNING_SALT: 'qr_code_url_protection_salt',
+        constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False,
+        constants.ALLOWS_EXTERNAL_REQUESTS: False
     }
 
 
@@ -31,17 +31,21 @@ def _get_url_protection_settings():
 
 def _options_allow_external_request(url_protection_options, user):
     # Evaluate the callable if required.
-    if callable(url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
-        allows_external_request = user and url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user)
-    elif url_protection_options[ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER] is True and user:
-        allows_external_request = user.is_authenticated
+    if callable(url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
+        allows_external_request = url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user or AnonymousUser())
+    elif url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER] is True:
+        allows_external_request = user and user.pk and user.is_authenticated
     else:
         allows_external_request = False
     return allows_external_request
 
 
 def requires_url_protection_token(user=None):
-    return not get_url_protection_options(user=user)['ALLOWS_EXTERNAL_REQUESTS']
+    return not get_url_protection_options(user=user)[constants.ALLOWS_EXTERNAL_REQUESTS]
+
+
+def allows_external_request_from_user(user=None):
+    return get_url_protection_options(user=user)[constants.ALLOWS_EXTERNAL_REQUESTS]
 
 
 def get_url_protection_options(user=None):
@@ -49,13 +53,13 @@ def get_url_protection_options(user=None):
     settings_options = _get_url_protection_settings()
     if settings_options is not None:
         options.update(settings.QR_CODE_URL_PROTECTION)
-        options['ALLOWS_EXTERNAL_REQUESTS'] = _options_allow_external_request(options, user)
+        options[constants.ALLOWS_EXTERNAL_REQUESTS] = _options_allow_external_request(options, user)
     return options
 
 
 def _make_random_token():
     url_protection_options = get_url_protection_options()
-    return get_random_string(url_protection_options['TOKEN_LENGTH'])
+    return get_random_string(url_protection_options[constants.TOKEN_LENGTH])
 
 
 _RANDOM_TOKEN = _make_random_token()
@@ -64,7 +68,7 @@ _RANDOM_TOKEN = _make_random_token()
 def get_qr_url_protection_signed_token(qr_code_options):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
-    signer = Signer(key=url_protection_options['SIGNING_KEY'], salt=url_protection_options['SIGNING_SALT'])
+    signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
     token = signer.sign(get_qr_url_protection_token(qr_code_options, _RANDOM_TOKEN))
     return token
 
@@ -80,14 +84,14 @@ def get_qr_url_protection_token(qr_code_options, random_token):
 
 
 def qr_code_etag(request):
-    return '"%s:%s:version_%s"' % (request.path, request.GET.urlencode(), QR_CODE_GENERATION_VERSION_DATE.isoformat())
+    return '"%s:%s:version_%s"' % (request.path, request.GET.urlencode(), constants.QR_CODE_GENERATION_VERSION_DATE.isoformat())
 
 
 def qr_code_last_modified(request):
-    return QR_CODE_GENERATION_VERSION_DATE
+    return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAULT_CACHE_ENABLED, include_url_protection_token=True):
+def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, include_url_protection_token=None):
     """
     Build an URL to a view that handle serving QR code image from the given parameters. Any invalid argument related
     to the size or the format of the image is silently converted into the default value for that argument.
@@ -98,6 +102,10 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=DEFAUL
     The parameter *include_url_protection_token (bool)* tells whether the random token for protecting the URL against
     external requests is added to the returned URL. It defaults to *True*.
     """
+    if include_url_protection_token is None:
+        include_url_protection_token = constants.DEFAULT_INCLUDE_URL_PROTECTION_TOKEN
+    if cache_enabled is None:
+        cache_enabled = constants.DEFAULT_CACHE_ENABLED
     encoded_text = str(base64.urlsafe_b64encode(bytes(force_text(text), encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
