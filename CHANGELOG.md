@@ -4,7 +4,8 @@
 * Ensure compatibility with Django 2.1.
 * Drop support for Python 3.4.
 * Fixed error when generating qr code from lazy text (#1)
-* Add support for customizing usage of URL signature token via template tags.
+* Add support for customizing usage of URL signature token via template tags (allows to generate URLs for serving QR code images that do not include a signature token).
+* The caching of QR codes images could allow to bypass checking the user when external access is active.
 
 ## 1.0.0 (2018-03-23)
 * BREAKING CHANGES:
