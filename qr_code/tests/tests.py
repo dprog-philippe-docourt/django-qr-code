@@ -134,8 +134,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
     protection against external requests).
     """
-    svg_result_file_name = 'qrfromtextsvgresult_default' + SVG_REF_SUFFIX
-    png_result_file_name = 'qrfromtextpnggresult_default' + PNG_REF_SUFFIX
+    ref_base_file_name = 'qrfromtext_default'
     svg_result = None
     png_result = None
 
@@ -143,9 +142,9 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     def setUpClass(cls):
         super().setUpClass()
         TestQRUrlFromTextResult.svg_result = get_svg_content_from_file_name(
-            TestQRUrlFromTextResult.svg_result_file_name)
+            TestQRUrlFromTextResult.ref_base_file_name + SVG_REF_SUFFIX)
         TestQRUrlFromTextResult.png_result = get_png_content_from_file_name(
-            TestQRUrlFromTextResult.png_result_file_name)
+            TestQRUrlFromTextResult.ref_base_file_name + PNG_REF_SUFFIX)
 
     def test_svg_url(self):
         is_first = True
@@ -187,7 +186,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             if expected_status_code == 200:
                 self.assertEqual(image_data, TestQRUrlFromTextResult.svg_result)
             if is_first and REFRESH_REFERENCE_IMAGES:
-                write_svg_content_to_file(TestQRUrlFromTextResult.svg_result_file_name,
+                write_svg_content_to_file(TestQRUrlFromTextResult.ref_base_file_name + SVG_REF_SUFFIX,
                                           image_data)
                 is_first = False
 
@@ -222,8 +221,8 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             if expected_status_code == 200:
                 self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
             if is_first and REFRESH_REFERENCE_IMAGES:
-                write_png_content_to_file(TestQRUrlFromTextResult.png_result_file_name,
-                                      response.content)
+                write_png_content_to_file(TestQRUrlFromTextResult.ref_base_file_name + PNG_REF_SUFFIX,
+                                          response.content)
                 is_first = False
 
     @override_settings(CACHES=OVERRIDE_CACHES_SETTING, QR_CODE_CACHE_ALIAS=None)
@@ -277,6 +276,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_svg_error_correction(self):
+        base_file_name = 'qrfromtext_error_correction'
         for correction_level in ERROR_CORRECTION_DICT:
             print('Testing SVG URL with error correction: %s' % correction_level)
             url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(error_correction=correction_level), cache_enabled=False)
@@ -299,13 +299,14 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             # Skip header and adjust tag format.
             source_image_data = source_image_data[source_image_data.index('\n') + 1:]
             source_image_data = _make_closing_path_tag(source_image_data)
-            ref_file_name = 'qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX)
+            ref_file_name = '%s_%s%s' % (base_file_name, correction_level.lower(), SVG_REF_SUFFIX)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_png_error_correction(self):
+        base_file_name = 'qrfromtext_error_correction'
         for correction_level in ERROR_CORRECTION_DICT:
             print('Testing PNG URL with error correction: %s' % correction_level)
             url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(error_correction=correction_level, image_format='png'), cache_enabled=False)
@@ -322,7 +323,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = 'qrfromtextpngresult_error_correction_%s%s' % (correction_level.lower(), PNG_REF_SUFFIX)
+            ref_file_name = '%s_%s%s' % (base_file_name, correction_level.lower(), PNG_REF_SUFFIX)
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -335,9 +336,9 @@ class TestQRFromTextSvgResult(SimpleTestCase):
 
     The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
     """
-    base_ref_file_name = 'qrfromtext_size_'
 
     def test_size(self):
+        base_ref_file_name = 'qrfromtext_size_'
         sizes = ['t', 'T', 's', 'S', None, -1, 0, 'm', 'M', 'l', 'L', 'h', 'H', '6', 6, '8', 8, '10', 10]
         size_names = ['tiny'] * 2 + ['small'] * 2 + ['medium'] * 5 + ['large'] * 2 + ['huge'] * 2 + ['6'] * 2 + ['8'] * 2 + ['10'] * 2
         for i in range(len(sizes)):
@@ -349,7 +350,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr3 = qr_from_text(TEST_TEXT, size=size, image_format='svg')
             qr4 = qr_from_text(TEST_TEXT, options=QRCodeOptions(size=size, image_format='svg'))
             qr5 = qr_from_text(TEST_TEXT, size=size, image_format='invalid-format-name')
-            result_file_name = '%s%s%s' % (TestQRFromTextSvgResult.base_ref_file_name, size_name, SVG_REF_SUFFIX)
+            result_file_name = '%s%s%s' % (base_ref_file_name, size_name, SVG_REF_SUFFIX)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(result_file_name, _make_xml_header() + '\n' + qr1)
             result = get_svg_content_from_file_name(result_file_name, skip_header=True)
@@ -388,7 +389,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             self.assertEqual(qr1, result)
 
     def test_error_correction(self):
-        file_base_name = 'qrfromtextsvgresult_error_correction'
+        file_base_name = 'qrfromtext_error_correction'
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s%s' % (file_base_name, correction_level, SVG_REF_SUFFIX)
@@ -412,9 +413,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
 
     The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
     """
-    base_ref_file_name = 'qrfromtext_size_'
-
     def test_size(self):
+        base_ref_file_name = 'qrfromtext_size_'
         sizes = ['t', 'T', 's', 'S', None, -1, 0, 'm', 'M', 'l', 'L', 'h', 'H', '6', 6, '8', 8, '10', 10]
         size_names = ['tiny'] * 2 + ['small'] * 2 + ['medium'] * 5 + ['large'] * 2 + ['huge'] * 2 + ['6'] * 2 + [
             '8'] * 2 + ['10'] * 2
@@ -422,7 +422,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             size = sizes[i]
             print('Testing PNG with size %s' % size)
             size_name = size_names[i]
-            result_file_name = '%s%s%s' % (TestQRFromTextPngResult.base_ref_file_name, size_name, PNG_REF_SUFFIX)
+            result_file_name = '%s%s%s' % (base_ref_file_name, size_name, PNG_REF_SUFFIX)
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size, image_format='png'))
             qr2 = qr_from_text(TEST_TEXT, size=size, image_format='png')
             qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(size=size, image_format='png'))
@@ -460,7 +460,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
 
     def test_error_correction(self):
-        file_base_name = 'qrfromtextpngresult_error_correction'
+        file_base_name = 'qrfromtext_error_correction'
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s%s' % (file_base_name, correction_level, PNG_REF_SUFFIX)
