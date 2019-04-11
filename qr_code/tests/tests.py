@@ -134,17 +134,15 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     Ensures that serving images representing QR codes works as expected (with or without caching, and with or without
     protection against external requests).
     """
-    ref_base_file_name = 'qrfromtext_default'
-    svg_result = None
-    png_result = None
+    default_ref_base_file_name = 'qrfromtext_default'
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        TestQRUrlFromTextResult.svg_result = get_svg_content_from_file_name(
-            TestQRUrlFromTextResult.ref_base_file_name + SVG_REF_SUFFIX)
-        TestQRUrlFromTextResult.png_result = get_png_content_from_file_name(
-            TestQRUrlFromTextResult.ref_base_file_name + PNG_REF_SUFFIX)
+    @staticmethod
+    def _get_reference_result_for_default_svg():
+        return get_svg_content_from_file_name(TestQRUrlFromTextResult.default_ref_base_file_name + SVG_REF_SUFFIX)
+
+    @staticmethod
+    def _get_reference_result_for_default_png():
+        return get_png_content_from_file_name(TestQRUrlFromTextResult.default_ref_base_file_name + PNG_REF_SUFFIX)
 
     def test_svg_url(self):
         is_first = True
@@ -184,11 +182,11 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(response.status_code, expected_status_code)
             image_data = response.content.decode('utf-8')
             if expected_status_code == 200:
-                self.assertEqual(image_data, TestQRUrlFromTextResult.svg_result)
-            if is_first and REFRESH_REFERENCE_IMAGES:
-                write_svg_content_to_file(TestQRUrlFromTextResult.ref_base_file_name + SVG_REF_SUFFIX,
-                                          image_data)
-                is_first = False
+                if is_first and REFRESH_REFERENCE_IMAGES:
+                    write_svg_content_to_file(TestQRUrlFromTextResult.default_ref_base_file_name + SVG_REF_SUFFIX,
+                                              image_data)
+                    is_first = False
+                self.assertEqual(image_data, TestQRUrlFromTextResult._get_reference_result_for_default_svg())
 
     def test_png_url(self):
         is_first = True
@@ -219,11 +217,11 @@ class TestQRUrlFromTextResult(SimpleTestCase):
                 expected_status_code = 403
             self.assertEqual(response.status_code, expected_status_code)
             if expected_status_code == 200:
-                self.assertEqual(response.content, TestQRUrlFromTextResult.png_result)
-            if is_first and REFRESH_REFERENCE_IMAGES:
-                write_png_content_to_file(TestQRUrlFromTextResult.ref_base_file_name + PNG_REF_SUFFIX,
-                                          response.content)
-                is_first = False
+                if is_first and REFRESH_REFERENCE_IMAGES:
+                    write_png_content_to_file(TestQRUrlFromTextResult.default_ref_base_file_name + PNG_REF_SUFFIX,
+                                              response.content)
+                    is_first = False
+                self.assertEqual(response.content, TestQRUrlFromTextResult._get_reference_result_for_default_png())
 
     @override_settings(CACHES=OVERRIDE_CACHES_SETTING, QR_CODE_CACHE_ALIAS=None)
     def test_svg_with_cache_but_no_alias(self):
