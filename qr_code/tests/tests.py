@@ -20,6 +20,8 @@ from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
+# Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
+REFRESH_REFERENCE_IMAGES = False
 
 BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64, %salt="Hello World!">'
 TEST_TEXT = 'Hello World!'
@@ -272,7 +274,10 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             # Skip header and adjust tag format.
             source_image_data = source_image_data[source_image_data.index('\n') + 1:]
             source_image_data = _make_closing_path_tag(source_image_data)
-            ref_image_data = get_svg_content_from_file_name('qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX), skip_header=False)
+            ref_file_name = 'qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX)
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name, skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_png_error_correction(self):
@@ -292,7 +297,10 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_image_data = get_png_content_from_file_name('qrfromtextpngresult_error_correction_%s%s' % (correction_level.lower(), PNG_REF_SUFFIX))
+            ref_file_name = 'qrfromtextpngresult_error_correction_%s%s' % (correction_level.lower(), PNG_REF_SUFFIX)
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_png_content_from_file_name(ref_file_name)
             self.assertEqual(source_image_data, ref_image_data)
 
 
@@ -373,8 +381,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             template = Template(html_source)
             context = Context()
             source_image_data = template.render(context).strip()
-            # Debug code for updating reference file.
-            # write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
@@ -452,8 +460,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
             source_image = template.render(context).strip()
             source_image_data = source_image[33:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
             source_image_data = base64.b64decode(source_image_data)
-            # Debug code for updating reference file.
-            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
 
@@ -534,7 +542,9 @@ class TestQRForApplications(SimpleTestCase):
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
             source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
-            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_samples_embedded_in_png_format(self):
@@ -546,8 +556,9 @@ class TestQRForApplications(SimpleTestCase):
             match = image_data_re.search(source_image_data)
             source_image_data = match.group('data')
             source_image_data = base64.b64decode(source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
-            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_svg_format(self):
@@ -555,6 +566,8 @@ class TestQRForApplications(SimpleTestCase):
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content.decode('utf-8')
             source_image_data = _make_closing_path_tag(source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
             self.assertEqual(source_image_data, ref_image_data)
 
@@ -562,8 +575,9 @@ class TestQRForApplications(SimpleTestCase):
         tests_data = self._make_tests_data(embedded=False, image_format=PNG_FORMAT_NAME)
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
-            # write_png_content_to_file(test_data['ref_file_name'], source_image_data)
             self.assertEqual(source_image_data, ref_image_data)
 
     def _check_url_for_test_data(self, test_data):
@@ -604,11 +618,11 @@ def get_png_content_from_file_name(file_name):
 
 
 # Uncomment in order to renew some of the reference files.
-# def write_png_content_to_file(file_name, image_content):
-#     with open(os.path.join(get_resources_path(), file_name), 'wb') as file:
-#         file.write(image_content)
-#
-#
-# def write_svg_content_to_file(file_name, image_content):
-#     with open(os.path.join(get_resources_path(), file_name), 'wt', encoding='utf-8') as file:
-#         file.write(image_content)
+def write_png_content_to_file(file_name, image_content):
+    with open(os.path.join(get_resources_path(), file_name), 'wb') as file:
+        file.write(image_content)
+
+
+def write_svg_content_to_file(file_name, image_content):
+    with open(os.path.join(get_resources_path(), file_name), 'wt', encoding='utf-8') as file:
+        file.write(image_content)
