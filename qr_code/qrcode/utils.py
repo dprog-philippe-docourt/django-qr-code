@@ -58,16 +58,19 @@ class QRCodeOptions(object):
         :raises: ValueError in case an unknown argument is given.
         """
         self._qr_code_options = dict(QRCodeOptions._DEFAULT_QR_CODE_OPTIONS)
-        for key, value in kwargs.items():
-            if key in self._qr_code_options:
-                self._qr_code_options[key] = value
-            else:
-                raise ValueError(_("The option '%s' is not a valid option for a QR code.") % key)
+        self.setup_options_from_kwargs(kwargs)
         # Ensures that the image format is supported, or fallback to supported format.
         if 'image_format' in kwargs:
             self._qr_code_options['image_format'] = get_supported_image_format(self._qr_code_options['image_format'])
         if 'version' in kwargs and (kwargs['version'] == '' or kwargs['version'] == 'None'):
             self._qr_code_options['version'] = None
+
+    def setup_options_from_kwargs(self, kwargs):
+        for key, value in kwargs.items():
+            if key in self._qr_code_options:
+                self._qr_code_options[key] = value
+            else:
+                raise ValueError(_("The option '%s' is not a valid option for a QR code.") % key)
 
     @property
     def size(self):
