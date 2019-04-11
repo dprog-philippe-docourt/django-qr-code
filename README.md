@@ -176,11 +176,11 @@ QR_CODE_URL_PROTECTION = {
 }
 ```
 
-Here is a "hello world" QR code that uses an URL to serve the image in SVG format, and disable against external requests:
+Here is a "hello world" QR code that uses an URL to serve the image in SVG format without the protection against external requests:
 ```djangotemplate
 <img src="{% qr_url_from_text "Hello World!" url_signature_enabled=False %}" alt="Hello World!">
 ```
-The `token` argument will be removed from the query string, making possible to build a simpler, predictable URL. See the setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` for enabling certain users to access those unprotected link.
+The `token` parameter will not be part of the query string of the generated URL. This makes it possible to build a simpler, predictable URL. See the setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` for enabling certain users to access those unprotected link.
 
 ### QR Codes for Apps
 Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc.  See [this documentation](https://github.com/zxing/zxing/wiki/Barcode-Contents) about what a QR code can encode.
