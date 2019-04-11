@@ -19,8 +19,7 @@ def _get_default_url_protection_options():
         constants.TOKEN_LENGTH: 20,
         constants.SIGNING_KEY: settings.SECRET_KEY,
         constants.SIGNING_SALT: 'qr_code_url_protection_salt',
-        constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False,
-        constants.ALLOWS_EXTERNAL_REQUESTS: False
+        constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False
     }
 
 
@@ -41,19 +40,18 @@ def _options_allow_external_request(url_protection_options, user):
 
 
 def requires_url_protection_token(user=None):
-    return not get_url_protection_options(user=user)[constants.ALLOWS_EXTERNAL_REQUESTS]
+    return not _options_allow_external_request(get_url_protection_options(), user)
 
 
 def allows_external_request_from_user(user=None):
-    return get_url_protection_options(user=user)[constants.ALLOWS_EXTERNAL_REQUESTS]
+    return _options_allow_external_request(get_url_protection_options(), user)
 
 
-def get_url_protection_options(user=None):
+def get_url_protection_options():
     options = _get_default_url_protection_options()
     settings_options = _get_url_protection_settings()
     if settings_options is not None:
         options.update(settings.QR_CODE_URL_PROTECTION)
-        options[constants.ALLOWS_EXTERNAL_REQUESTS] = _options_allow_external_request(options, user)
     return options
 
 

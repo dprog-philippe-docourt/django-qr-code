@@ -15,7 +15,7 @@ from qr_code.qrcode import constants
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import get_url_protection_options, get_qr_url_protection_token, qr_code_etag, \
-    qr_code_last_modified
+    qr_code_last_modified, allows_external_request_from_user
 from qr_code.qrcode.image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage
 
 
@@ -87,19 +87,24 @@ def get_qr_code_option_from_request(request):
 
 def check_image_access_permission(request, qr_code_options):
     """Handle image access protection (we do not allow external requests for anyone)."""
-    url_protection_options = get_url_protection_options(request.user)
     token = request.GET.get('token', '')
     if token:
-        signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-        try:
-            # Check signature.
-            url_protection_string = signer.unsign(token)
-            # Check that the given token matches the request parameters.
-            random_token = url_protection_string.split('.')[-1]
-            if get_qr_url_protection_token(qr_code_options, random_token) != url_protection_string:
-                raise PermissionDenied("Request query does not match protection token.")
-        except BadSignature:
-            raise PermissionDenied("Wrong token signature.")
+        check_url_signature_token(qr_code_options, token)
     else:
-        if not url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS]:
+        if not allows_external_request_from_user(request.user):
             raise PermissionDenied("You are not allowed to access this QR code.")
+
+
+def check_url_signature_token(qr_code_options, token):
+    url_protection_options = get_url_protection_options()
+    signer = Signer(key=url_protection_options[constants.SIGNING_KEY],
+                    salt=url_protection_options[constants.SIGNING_SALT])
+    try:
+        # Check signature.
+        url_protection_string = signer.unsign(token)
+        # Check that the given token matches the request parameters.
+        random_token = url_protection_string.split('.')[-1]
+        if get_qr_url_protection_token(qr_code_options, random_token) != url_protection_string:
+            raise PermissionDenied("Request query does not match protection token.")
+    except BadSignature:
+        raise PermissionDenied("Wrong token signature.")
