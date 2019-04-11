@@ -3,6 +3,7 @@
 ## 1.1.0 (2019-??-??)
 * Ensure compatibility with Django 2.1.
 * Ensure compatibility with Django 2.2.
+* Upgrade qr_code library from 5.3 to 6.1 (several fixes).
 * Drop support for Python 3.4.
 * Fixed error when generating qr code from lazy text (#1)
 * Add support for customizing usage of URL signature token via template tags (allows to generate URLs for serving QR code images that do not include a signature token).
