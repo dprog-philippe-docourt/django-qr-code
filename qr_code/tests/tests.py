@@ -68,6 +68,10 @@ def _make_closing_path_tag(svg):
     return svg.replace(' /></svg>', '></path></svg>')
 
 
+def _make_xml_header():
+    return "<?xml version='1.0' encoding='UTF-8'?>"
+
+
 class TestApps(SimpleTestCase):
     def test_apps_attributes(self):
         from qr_code.apps import QrCodeConfig
@@ -277,7 +281,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             ref_file_name = 'qrfromtextsvgresult_error_correction_%s%s' % (correction_level.lower(), SVG_REF_SUFFIX)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
-            ref_image_data = get_svg_content_from_file_name(ref_file_name, skip_header=False)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name)
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_png_error_correction(self):
@@ -383,7 +387,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             source_image_data = template.render(context).strip()
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
-            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
 
 
@@ -542,9 +546,10 @@ class TestQRForApplications(SimpleTestCase):
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
             source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
+            source_image_data = _make_xml_header() + '\n' + source_image_data
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
-            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_samples_embedded_in_png_format(self):
@@ -567,8 +572,9 @@ class TestQRForApplications(SimpleTestCase):
             source_image_data = self._check_url_for_test_data(test_data).content.decode('utf-8')
             source_image_data = _make_closing_path_tag(source_image_data)
             if REFRESH_REFERENCE_IMAGES:
+                # source_image_data = _make_xml_header() + '\n' + source_image_data
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
-            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'], skip_header=False)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_sample_urls_in_png_format(self):
@@ -602,11 +608,11 @@ class TestIssues(SimpleTestCase):
         self.assertEqual(svg1, svg2)
 
 
-def get_svg_content_from_file_name(file_name, skip_header=True):
+def get_svg_content_from_file_name(file_name):
+    print(file_name)
+    if file_name == 'qr_for_email.ref.svg':
+        print('sd')
     with open(os.path.join(get_resources_path(), file_name), 'r', encoding='utf-8') as file:
-        if skip_header:
-            # Skip SVG header.
-            file.readline()
         image_data = file.read().strip()
         return image_data
 
