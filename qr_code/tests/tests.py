@@ -238,7 +238,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
     @override_settings(QR_CODE_URL_PROTECTION=dict(TOKEN_LENGTH=30, SIGNING_KEY='my-secret-signing-key',
                                                    SIGNING_SALT='my-signing-salt',
                                                    ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=True))
-    def test_with_url_protection_settings_1(self):
+    def test_url_with_protection_settings_1(self):
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
@@ -246,21 +246,25 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.assertEqual(response.status_code, 403)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=False))
-    def test_with_url_protection_settings_2(self):
+    def test_url_with_protection_settings_2(self):
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=True, cache_enabled=False))
+        self.assertEqual(response.status_code, 200)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: False))
-    def test_with_url_protection_settings_3(self):
+    def test_url_with_protection_settings_3(self):
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 403)
+        response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=True, cache_enabled=False))
+        self.assertEqual(response.status_code, 200)
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: True))
-    def test_with_url_protection_settings_4(self):
+    def test_url_with_protection_settings_4(self):
         self.test_svg_url()
         self.test_png_url()
         # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, even for anonymous user.
@@ -272,6 +276,24 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
         self.assertEqual(response.status_code, 200)
+
+    def test_url_with_invalid_signature_token(self):
+        valid_url_with_signature_token = make_qr_code_url(TEST_TEXT)
+        url_with_invalid_signature_token = valid_url_with_signature_token.replace('token=', 'token=some-front-padding')
+        response = self.client.get(url_with_invalid_signature_token)
+        self.assertEqual(response.status_code, 403)
+
+    def test_url_with_wrong_signature_token(self):
+        valid_url_with_signature_token_for_size_10 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=10))
+        valid_url_with_signature_token_for_size_8 = make_qr_code_url(TEST_TEXT, QRCodeOptions(size=8))
+        token_regex = re.compile(r"token=([^&]+)")
+        match = token_regex.search(valid_url_with_signature_token_for_size_8)
+        size_8_token_value = match.group(1)
+        match = token_regex.search(valid_url_with_signature_token_for_size_10)
+        size_10_token_value = match.group(1)
+        url_with_invalid_signature_token = valid_url_with_signature_token_for_size_10.replace(size_10_token_value, size_8_token_value)
+        response = self.client.get(url_with_invalid_signature_token)
+        self.assertEqual(response.status_code, 403)
 
     def test_svg_error_correction(self):
         base_file_name = 'qrfromtext_error_correction'
