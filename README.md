@@ -347,3 +347,9 @@ cd scripts
 ./run-tests.sh
 ```
 This will run the test suite with all supported versions of Python and Django. The test results are stored within `tests_result.txt`.
+
+## Projects Using this App
+
+This app is used in the following projects:
+* [MyGym Web](https://mygym-web.ch/): a web platform for managing sports clubs. The QR codes are used for importing members' contact information in a phone book.
+* [Gymna-Score](https://gymna-score.acjg.ch/): a web platform for entering scores during gymnastics competitions organized by the Association Cantonale Jurassienne de Gymnastique (ACJG). The QR codes are used to provide an easy way for the public to follow an ongoing competition. They are also used to authenticate judges that need to enter scores.
