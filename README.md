@@ -27,7 +27,7 @@ In order to modify or test this app you may want to install it from the source c
 
 Clone the [GitHub repository](https://github.com/dprog-philippe-docourt/django-qr-code) and then run:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 python manage.py collectstatic --no-input
 ```
 
