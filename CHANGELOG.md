@@ -8,6 +8,7 @@
 * Fixed error when generating qr code from lazy text (#1)
 * Add support for customizing usage of URL signature token via template tags (allows to generate URLs for serving QR code images that do not include a signature token).
 * The caching of QR codes images could allow to bypass checking the user when external access is active.
+* Upgrade Pillow requirement to 6.2.0 (CVE-2019-16865).
 
 ## 1.0.0 (2018-03-23)
 * BREAKING CHANGES:
