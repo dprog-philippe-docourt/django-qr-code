@@ -6,7 +6,7 @@
 * Upgrade qr_code library from 5.3 to 6.1 (several fixes).
 * Drop support for Python 3.4.
 * Fixed error when generating qr code from lazy text. (#1)
-* Add support for customizing usage of URL signature token via template tags (allows to generate URLs for serving QR code images that do not include a signature token). (#2)
+* Add support for customizing usage of URL signature token via template tags (allows to generate URLs for serving QR code images that do not include a signature token). (#4)
 * The caching of QR codes images could allow to bypass checking the user when external access is active.
 * Upgrade Pillow requirement to 6.2.0 (CVE-2019-16865).
 * Adopt a dedicated logger, and move message "Pillow is not installed. No support available for PNG format." from info to debug. (#6)
