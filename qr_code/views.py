@@ -1,13 +1,13 @@
 import base64
 import binascii
 from io import BytesIO
+from six import wraps
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
 from django.utils.decorators import available_attrs
-from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
