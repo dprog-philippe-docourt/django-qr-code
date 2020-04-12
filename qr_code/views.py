@@ -7,8 +7,6 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
-from django.utils.decorators import available_attrs
-from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
 from qr_code.qrcode import constants
@@ -18,31 +16,7 @@ from qr_code.qrcode.serve import get_url_protection_options, get_qr_url_protecti
     qr_code_last_modified, allows_external_request_from_user
 from qr_code.qrcode.image import PNG_FORMAT_NAME, PilImageOrFallback, SVG_FORMAT_NAME, SvgPathImage
 
-
-def cache_qr_code():
-    """
-    Decorator that caches the requested page if a settings named 'QR_CODE_CACHE_ALIAS' exists and is not empty or None.
-    """
-    def decorator(view_func):
-        @wraps(view_func, assigned=available_attrs(view_func))
-        def _wrapped_view(request, *view_args, **view_kwargs):
-            cache_enabled = request.GET.get('cache_enabled', True)
-            if cache_enabled and hasattr(settings, 'QR_CODE_CACHE_ALIAS') and settings.QR_CODE_CACHE_ALIAS:
-                # We found a cache alias for storing the generate qr code and cache is enabled, use it to cache the
-                # page.
-                timeout = settings.CACHES[settings.QR_CODE_CACHE_ALIAS]['TIMEOUT']
-                key_prefix = 'token=%s.user_pk=%s' % (request.GET.get('url_signature_enabled') or constants.DEFAULT_URL_SIGNATURE_ENABLED, request.user.pk)
-                response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS, key_prefix=key_prefix)(view_func)(request, *view_args, **view_kwargs)
-            else:
-                # No cache alias for storing the generated qr code, call the view as is.
-                response = (view_func)(request, *view_args, **view_kwargs)
-            return response
-        return _wrapped_view
-    return decorator
-
-
 @condition(etag_func=qr_code_etag, last_modified_func=qr_code_last_modified)
-@cache_qr_code()
 def serve_qr_code_image(request):
     """Serve an image that represents the requested QR code."""
     qr_code_options = get_qr_code_option_from_request(request)
