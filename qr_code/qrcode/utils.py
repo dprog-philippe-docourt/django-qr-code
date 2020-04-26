@@ -10,7 +10,7 @@ from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, D
 from qr_code.qrcode.image import get_supported_image_format
 
 
-class QRCodeOptions(object):
+class QRCodeOptions:
     """
     Represents the options used to draw a QR code.
 
@@ -93,7 +93,7 @@ class QRCodeOptions(object):
         return self._qr_code_options['error_correction']
 
 
-class ContactDetail(object):
+class ContactDetail:
     """
     Represents the detail of a contact.
 
