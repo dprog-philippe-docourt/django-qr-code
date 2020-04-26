@@ -4,7 +4,11 @@ version: 2
 build:
   image: latest
 
+# Build all formats
+formats: all
+
 python:
   version: 3.7
-  requirements: docs/requirements.txt
-  method: pip
+  install:
+    - requirements: docs/requirements.txt
+    - method: pip
