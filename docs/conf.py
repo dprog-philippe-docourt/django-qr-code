@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Django QR Code'
-copyright = '2017-2018, Philippe Docourt'
+copyright = '2017-2020, Philippe Docourt'
 author = 'Philippe Docourt'
 
 # The version info for the project you're documenting, acts as replacement for
