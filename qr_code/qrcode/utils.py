@@ -231,7 +231,7 @@ class WifiConfig(object):
         return wifi_config
 
 
-class Coordinates(object):
+class Coordinates:
     def __init__(self, latitude, longitude, altitude=None):
         self.latitude = latitude
         self.longitude = longitude
