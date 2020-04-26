@@ -5,6 +5,7 @@
 * Upgrade Pillow requirement to 7.1.
 * Drop support for Python 3.5.
 * Drop support for Django <2.2.
+* More modern build environment and configuration for ReadTheDocs.
 
 ## 1.1.0 (2019-11-16)
 * Ensure compatibility with Django 2.1.
