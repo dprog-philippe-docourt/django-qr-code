@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.0 (2020-04-26)
+* Ensure compatibility with Django 3.0.
+* Upgrade Pillow requirement to 7.1.
+* Drop support for Python 3.5.
+* Drop support for Django <2.2.
+
 ## 1.1.0 (2019-11-16)
 * Ensure compatibility with Django 2.1.
 * Ensure compatibility with Django 2.2.
@@ -10,7 +16,6 @@
 * The caching of QR codes images could allow to bypass checking the user when external access is active.
 * Upgrade Pillow requirement to 6.2.0 (CVE-2019-16865).
 * Adopt a dedicated logger, and move message "Pillow is not installed. No support available for PNG format." from info to debug. (#6)
-
 
 ## 1.0.0 (2018-03-23)
 * BREAKING CHANGES:
