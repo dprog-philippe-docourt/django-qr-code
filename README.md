@@ -113,11 +113,11 @@ The `qr_url_from_text` tag generates an url to an image representing the QR code
 
 The image targeted by the generated URL is served by a view provided in `qr_code.urls`. Therefore you need to include the URLs provided by `qr_code.urls` in your app in order to make this tag work. This can be achieved with something like this:
 ```python
-from django.conf.urls import include, url
-from qr_code import urls as qr_code_urls
+from django.conf.urls import include
+from django.urls import path
 
 urlpatterns = [
-    url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
+    path('qr_code/', include('qr_code.urls', namespace="qr_code")),
 ]
 ```
 
@@ -290,7 +290,7 @@ Please check-out the [demo application](#demo-application) to see more examples.
 
 ### Image Formats
 The SVG is the default image format.
-It is a vectorial format so it can be scaled as wanted.
+It is a vector image format so it can be scaled as wanted.
 However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels).
 The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
 
