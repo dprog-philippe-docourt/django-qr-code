@@ -1,13 +1,12 @@
 import base64
 import binascii
+import functools
 from io import BytesIO
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
-from django.utils.decorators import available_attrs
-from django.utils.six import wraps
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
@@ -24,7 +23,7 @@ def cache_qr_code():
     Decorator that caches the requested page if a settings named 'QR_CODE_CACHE_ALIAS' exists and is not empty or None.
     """
     def decorator(view_func):
-        @wraps(view_func, assigned=available_attrs(view_func))
+        @functools.wraps(view_func)
         def _wrapped_view(request, *view_args, **view_kwargs):
             cache_enabled = request.GET.get('cache_enabled', True)
             if cache_enabled and hasattr(settings, 'QR_CODE_CACHE_ALIAS') and settings.QR_CODE_CACHE_ALIAS:
