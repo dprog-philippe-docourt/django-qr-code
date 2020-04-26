@@ -12,7 +12,7 @@ fi
     echo "--- CPU: $(nproc --all)"
     echo "--- RAM: $(free -h)"
 
-    python_versions=("3.6" "3.7" "3.8")
+    python_versions=("3.6 3.7 3.8")
     django_versions=("2.2.12" "3.0.4")
 
     for python_version in ${python_versions[@]}
@@ -31,6 +31,7 @@ fi
 
             echo --- Force Django version
             ${DOCKER_COMPOSE_COMMAND} exec django-qr-code pip install "django~=${django_version}"
+            echo Output code for tests with Python ${python_version} and Django ${django_version}: $?
 
             echo --- Setup test environment
             ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py collectstatic --noinput
