@@ -1,4 +1,5 @@
-FROM python:3.6
+ARG PYTHON_VERSION
+FROM python:${PYTHON_VERSION}
 LABEL vendor="dProg - Philippe Docourt" maintainer="Philippe Docourt" description="Demo Site for Django QR code"
 
 ENV PYTHONUNBUFFERED 1
@@ -15,7 +16,7 @@ RUN mkdir -p "$APP_BASE_DIR"
 WORKDIR "$APP_BASE_DIR"
 
 # Install dumb-init is a simple process supervisor and init system designed to run as PID 1 inside minimal container environments.
-RUN pip install dumb-init==1.2.1
+RUN pip install dumb-init==1.2.2
 
 # Install requirements (separate step for caching intermediate image).
 COPY requirements.txt "$APP_BASE_DIR/"

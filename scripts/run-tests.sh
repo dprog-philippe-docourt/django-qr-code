@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 log_file_path=tests_result.txt
 if [ -f "${log_file_path}" ]; then
     cp "${log_file_path}" "${log_file_path}.back"
@@ -13,39 +12,35 @@ fi
     echo "--- CPU: $(nproc --all)"
     echo "--- RAM: $(free -h)"
 
-    python_versions=("3.4" "3.5" "3.6")
-    django_versions=("1.11.11" "2.0.3")
+    python_versions=("3.6" "3.7" "3.8")
+    django_versions=("2.2.12" "3.0.4")
 
     for python_version in ${python_versions[@]}
     do
-        DOCKER_COMPOSE_COMMAND="docker-compose -f docker-compose-${python_version}.yml"
-
-        cp "docker-compose.yml" "docker-compose-${python_version}.yml"
-        sed -i "s/dockerfile: Dockerfile/dockerfile: Dockerfile-${python_version}/" "docker-compose-${python_version}.yml"
-        cp "Dockerfile" "Dockerfile-${python_version}"
-        sed -i "s/FROM python:3.6/FROM python:${python_version}/" "Dockerfile-${python_version}"
-
+        DOCKER_COMPOSE_COMMAND="docker-compose -f docker-compose.yml"
         for django_version in ${django_versions[@]}
         do
+            ${DOCKER_COMPOSE_COMMAND} stop
+            build_cmd=${DOCKER_COMPOSE_COMMAND} --build-arg PYTHON_VERSION=${python_version} build
+            echo --- Build test container for Python ${python_version}: "${build_cmd}"
+            ${build_cmd}
+
             echo --- Testing against: Python ${python_version} and Django ${django_version}
 
-            echo --- Build test container
-            ${DOCKER_COMPOSE_COMMAND} stop && ${DOCKER_COMPOSE_COMMAND} build
+            ${DOCKER_COMPOSE_COMMAND} up -d
 
             echo --- Force Django version
-            ${DOCKER_COMPOSE_COMMAND} run --entrypoint "pip" django-qr-code install "django~=${django_version}"
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code pip install "django~=${django_version}"
 
-            echo --- Setup test site
-            ${DOCKER_COMPOSE_COMMAND} run --entrypoint "python" django-qr-code manage.py collectstatic --noinput
+            echo --- Setup test environment
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py collectstatic --noinput
 
             # Run tests
-            ${DOCKER_COMPOSE_COMMAND} run --rm --entrypoint "python" django-qr-code manage.py test
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py test
 
-            echo --- Stop container
-            ${DOCKER_COMPOSE_COMMAND} stop
+            echo --- Stop containers and remove them.
+            ${DOCKER_COMPOSE_COMMAND} down
          done
-
-         rm "docker-compose-${python_version}.yml" "Dockerfile-${python_version}"
     done
 
     echo "--- Tests finished at $(date)"
