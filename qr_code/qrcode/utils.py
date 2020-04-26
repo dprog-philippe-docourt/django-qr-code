@@ -3,7 +3,7 @@
 from collections import namedtuple
 
 from django.utils.html import escape
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_IMAGE_FORMAT, \
     DEFAULT_ERROR_CORRECTION

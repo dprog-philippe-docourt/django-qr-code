@@ -7,7 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.signing import Signer
 from django.urls import reverse
 from django.utils.crypto import get_random_string
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode import constants
@@ -104,7 +104,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, 
         url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
-    encoded_text = str(base64.urlsafe_b64encode(bytes(force_text(text), encoding='utf-8')), encoding='utf-8')
+    encoded_text = str(base64.urlsafe_b64encode(bytes(force_str(text), encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
     params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
