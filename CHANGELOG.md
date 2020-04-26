@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.1.0 (2020-04-26)
+## 1.2.0 (2020-04-26)
 * Ensure compatibility with Django 3.0.
 * Upgrade Pillow requirement to 7.1.
 * Drop support for Python 3.5.
