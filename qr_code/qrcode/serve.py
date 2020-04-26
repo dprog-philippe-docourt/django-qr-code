@@ -1,6 +1,6 @@
 import base64
 import urllib.parse
-from collections import Mapping
+from collections.abc import Mapping
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
