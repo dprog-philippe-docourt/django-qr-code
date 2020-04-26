@@ -12,7 +12,7 @@ The Pillow library needs to be installed manually if you want to generate QR cod
 
 This app makes no usage of the Django models and therefore do not use any database.
 
-Only Python >= 3.5 is supported.
+Only Python >= 3.6 is supported.
 
 ## Installation
 
