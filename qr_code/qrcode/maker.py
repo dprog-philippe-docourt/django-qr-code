@@ -83,9 +83,7 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     HTML document.
     """
     image_format = qr_code_options.image_format
-    image_format = PilImageOrFallback
-#    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
-    img = make_qr_code_image(text, PilImageOrFallback, qr_code_options=qr_code_options)
+    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
     stream = BytesIO()
     if image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())
