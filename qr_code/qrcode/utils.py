@@ -6,7 +6,7 @@ from django.utils.html import escape
 from django.utils.translation import gettext as _
 
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_IMAGE_FORMAT, \
-    DEFAULT_ERROR_CORRECTION
+    DEFAULT_ERROR_CORRECTION, DEFAULT_FILL_COLOR
 from qr_code.qrcode.image import get_supported_image_format
 
 
@@ -49,7 +49,8 @@ class QRCodeOptions:
         border=DEFAULT_BORDER_SIZE,
         version=DEFAULT_VERSION,
         image_format=DEFAULT_IMAGE_FORMAT,
-        error_correction=DEFAULT_ERROR_CORRECTION
+        error_correction=DEFAULT_ERROR_CORRECTION,
+        fill_color=DEFAULT_FILL_COLOR,
     )
     _qr_code_options = dict(_DEFAULT_QR_CODE_OPTIONS)
 
@@ -91,6 +92,10 @@ class QRCodeOptions:
     @property
     def error_correction(self):
         return self._qr_code_options['error_correction']
+
+    @property
+    def fill_color(self):
+        return self._qr_code_options['fill_color']
 
 
 class ContactDetail:

@@ -38,12 +38,12 @@ def make_qr_code_image(text, image_factory, qr_code_options=QRCodeOptions()):
         version=valid_version,
         error_correction=valid_error_correction,
         box_size=valid_size,
-        border=qr_code_options.border
+        border=qr_code_options.border,
     )
     qr.add_data(force_str(text))
     if valid_version is None:
         qr.make(fit=True)
-    return qr.make_image(image_factory=image_factory)
+    return qr.make_image(image_factory=image_factory, fill_color=qr_code_options.fill_color)
 
 
 def _get_valid_error_correction_or_default(error_correction):
@@ -83,7 +83,9 @@ def make_embedded_qr_code(text, qr_code_options=QRCodeOptions()):
     HTML document.
     """
     image_format = qr_code_options.image_format
-    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
+    image_format = PilImageOrFallback
+#    img = make_qr_code_image(text, SvgEmbeddedInHtmlImage if image_format == SVG_FORMAT_NAME else PilImageOrFallback, qr_code_options=qr_code_options)
+    img = make_qr_code_image(text, PilImageOrFallback, qr_code_options=qr_code_options)
     stream = BytesIO()
     if image_format == SVG_FORMAT_NAME:
         img.save(stream, kind=SVG_FORMAT_NAME.upper())

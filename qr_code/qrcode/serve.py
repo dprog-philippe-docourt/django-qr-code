@@ -107,7 +107,7 @@ def make_qr_code_url(text, qr_code_options=QRCodeOptions(), cache_enabled=None, 
     encoded_text = str(base64.urlsafe_b64encode(bytes(force_str(text), encoding='utf-8')), encoding='utf-8')
 
     image_format = qr_code_options.image_format
-    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled)
+    params = dict(text=encoded_text, size=qr_code_options.size, border=qr_code_options.border, version=qr_code_options.version or '', image_format=image_format, error_correction=qr_code_options.error_correction, cache_enabled=cache_enabled, fill_color=qr_code_options.fill_color)
     path = reverse('qr_code:serve_qr_code_image')
 
     if url_signature_enabled:
