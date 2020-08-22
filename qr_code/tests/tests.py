@@ -295,7 +295,6 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_svg_error_correction(self):
-        is_first = True
         base_file_name = 'qrfromtext_error_correction'
         for correction_level in ERROR_CORRECTION_DICT:
             print('Testing SVG URL with error correction: %s' % correction_level)
