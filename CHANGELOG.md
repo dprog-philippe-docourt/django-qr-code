@@ -1,5 +1,11 @@
 # Change Log
 
+## x.y.z (yyyy-mm-dd)
+* Removed dependency on Pillow / qrcode
+* Switched to [Segno](https://pypi.org/project/segno/) for generating QR Codes
+* Added support for QR Codes with multiple colors
+* Added support for Micro QR Codes
+
 ## 1.2.0 (2020-04-26)
 * Ensure compatibility with Django 3.0.
 * Upgrade Pillow requirement to 7.1.

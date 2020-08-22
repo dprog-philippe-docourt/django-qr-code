@@ -2,13 +2,6 @@ API Reference
 =============
 
 
-qrcode.image
-------------
-
-.. automodule:: qr_code.qrcode.image
-   :members:
-
-
 qrcode.maker
 -------
 

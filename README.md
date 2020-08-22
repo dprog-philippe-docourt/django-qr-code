@@ -7,8 +7,7 @@
 
 This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
 
-This application depends on the [qrcode](https://github.com/lincolnloop/python-qrcode) python library which requires the [Pillow](https://github.com/python-pillow/Pillow) library in order to support the PNG image format.
-The Pillow library needs to be installed manually if you want to generate QR codes in PNG format; otherwise, SVG is the only supported format.
+This application depends on the [Segno QR Code generator](https://pypi.org/project/segno/) library.
 
 This app makes no usage of the Django models and therefore do not use any database.
 
@@ -66,7 +65,7 @@ The `size` parameter gives the size of each module of the QR code matrix. It can
 * l or L: large (value: 30)
 * h or H: huge (value: 48)
 
-For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
+For PNG image format the size unit is in pixels, while the unit is 1 mm for SVG format.
 
 Here is a "hello world" QR code using the version 12:
 ```djangotemplate

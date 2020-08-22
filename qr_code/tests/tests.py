@@ -12,7 +12,6 @@ from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
-from qr_code.qrcode.image import SVG_FORMAT_NAME, PNG_FORMAT_NAME
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION
@@ -23,8 +22,8 @@ from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 # Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
 REFRESH_REFERENCE_IMAGES = False
 
-BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64, %s" alt="Hello World!">'
-IMAGE_TAG_BASE64_DATA_RE = re.compile(r'data:image/png;base64, (?P<data>[\w/+=]+)')
+BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64,%s" alt="Hello World!">'
+IMAGE_TAG_BASE64_DATA_RE = re.compile(r'data:image/png;base64,(?P<data>[\w/+=]+)')
 TEST_TEXT = 'Hello World!'
 COMPLEX_TEST_TEXT = '/%+¼@#=<>àé'
 TEST_CONTACT_DETAIL = dict(
@@ -61,16 +60,16 @@ def get_urls_without_token_for_comparison(*urls):
 
 def get_resources_path():
     tests_dir = os.path.dirname(os.path.abspath(__file__))
-    resources_dir = os.path.join(tests_dir, 'resources')
-    return resources_dir
+    return os.path.join(tests_dir, 'resources')
 
 
-def _make_closing_path_tag(svg):
-    return svg.replace(' /></svg>', '></path></svg>')
+def minimal_svg(s):
+    """Returns the SVG document without the XML declaration and SVG namespace declaration
 
-
-def _make_xml_header():
-    return "<?xml version='1.0' encoding='UTF-8'?>"
+    :rtype: str
+    """
+    return s.replace('<?xml version="1.0" encoding="utf-8"?>\n', '') \
+            .replace('xmlns="http://www.w3.org/2000/svg" ', '').strip()
 
 
 class TestApps(SimpleTestCase):
@@ -82,7 +81,7 @@ class TestApps(SimpleTestCase):
 
 class TestQRCodeOptions(SimpleTestCase):
     def test_qr_code_options(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             QRCodeOptions(foo='bar')
         options = QRCodeOptions()
         self.assertEqual(options.border, 4)
@@ -296,6 +295,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_svg_error_correction(self):
+        is_first = True
         base_file_name = 'qrfromtext_error_correction'
         for correction_level in ERROR_CORRECTION_DICT:
             print('Testing SVG URL with error correction: %s' % correction_level)
@@ -316,9 +316,6 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode('utf-8')
-            # Skip header and adjust tag format.
-            source_image_data = source_image_data[source_image_data.index('\n') + 1:]
-            source_image_data = _make_closing_path_tag(source_image_data)
             ref_file_name = '%s_%s' % (base_file_name, correction_level.lower())
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
@@ -372,8 +369,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr5 = qr_from_text(TEST_TEXT, size=size, image_format='invalid-format-name')
             result_file_name = '%s_%s' % (base_ref_file_name, size_name)
             if REFRESH_REFERENCE_IMAGES:
-                write_svg_content_to_file(result_file_name, _make_xml_header() + '\n' + qr1)
-            result = get_svg_content_from_file_name(result_file_name, skip_header=True)
+                write_svg_content_to_file(result_file_name, qr1)
+            result = get_svg_content_from_file_name(result_file_name)
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
@@ -401,8 +398,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr6 = qr_from_text(TEST_TEXT, version=version, image_format='invalid-format-name')
             result_file_name = '%s_%s' % (base_file_name, version_name)
             if REFRESH_REFERENCE_IMAGES:
-                write_svg_content_to_file(result_file_name, _make_xml_header() + '\n' + qr1)
-            result = get_svg_content_from_file_name(result_file_name, skip_header=True)
+                write_svg_content_to_file(result_file_name, qr1)
+            result = get_svg_content_from_file_name(result_file_name)
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
@@ -422,11 +419,11 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             html_source = mark_safe('{% load qr_code %}' + test_data['source'])
             template = Template(html_source)
             context = Context()
-            source_image_data = template.render(context).strip()
+            source_image_data = template.render(context)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
-            self.assertEqual(source_image_data, ref_image_data)
+            self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
 
 class TestQRFromTextPngResult(SimpleTestCase):
@@ -453,7 +450,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
                 match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
                 source_image_data = match.group('data')
                 write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
-            result =base64.b64encode(get_png_content_from_file_name(result_file_name)).decode('utf-8')
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode('utf-8')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
@@ -480,7 +477,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
                 match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
                 source_image_data = match.group('data')
                 write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
-            result =base64.b64encode(get_png_content_from_file_name(result_file_name)).decode('utf-8')
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode('utf-8')
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
@@ -499,7 +496,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             template = Template(html_source)
             context = Context()
             source_image = template.render(context).strip()
-            source_image_data = source_image[33:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
+            source_image_data = source_image[32:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
             source_image_data = base64.b64decode(source_image_data)
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(test_data['ref_file_name'], source_image_data)
@@ -520,7 +517,7 @@ class TestQRForApplications(SimpleTestCase):
         return dict(source='{% ' + tag_content + ' %}', ref_file_name=ref_file_name, template_context=template_context)
 
     @staticmethod
-    def _make_tests_data(embedded=True, image_format=SVG_FORMAT_NAME):
+    def _make_tests_data(embedded=True, image_format='svg'):
         contact_detail1 = dict(**TEST_CONTACT_DETAIL)
         contact_detail2 = ContactDetail(
             **contact_detail1
@@ -533,7 +530,7 @@ class TestQRForApplications(SimpleTestCase):
         geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         tag_prefix = 'qr_for_' if embedded else 'qr_url_for_'
         tag_args = dict(image_format=image_format)
-        if image_format == PNG_FORMAT_NAME:
+        if image_format == 'png':
             tag_args['size'] = 't'
         if not embedded:
             # Deactivate cache for URL.
@@ -579,14 +576,13 @@ class TestQRForApplications(SimpleTestCase):
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
             source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
-            source_image_data = _make_xml_header() + '\n' + source_image_data
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_demo_samples_embedded_in_png_format(self):
-        tests_data = self._make_tests_data(embedded=True, image_format=PNG_FORMAT_NAME)
+        tests_data = self._make_tests_data(embedded=True, image_format='png')
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
             source_image_data = TestQRForApplications._get_rendered_template(test_data['source'], test_data.get('template_context'))
@@ -602,14 +598,13 @@ class TestQRForApplications(SimpleTestCase):
         tests_data = self._make_tests_data(embedded=False)
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content.decode('utf-8')
-            source_image_data = _make_closing_path_tag(source_image_data)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
-            self.assertEqual(source_image_data, ref_image_data)
+            self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
     def test_demo_sample_urls_in_png_format(self):
-        tests_data = self._make_tests_data(embedded=False, image_format=PNG_FORMAT_NAME)
+        tests_data = self._make_tests_data(embedded=False, image_format='png')
         for test_data in tests_data:
             source_image_data = self._check_url_for_test_data(test_data).content
             if REFRESH_REFERENCE_IMAGES:
@@ -657,18 +652,14 @@ class TestWriteResourceData(SimpleTestCase):
         os.remove(file_path_to_remove)
 
 
-def get_svg_content_from_file_name(base_file_name, skip_header=False):
+def get_svg_content_from_file_name(base_file_name):
     with open(os.path.join(get_resources_path(), base_file_name + SVG_REF_SUFFIX), 'r', encoding='utf-8') as file:
-        if skip_header:
-            file.readline()
-        image_data = file.read().strip()
-        return image_data
+        return file.read()
 
 
 def get_png_content_from_file_name(base_file_name):
     with open(os.path.join(get_resources_path(), base_file_name + PNG_REF_SUFFIX), 'rb') as file:
-        image_data = file.read()
-        return image_data
+        return file.read()
 
 
 def write_svg_content_to_file(base_file_name, image_content):
