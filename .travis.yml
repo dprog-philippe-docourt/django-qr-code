@@ -1,6 +1,8 @@
 dist: bionic
 language: python
 python:
+  - "3.6"
+  - "3.7"
   - "3.8"
 env:
   - DJANGO_VERSION=2.2
