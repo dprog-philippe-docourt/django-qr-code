@@ -20,8 +20,8 @@ fi
         DOCKER_COMPOSE_COMMAND="docker-compose -f docker-compose.yml"
         for django_version in ${django_versions[@]}
         do
-            ${DOCKER_COMPOSE_COMMAND} stop
-            build_cmd=${DOCKER_COMPOSE_COMMAND} build --build-arg PYTHON_VERSION=${python_version}
+            ${DOCKER_COMPOSE_COMMAND} down
+            build_cmd="${DOCKER_COMPOSE_COMMAND} build --build-arg PYTHON_VERSION=${python_version}"
             echo --- Build test container for Python ${python_version}: "${build_cmd}"
             ${build_cmd}
 
