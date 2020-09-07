@@ -105,12 +105,8 @@ def make_qr_code_with_args(text, qr_code_args):
 
 
 def make_qr_code_url_with_args(text, qr_code_args):
-    cache_enabled = DEFAULT_CACHE_ENABLED
-    if 'cache_enabled' in qr_code_args:
-        cache_enabled = qr_code_args.pop('cache_enabled')
-    url_signature_enabled = DEFAULT_URL_SIGNATURE_ENABLED
-    if 'url_signature_enabled' in qr_code_args:
-        url_signature_enabled = qr_code_args.pop('url_signature_enabled')
+    cache_enabled = qr_code_args.pop('cache_enabled', DEFAULT_CACHE_ENABLED)
+    url_signature_enabled = qr_code_args.pop('url_signature_enabled', DEFAULT_URL_SIGNATURE_ENABLED)
     options = qr_code_args.get('options')
     if options:
         if not isinstance(options, QRCodeOptions):
