@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.3.1 (2020-09-07)
+* Fix local testing script.
+* Fix date of release 1.3.0 in readme. 
+* Code cleanup.
+
 ## 1.3.0 (2020-09-05)
 * Drop support for Django 2.1.
 * Ensure compatibility with Django 3.1.
