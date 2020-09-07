@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-log_file_path=tests_result.txt
-if [ -f "${log_file_path}" ]; then
-    cp "${log_file_path}" "${log_file_path}.back"
+output_folder_name=tests_result
+if [ -d "../${output_folder_name}" ]; then
+    mv "../${output_folder_name}" "../${output_folder_name}.back"
 fi
+mkdir "../${output_folder_name}"
+log_file_name=log.txt
 (
     cd ../
 
@@ -37,12 +39,14 @@ fi
             ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py collectstatic --noinput
 
             # Run tests
-            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python -Wd manage.py test
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python -Wd manage.py test | tee "${output_folder_name}/python_${python_version}-django_${django_version}-${log_file_name}"
 
             echo --- Stop containers and remove them.
             ${DOCKER_COMPOSE_COMMAND} down
          done
     done
 
+    wait
+
     echo "--- Tests finished at $(date)"
-) | tee "${log_file_path}"
+) | tee "../${output_folder_name}/${log_file_name}"
