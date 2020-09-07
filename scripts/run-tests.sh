@@ -21,7 +21,7 @@ fi
         for django_version in ${django_versions[@]}
         do
             ${DOCKER_COMPOSE_COMMAND} stop
-            build_cmd=${DOCKER_COMPOSE_COMMAND} --build-arg PYTHON_VERSION=${python_version} build
+            build_cmd=${DOCKER_COMPOSE_COMMAND} build --build-arg PYTHON_VERSION=${python_version}
             echo --- Build test container for Python ${python_version}: "${build_cmd}"
             ${build_cmd}
 
@@ -37,7 +37,7 @@ fi
             ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py collectstatic --noinput
 
             # Run tests
-            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python manage.py test
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code python -Wd manage.py test
 
             echo --- Stop containers and remove them.
             ${DOCKER_COMPOSE_COMMAND} down
