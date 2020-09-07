@@ -34,6 +34,7 @@ Only Python >= 3.6 is supported.""",
         'Programming Language :: Python :: 3 :: Only',
         'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
         'Natural Language :: English'
     ],
     keywords='qr code django',

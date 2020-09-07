@@ -5,6 +5,9 @@
 * Switched to [Segno](https://pypi.org/project/segno/) for generating QR Codes
 * Added support for QR Codes with multiple colors
 * Added support for Micro QR Codes
+## 1.3.0 (2010-09-05)
+* Drop support for Django 2.1.
+* Ensure compatibility with Django 3.1.
 
 ## 1.2.0 (2020-04-26)
 * Ensure compatibility with Django 3.0.

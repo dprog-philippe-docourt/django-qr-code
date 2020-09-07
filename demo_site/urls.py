@@ -1,7 +1,7 @@
 """qr_code_demo URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.11/topics/http/urls/
+    https://docs.djangoproject.com/en/3.1/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -13,13 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.urls import path
 from django.views.generic import RedirectView
 from qr_code_demo import urls as qr_code_demo_urls
 from qr_code import urls as qr_code_urls
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='qr_code_demo/', permanent=True)),
-    url(r'^qr_code_demo/', include(qr_code_demo_urls, namespace='qr_code_demo')),
-    url(r'^qr_code/', include(qr_code_urls, namespace='qr_code')),
+    path('', RedirectView.as_view(url='qr_code_demo/', permanent=True)),
+    path('qr_code_demo/', include(qr_code_demo_urls, namespace='qr_code_demo')),
+    path('qr_code/', include(qr_code_urls, namespace='qr_code')),
 ]
