@@ -345,7 +345,7 @@ If you have [Docker Compose](https://docs.docker.com/compose/) installed, you ca
 cd scripts
 ./run-tests.sh
 ```
-This will run the test suite with all supported versions of Python and Django. The test results are stored within `tests_result.txt`.
+This will run the test suite with all supported versions of Python and Django. The test results are stored within `tests_result` folder.
 
 ## Projects Using this App
 
