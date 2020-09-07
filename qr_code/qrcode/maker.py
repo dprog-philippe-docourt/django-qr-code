@@ -62,8 +62,7 @@ def make_qr_code_url_with_args(text, qr_code_args):
 
 
 def _options_from_args(args):
-    """
-
+    """Returns a QRCodeOptions instance from the provided arguments.
     """
     options = args.get('options')
     if options:

@@ -149,7 +149,7 @@
   </tr>
   <tr>
     <td width="33%">
-      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 dark="darkgreen" finder_dark="#000" alignment_dark="#000" {% templatetag closeblock %}</code></strong>
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" {% templatetag closeblock %}</code></strong>
     </td>
     <td width="33%">
       <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></strong>
@@ -160,7 +160,7 @@
   </tr>
   <tr>
     <td width="33%">
-      <div>{% qr_from_text "Hello World!" size=8 version=12 dark="darkgreen" finder_dark="#000" alignment_dark="#000"  %}
+      <div>{% qr_from_text "Hello World!" size=8 version=12 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000"  %}
       </div>
     </td>
     <td width="33%">
@@ -178,19 +178,19 @@
 <table width="100%">
   <tr>
     <td width="50%">
-      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 dark="darkgreen" finder_dark="#000" alignment_dark="#000" micro=True {% templatetag closeblock %}</code></strong>
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" micro=True {% templatetag closeblock %}</code></strong>
     </td>
     <td width="50%">
-      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark='#4B0082'  {% templatetag closeblock %}</code></strong>
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark_color='#4B0082'  {% templatetag closeblock %}</code></strong>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <div>{% qr_from_text "Hello World!" size=8 dark="darkgreen" finder_dark="#000" alignment_dark="#000" micro=True %}
+      <div>{% qr_from_text "Hello World!" size=8 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" micro=True %}
       </div>
     </td>
     <td width="50%">
-      <div>{% qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark='#4B0082' %}</div>
+      <div>{% qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark_color='#4B0082' %}</div>
     </td>
   </tr>
 </table>
@@ -229,10 +229,10 @@
   </tr>
   <tr>
     <td width="33%">
-      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" dark="darkblue" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" dark_color="darkblue" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
     </td>
     <td width="33%">
-      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark="darkred" finder_dark="#000" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark_color="darkred" finder_dark_color="#000" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
     </td>
     <td width="33%">
       <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
@@ -240,10 +240,10 @@
   </tr>
   <tr>
     <td width="33%">
-      <div><img src="{% qr_url_from_text "Hello World!" dark="darkblue" %}" alt="Hello World!"></div>
+      <div><img src="{% qr_url_from_text "Hello World!" dark_color="darkblue" %}" alt="Hello World!"></div>
     </td>
     <td width="33%">
-      <div><img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark="darkred" finder_dark="#000" %}" alt="Hello World!">
+      <div><img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark_color="darkred" finder_dark_color="#000" %}" alt="Hello World!">
       </div>
     </td>
     <td width="33%">

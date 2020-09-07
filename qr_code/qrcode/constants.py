@@ -1,6 +1,6 @@
 from datetime import datetime
 
-QR_CODE_GENERATION_VERSION_DATE = datetime(year=2019, month=4, day=11, hour=15)
+QR_CODE_GENERATION_VERSION_DATE = datetime(year=2019, month=7, day=11, hour=15)
 SIZE_DICT = {'t': 6, 's': 12, 'm': 18, 'l': 30, 'h': 48}
 ERROR_CORRECTION_DICT = {'L': 'l', 'M': 'm', 'Q': 'q', 'H': 'h'}
 DEFAULT_MODULE_SIZE = 'm'

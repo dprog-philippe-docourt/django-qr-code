@@ -12,12 +12,15 @@ class QRCodeOptions:
     """
     def __init__(self, *, size=DEFAULT_MODULE_SIZE, border=4, version=None,
                  image_format='svg', error_correction=DEFAULT_ERROR_CORRECTION,
-                 micro=False, dark='#000', light='#fff', finder_dark=False,
-                 finder_light=False, data_dark=False, data_light=False,
-                 version_dark=False, version_light=False, format_dark=False,
-                 format_light=False, alignment_dark=False, alignment_light=False,
-                 timing_dark=False, timing_light=False, separator=False,
-                 dark_module=False, quiet_zone=False):
+                 micro=False, dark_color='#000', light_color='#fff',
+                 finder_dark_color=False, finder_light_color=False,
+                 data_dark_color=False, data_light_color=False,
+                 version_dark_color=False, version_light_color=False,
+                 format_dark_color=False, format_light_color=False,
+                 alignment_dark_color=False, alignment_light_color=False,
+                 timing_dark_color=False, timing_light_color=False,
+                 separator_color=False, dark_module_color=False, 
+                 quiet_zone_color=False):
         """
         :param size: The size of the QR code as an integer or a string.
                     Default is *'m'*.
@@ -30,28 +33,28 @@ class QRCodeOptions:
         :param str error_correction: How much error correction that might be required
                 to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
-        :param dark: Color of the dark modules (default: black). The
+        :param dark_color: Color of the dark modules (default: black). The
                 color can be provided as ``(R, G, B)`` tuple, as hexadecimal
                 format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
                 name (i.e. ``red``).
-        :param light: Color of the light modules (default: white).
+        :param light_color: Color of the light modules (default: white).
                 See `color` for valid values. If light is set to ``None`` the
                 light modules will be transparent.
-        :param finder_dark: Color of the dark finder modules (default: same as ``dark``)
-        :param finder_light: Color of the light finder modules (default: same as ``light``)
-        :param data_dark: Color of the dark data modules (default: same as ``dark``)
-        :param data_light: Color of the light data modules (default: same as ``light``)
-        :param version_dark: Color of the dark version modules (default: same as ``dark``)
-        :param version_light: Color of the light version modules (default: same as ``light``)
-        :param format_dark: Color of the dark format modules (default: same as ``dark``)
-        :param format_light: Color of the light format modules (default: same as ``light``)
-        :param alignment_dark: Color of the dark alignment modules (default: same as ``dark``)
-        :param alignment_light: Color of the light alignment modules (default: same as ``light``)
-        :param timing_dark: Color of the dark timing pattern modules (default: same as ``dark``)
-        :param timing_light: Color of the light timing pattern modules (default: same as ``light``)
-        :param separator: Color of the separator (default: same as ``light``)
-        :param dark_module: Color of the dark module (default: same as ``dark``)
-        :param quiet_zone: Color of the quiet zone modules (default: same as ``light``)
+        :param finder_dark_color: Color of the dark finder modules (default: same as ``dark_color``)
+        :param finder_light_color: Color of the light finder modules (default: same as ``light_color``)
+        :param data_dark_color: Color of the dark data modules (default: same as ``dark_color``)
+        :param data_light_color: Color of the light data modules (default: same as ``light_color``)
+        :param version_dark_color: Color of the dark version modules (default: same as ``dark_color``)
+        :param version_light_color: Color of the light version modules (default: same as ``light_color``)
+        :param format_dark_color: Color of the dark format modules (default: same as ``dark_color``)
+        :param format_light_color: Color of the light format modules (default: same as ``light_color``)
+        :param alignment_dark_color: Color of the dark alignment modules (default: same as ``dark_color``)
+        :param alignment_light_color: Color of the light alignment modules (default: same as ``light_color``)
+        :param timing_dark_color: Color of the dark timing pattern modules (default: same as ``dark_color``)
+        :param timing_light_color: Color of the light timing pattern modules (default: same as ``light_color``)
+        :param separator_color: Color of the separator (default: same as ``light_color``)
+        :param dark_module_color: Color of the dark module (default: same as ``dark_color``)
+        :param quiet_zone_color: Color of the quiet zone modules (default: same as ``light_color``)
 
         The *size* parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
             * t or T: tiny (value: 6)
@@ -97,29 +100,38 @@ class QRCodeOptions:
         self._micro = micro
         try:
             error = error_correction.lower()
-            self._error = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
+            self._error_correction = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
         except AttributeError:
-            self._error = DEFAULT_ERROR_CORRECTION
+            self._error_correction = DEFAULT_ERROR_CORRECTION
         try:
             image_format = image_format.lower()
             self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
         except AttributeError:
             self._image_format = DEFAULT_IMAGE_FORMAT
-        self._colors = dict(dark=dark, light=light, finder_dark=finder_dark,
-                            finder_light=finder_light, data_dark=data_dark,
-                            data_light=data_light, version_dark=version_dark,
-                            version_light=version_light, format_dark=format_dark,
-                            format_light=format_light, alignment_dark=alignment_dark,
-                            alignment_light=alignment_light, timing_dark=timing_dark,
-                            timing_light=timing_light, separator=separator,
-                            dark_module=dark_module, quiet_zone=quiet_zone)
+        self._colors = dict(dark_color=dark_color, light_color=light_color,
+                            finder_dark_color=finder_dark_color,
+                            finder_light_color=finder_light_color,
+                            data_dark_color=data_dark_color,
+                            data_light_color=data_light_color,
+                            version_dark_color=version_dark_color,
+                            version_light_color=version_light_color,
+                            format_dark_color=format_dark_color,
+                            format_light_color=format_light_color,
+                            alignment_dark_color=alignment_dark_color,
+                            alignment_light_color=alignment_light_color,
+                            timing_dark_color=timing_dark_color,
+                            timing_light_color=timing_light_color,
+                            separator_color=separator_color,
+                            dark_module_color=dark_module_color,
+                            quiet_zone_color=quiet_zone_color)
 
     def kw_make(self):
         """Internal method which returns a dict of parameters to create a QR code.
 
         :rtype: dict
         """
-        return dict(version=self._version, error=self._error, micro=self._micro)
+        return dict(version=self._version, error=self._error_correction,
+                    micro=self._micro)
 
     def kw_save(self):
         """Internal method which returns a dict of parameters to save a QR code.
@@ -128,7 +140,9 @@ class QRCodeOptions:
         """
         image_format = self._image_format
         kw = dict(kind=image_format, scale=self._size_as_int())
-        kw.update(self.color_mapping())
+        # Change the color mapping into the keywords Segno expects
+        # (remove the "_color" suffix from the module names)
+        kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
         if image_format == 'svg':
             kw['unit'] = 'mm'
             scale = decimal.Decimal(kw['scale']) / 10
@@ -144,10 +158,10 @@ class QRCodeOptions:
         """
         colors = {k: v for k, v in self._colors.items() if v is not False}
         # Remove common default "dark" and "light" values
-        if colors.get('dark') in ('#000', '#000000', 'black'):
-            del colors['dark']
-        if colors.get('light') in ('#fff', '#FFF', '#ffffff', '#FFFFFF', 'white'):
-            del colors['light']
+        if colors.get('dark_color') in ('#000', '#000000', 'black'):
+            del colors['dark_color']
+        if colors.get('light_color') in ('#fff', '#FFF', '#ffffff', '#FFFFFF', 'white'):
+            del colors['light_color']
         return colors
 
     def _size_as_int(self):
@@ -184,7 +198,7 @@ class QRCodeOptions:
 
     @property
     def error_correction(self):
-        return self._error
+        return self._error_correction
 
     @property
     def micro(self):
