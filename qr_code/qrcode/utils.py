@@ -1,96 +1,212 @@
 """Utility classes and functions for configuring and setting up the content and the look of a QR code."""
-
+import decimal
 from collections import namedtuple
-
 from django.utils.html import escape
-from django.utils.translation import gettext as _
-
-from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, DEFAULT_BORDER_SIZE, DEFAULT_VERSION, DEFAULT_IMAGE_FORMAT, \
-    DEFAULT_ERROR_CORRECTION
-from qr_code.qrcode.image import get_supported_image_format
+from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, \
+    DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
 
 class QRCodeOptions:
     """
-    Represents the options used to draw a QR code.
-
-    The following fields are provided:
-        * size (int, str): the size of the QR code as an integer or a string. Default is *'m'*.
-        * border (int): the size of the border (blank space around the code).
-        * version (int): the version of the QR code gives the size of the matrix. Default is *None* which mean automatic in order to avoid data overflow.
-        * image_format (str): the graphics format used to render the QR code. It can be either *'svg'* or *'png'*. Default is *'svg'*.
-        * error_correction: how much error correction that might be required to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
-
-    The *size* parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
-        * t or T: tiny (value: 6)
-        * s or S: small (value: 12)
-        * m or M: medium (value: 18)
-        * l or L: large (value: 30)
-        * h or H: huge (value: 48)
-
-    For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
-
-    The *border* parameter controls how many modules thick the border should be (blank space around the code). The default is 4, which is the minimum according to the specs.
-
-    The *version* parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
-    this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
-    The size grows by 4 modules/side.
-
-    There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
-    depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
-    error correction may be required. The correction level can be configured with the *error_correction* parameter as follow:
-        * l or L: error correction level L – up to 7% damage
-        * m or M: error correction level M – up to 15% damage
-        * q or Q: error correction level Q – up to 25% damage
-        * h or H: error correction level H – up to 30% damage
+    Represents the options used to create and draw a QR code.
     """
-    _DEFAULT_QR_CODE_OPTIONS = dict(
-        size=DEFAULT_MODULE_SIZE,
-        border=DEFAULT_BORDER_SIZE,
-        version=DEFAULT_VERSION,
-        image_format=DEFAULT_IMAGE_FORMAT,
-        error_correction=DEFAULT_ERROR_CORRECTION
-    )
-    _qr_code_options = dict(_DEFAULT_QR_CODE_OPTIONS)
-
-    def __init__(self, **kwargs):
+    def __init__(self, *, size=DEFAULT_MODULE_SIZE, border=4, version=None,
+                 image_format='svg', error_correction=DEFAULT_ERROR_CORRECTION,
+                 micro=False, dark_color='#000', light_color='#fff',
+                 finder_dark_color=False, finder_light_color=False,
+                 data_dark_color=False, data_light_color=False,
+                 version_dark_color=False, version_light_color=False,
+                 format_dark_color=False, format_light_color=False,
+                 alignment_dark_color=False, alignment_light_color=False,
+                 timing_dark_color=False, timing_light_color=False,
+                 separator_color=False, dark_module_color=False, 
+                 quiet_zone_color=False):
         """
-        :raises: ValueError in case an unknown argument is given.
-        """
-        self._qr_code_options = dict(QRCodeOptions._DEFAULT_QR_CODE_OPTIONS)
-        self.setup_options_from_kwargs(kwargs)
-        # Ensures that the image format is supported, or fallback to supported format.
-        if 'image_format' in kwargs:
-            self._qr_code_options['image_format'] = get_supported_image_format(self._qr_code_options['image_format'])
-        if 'version' in kwargs and (kwargs['version'] == '' or kwargs['version'] == 'None'):
-            self._qr_code_options['version'] = None
+        :param size: The size of the QR code as an integer or a string.
+                    Default is *'m'*.
+        :type: str or int
+        :param int border: The size of the border (blank space around the code).
+        :param int version: The version of the QR code gives the size of the matrix.
+                Default is *None* which mean automatic in order to avoid data overflow.
+        :param str image_format: The graphics format used to render the QR code.
+                It can be either *'svg'* or *'png'*. Default is *'svg'*.
+        :param str error_correction: How much error correction that might be required
+                to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
+        :param bool micro: Indicates if a Micro QR Code should be created. Default: False
+        :param dark_color: Color of the dark modules (default: black). The
+                color can be provided as ``(R, G, B)`` tuple, as hexadecimal
+                format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
+                name (i.e. ``red``).
+        :param light_color: Color of the light modules (default: white).
+                See `color` for valid values. If light is set to ``None`` the
+                light modules will be transparent.
+        :param finder_dark_color: Color of the dark finder modules (default: same as ``dark_color``)
+        :param finder_light_color: Color of the light finder modules (default: same as ``light_color``)
+        :param data_dark_color: Color of the dark data modules (default: same as ``dark_color``)
+        :param data_light_color: Color of the light data modules (default: same as ``light_color``)
+        :param version_dark_color: Color of the dark version modules (default: same as ``dark_color``)
+        :param version_light_color: Color of the light version modules (default: same as ``light_color``)
+        :param format_dark_color: Color of the dark format modules (default: same as ``dark_color``)
+        :param format_light_color: Color of the light format modules (default: same as ``light_color``)
+        :param alignment_dark_color: Color of the dark alignment modules (default: same as ``dark_color``)
+        :param alignment_light_color: Color of the light alignment modules (default: same as ``light_color``)
+        :param timing_dark_color: Color of the dark timing pattern modules (default: same as ``dark_color``)
+        :param timing_light_color: Color of the light timing pattern modules (default: same as ``light_color``)
+        :param separator_color: Color of the separator (default: same as ``light_color``)
+        :param dark_module_color: Color of the dark module (default: same as ``dark_color``)
+        :param quiet_zone_color: Color of the quiet zone modules (default: same as ``light_color``)
 
-    def setup_options_from_kwargs(self, kwargs):
-        for key, value in kwargs.items():
-            if key in self._qr_code_options:
-                self._qr_code_options[key] = value
-            else:
-                raise ValueError(_("The option '%s' is not a valid option for a QR code.") % key)
+        The *size* parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
+            * t or T: tiny (value: 6)
+            * s or S: small (value: 12)
+            * m or M: medium (value: 18)
+            * l or L: large (value: 30)
+            * h or H: huge (value: 48)
+
+        For PNG image format the size unit is in pixels, while the unit is 0.1 mm for SVG format.
+
+        The *border* parameter controls how many modules thick the border should be (blank space around the code).
+        The default is 4, which is the minimum according to the specs.
+
+        The *version* parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
+        this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
+        The size grows by 4 modules/side.
+
+        There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
+        depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
+        error correction may be required. The correction level can be configured with the *error_correction* parameter as follow:
+            * l or L: error correction level L – up to 7% damage
+            * m or M: error correction level M – up to 15% damage
+            * q or Q: error correction level Q – up to 25% damage
+            * h or H: error correction level H – up to 30% damage
+        :raises: TypeError in case an unknown argument is given.
+        """
+        self._size = size
+        self._border = border
+        if _can_be_cast_to_int(version):
+            version = int(version)
+            if not 1 <= version <= 40:
+                version = None
+        elif version in ('m1', 'm2', 'm3', 'm4', 'M1', 'M2', 'M3', 'M4'):
+            version = version.lower()
+            # Set / change the micro setting otherwise Segno complains about
+            # conflicting parameters
+            micro = True
+        else:
+            version = None
+        self._version = version
+        if not isinstance(micro, bool):
+            micro = micro == 'True'
+        self._micro = micro
+        try:
+            error = error_correction.lower()
+            self._error_correction = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
+        except AttributeError:
+            self._error_correction = DEFAULT_ERROR_CORRECTION
+        try:
+            image_format = image_format.lower()
+            self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
+        except AttributeError:
+            self._image_format = DEFAULT_IMAGE_FORMAT
+        self._colors = dict(dark_color=dark_color, light_color=light_color,
+                            finder_dark_color=finder_dark_color,
+                            finder_light_color=finder_light_color,
+                            data_dark_color=data_dark_color,
+                            data_light_color=data_light_color,
+                            version_dark_color=version_dark_color,
+                            version_light_color=version_light_color,
+                            format_dark_color=format_dark_color,
+                            format_light_color=format_light_color,
+                            alignment_dark_color=alignment_dark_color,
+                            alignment_light_color=alignment_light_color,
+                            timing_dark_color=timing_dark_color,
+                            timing_light_color=timing_light_color,
+                            separator_color=separator_color,
+                            dark_module_color=dark_module_color,
+                            quiet_zone_color=quiet_zone_color)
+
+    def kw_make(self):
+        """Internal method which returns a dict of parameters to create a QR code.
+
+        :rtype: dict
+        """
+        return dict(version=self._version, error=self._error_correction,
+                    micro=self._micro)
+
+    def kw_save(self):
+        """Internal method which returns a dict of parameters to save a QR code.
+
+        :rtype: dict
+        """
+        image_format = self._image_format
+        kw = dict(kind=image_format, scale=self._size_as_int())
+        # Change the color mapping into the keywords Segno expects
+        # (remove the "_color" suffix from the module names)
+        kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
+        if image_format == 'svg':
+            kw['unit'] = 'mm'
+            scale = decimal.Decimal(kw['scale']) / 10
+            kw['scale'] = scale
+        return kw
+
+    def color_mapping(self):
+        """Internal method which returns the color mapping.
+
+        Only non-default values are returned.
+
+        :rtype: dict
+        """
+        colors = {k: v for k, v in self._colors.items() if v is not False}
+        # Remove common default "dark" and "light" values
+        if colors.get('dark_color') in ('#000', '#000000', 'black'):
+            del colors['dark_color']
+        if colors.get('light_color') in ('#fff', '#FFF', '#ffffff', '#FFFFFF', 'white'):
+            del colors['light_color']
+        return colors
+
+    def _size_as_int(self):
+        """Returns the size as integer value.
+
+        :rtype: int
+        """
+        size = self._size
+        if _can_be_cast_to_int(size):
+            actual_size = int(size)
+            if actual_size < 1:
+                actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
+        elif isinstance(size, str):
+            actual_size = SIZE_DICT.get(size.lower(), DEFAULT_MODULE_SIZE)
+        else:
+            actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
+        return actual_size
 
     @property
     def size(self):
-        return self._qr_code_options['size']
+        return self._size
 
     @property
     def border(self):
-        return self._qr_code_options['border']
+        return self._border
 
     @property
     def version(self):
-        return self._qr_code_options['version']
+        return self._version
 
     @property
     def image_format(self):
-        return self._qr_code_options['image_format']
+        return self._image_format
 
     @property
     def error_correction(self):
-        return self._qr_code_options['error_correction']
+        return self._error_correction
+
+    @property
+    def micro(self):
+        return self._micro
+
+
+def _can_be_cast_to_int(value):
+    return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
 class ContactDetail:

@@ -2,9 +2,9 @@
 {% load qr_code %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Demo Site of django-qr-code</title>
-    <style>
+  <meta charset="UTF-8">
+  <title>Demo Site of django-qr-code</title>
+  <style>
         body {
           font-family: Sans-Serif;
         }
@@ -16,537 +16,594 @@
             padding-left: 20px;
             padding-right: 20px;
         }
-    </style>
+
+  </style>
 </head>
 <body>
 {% block content %}
-    <h1>Django QR Code Demo Site</h1>
-    <p>This is a demo site for the <em>Django QR Code</em> application.</p>
-    <a href="https://badge.fury.io/py/django-qr-code" ><img src="https://badge.fury.io/py/django-qr-code.svg" alt="Latest PyPI Version"></a>
-    <a href="http://django-qr-code.readthedocs.io/en/latest/" ><img src="https://readthedocs.org/projects/django-qr-code/badge/?version=latest" alt="Documentation Status"></a>
-    <a href="https://travis-ci.org/dprog-philippe-docourt/django-qr-code"><img src="https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master"  alt="Build Status"></a>
-    <a href="https://codeclimate.com/github/dprog-philippe-docourt/django-qr-code/maintainability"><img src="https://api.codeclimate.com/v1/badges/c47e79bf51f6a2bb8264/maintainability" /></a>
-    <a href='https://coveralls.io/github/dprog-philippe-docourt/django-qr-code?branch=master'><img src='https://coveralls.io/repos/github/dprog-philippe-docourt/django-qr-code/badge.svg?branch=master' alt='Coverage Status' /></a>
+<h1>Django QR Code Demo Site</h1>
+<p>This is a demo site for the <em>Django QR Code</em> application.</p>
+<a href="https://badge.fury.io/py/django-qr-code"><img src="https://badge.fury.io/py/django-qr-code.svg"
+                                                       alt="Latest PyPI Version"></a>
+<a href="http://django-qr-code.readthedocs.io/en/latest/"><img
+  src="https://readthedocs.org/projects/django-qr-code/badge/?version=latest" alt="Documentation Status"></a>
+<a href="https://travis-ci.org/dprog-philippe-docourt/django-qr-code"><img
+  src="https://travis-ci.org/dprog-philippe-docourt/django-qr-code.svg?branch=master" alt="Build Status"></a>
+<a href="https://codeclimate.com/github/dprog-philippe-docourt/django-qr-code/maintainability"><img
+  src="https://api.codeclimate.com/v1/badges/c47e79bf51f6a2bb8264/maintainability"/></a>
+<a href='https://coveralls.io/github/dprog-philippe-docourt/django-qr-code?branch=master'><img
+  src='https://coveralls.io/repos/github/dprog-philippe-docourt/django-qr-code/badge.svg?branch=master'
+  alt='Coverage Status'/></a>
 
-    <h2>Image Formats</h2>
-    <p>The SVG is the default image format. It is a vector image format so it can be scaled as wanted. However, it has two drawbacks.</p>
-    <p>The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels).</p>
-    <p>The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.</p>
-    <p>SVG has <a href="http://caniuse.com/#feat=svg">broad support</a> now and it will work properly on any modern web browser.</p>
+<h2>Image Formats</h2>
+<p>The SVG is the default image format. It is a vector image format so it can be scaled as wanted. However, it has two
+  drawbacks.</p>
+<p>The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in
+  pixels).</p>
+<p>The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible
+  than a SVG tag, so it might not matter that much of you use HTML compression on your web server.</p>
+<p>SVG has <a href="http://caniuse.com/#feat=svg">broad support</a> now and it will work properly on any modern web
+  browser.</p>
 
-    <h2>Examples of <em>qr_from_text</em> Usages</h2>
-    <p>The <em>qr_from_text</em> tag renders an inline QR code within your Django template. It comes with several options to customize the image format (SVG or PNG), the size, the border and the matrix size.</p>
+<h2>Examples of <em>qr_from_text</em> Usages</h2>
+<p>The <em>qr_from_text</em> tag renders an inline QR code within your Django template. It comes with several options to
+  customize the image format (SVG or PNG), the size, the border and the matrix size.</p>
 
-    <table width="100%">
-        <tr>
-            <td width="33%">
-                <h3>A tiny "hello world" QR code in SVG format (default format)</h3>
-            </td>
-            <td width="33%">
-                <h3>A tiny "hello world" QR code in PNG format</h3>
-            </td>
-            <td width="33%">
-                <h3>A small "hello world" QR code</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="svg" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="png" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="T" image_format="svg" %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="T" image_format="png" %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="S" %}</div>
-            </td>
-        </tr>
+<table width="100%">
+  <tr>
+    <td width="33%">
+      <h3>A tiny "hello world" QR code in SVG format (default format)</h3>
+    </td>
+    <td width="33%">
+      <h3>A tiny "hello world" QR code in PNG format</h3>
+    </td>
+    <td width="33%">
+      <h3>A small "hello world" QR code</h3>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="svg" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="T" image_format="png" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="S" {% templatetag closeblock %}</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="T" image_format="svg" %}</div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="T" image_format="png" %}</div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="S" %}</div>
+    </td>
+  </tr>
 
-        <tr><td><br><br></td></tr>
-        <tr>
-            <td width="33%">
-                <h3>A medium "hello world" QR code (default size) with level H of error correction (up to 30% damage)</h3>
-            </td>
-            <td width="33%">
-                <h3>A large "hello world" QR code with level L of error correction (up to 7% damage)</h3>
-            </td>
-            <td width="33%">
-                <h3>A huge "hello world" QR code with level M of error correction (default level, up to 15% damage)</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" error_correction="H" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" error_correction="L" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" error_correction="M" {% templatetag closeblock %}</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="M" error_correction="H" %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="L" error_correction="L" %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size="H" error_correction="M" %}</div>
-            </td>
-        </tr>
+  <tr>
+    <td><br><br></td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <h3>A medium "hello world" QR code (default size) with level H of error correction (up to 30% damage)</h3>
+    </td>
+    <td width="33%">
+      <h3>A large "hello world" QR code with level L of error correction (up to 7% damage)</h3>
+    </td>
+    <td width="33%">
+      <h3>A huge "hello world" QR code with level M of error correction (default level, up to 15% damage)</h3>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="M" error_correction="H" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="L" error_correction="L" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size="H" error_correction="M" {% templatetag closeblock %}</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="M" error_correction="H" %}</div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="L" error_correction="L" %}</div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size="H" error_correction="M" %}</div>
+    </td>
+  </tr>
 
-        <tr><td><br><br></td></tr>
-        <tr>
-            <td width="33%">
-                <h3>A custom "hello world" QR code with size <em>8</em> and version <em>12</em></h3>
-            </td>
-            <td width="33%">
-                <h3>A custom "hello world" QR code with size <em>10</em> and border <em>6</em></h3>
-            </td>
-            <td width="33%">
-                <h3>A custom "hello world" QR code using a <em>QRCodeoptions</em> instance. Here the <em>QRCodeoptions</em> instance has a size <em>t</em>, a border of 6 modules, and a level L of error correction (up to 7% damage).</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" options=options_example {% templatetag closeblock %}</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size=8 version=12 %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" size=10 border=6 %}</div>
-            </td>
-            <td width="33%">
-                <div>{% qr_from_text "Hello World!" options=options_example %}</div>
-            </td>
-        </tr>
-    </table>
+  <tr>
+    <td><br><br></td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <h3>A custom "hello world" QR code with size <em>8</em> and version <em>12</em> and dark modules in <em>dark
+        green</em>
+        finder and alignment patterns in <em>black</em></h3>
+    </td>
+    <td width="33%">
+      <h3>A custom "hello world" QR code with size <em>10</em> and border <em>6</em></h3>
+    </td>
+    <td width="33%">
+      <h3>A custom "hello world" QR code using a <em>QRCodeoptions</em> instance. Here the <em>QRCodeoptions</em>
+        instance has a size <em>t</em>, a border of 6 modules, and a level L of error correction (up to 7% damage).</h3>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 version=12 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=10 border=6 {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" options=options_example {% templatetag closeblock %}</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size=8 version=12 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000"  %}
+      </div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" size=10 border=6 %}</div>
+    </td>
+    <td width="33%">
+      <div>{% qr_from_text "Hello World!" options=options_example %}</div>
+    </td>
+  </tr>
+</table>
 
-    <h2>Examples of <em>qr_url_from_text</em> Usages</h2>
-    <p>The <em>qr_url_from_text</em> tag generates an url to an image representing the QR code. It comes with the same options as <em>qr_from_text</em> to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option <strong>cache_enabled</strong> to disable caching of served image.</p>
-    <p>The image targeted by the generated URL is served by a view provided in <strong><code>qr_code.urls</code></strong>. Therefore <strong>you need to include the URLs provided by <code>qr_code.urls</code></strong> in your app in order to make this tag work. This can be achieved with something like this:</p>
-    <code class="multiline">
-        from django.conf.urls import include, url
-        from qr_code import urls as qr_code_urls
+<h2>Micro QR Codes</h2>
+<p>Micro QR Codes are generated if either <em>version</em> or <em>micro</em> indicate that a Micro QR Code
+  is preferred.</p>
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=8 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" micro=True {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="50%">
+      <strong><code>{% templatetag openblock %} qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark_color='#4B0082'  {% templatetag closeblock %}</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <div>{% qr_from_text "Hello World!" size=8 dark_color="darkgreen" finder_dark_color="#000" alignment_dark_color="#000" micro=True %}
+      </div>
+    </td>
+    <td width="50%">
+      <div>{% qr_from_text "Hello World!" size=20 border=6 version='M4' data_dark_color='#4B0082' %}</div>
+    </td>
+  </tr>
+</table>
 
-        urlpatterns = [
-            url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
-        ]
-    </code>
+<h2>Examples of <em>qr_url_from_text</em> Usages</h2>
+<p>The <em>qr_url_from_text</em> tag generates an url to an image representing the QR code. It comes with the same
+  options as <em>qr_from_text</em> to customize the image format (SVG or PNG), the size, the border and the matrix size.
+  It also has an additional option <strong>cache_enabled</strong> to disable caching of served image.</p>
+<p>The image targeted by the generated URL is served by a view provided in <strong><code>qr_code.urls</code></strong>.
+  Therefore <strong>you need to include the URLs provided by <code>qr_code.urls</code></strong> in your app in order to
+  make this tag work. This can be achieved with something like this:</p>
+<code class="multiline">
+  from django.conf.urls import include, url
+  from qr_code import urls as qr_code_urls
 
-    <table width="100%">
-        <tr>
-            <td width="33%">
-                <h3>A medium "hello world" QR code that uses an URL to serve the image in SVG format</h3>
-            </td>
-            <td width="33%">
-                <h3>A "hello world" QR code in version 10 that uses an URL to serve the image in PNG format</h3>
-            </td>
-            <td width="33%">
-                <h3>A "hello world" QR code in version 20 that uses an URL to serve the image in SVG format, and disable caching for served image</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=10 image_format='png' {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div><img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!"></div>
-            </td>
-            <td width="33%">
-               <div><img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!"></div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False %}" alt="Hello World!"></div>
-            </td>
-        </tr>
-    </table>
+  urlpatterns = [
+  url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
+  ]
+</code>
 
-    <h2>QR Codes for Applications</h2>
-    <p>Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc. See <a href="https://github.com/zxing/zxing/wiki/Barcode-Contents">this documentation</a> about what a QR code can encode.</p>
-    <p><em>Django QR Code</em> proposes several utility tags to ease the generation of such codes, without having to build the appropriate text representation for each action you need. This remove the hassle of reading the specifications and handling all the required escaping for reserved chars.</p>
-    <p>Please note that some commands are common patterns, rather than formal specifications. Therefore, there is no guarantee that all QR code readers will handle them properly.</p>
+<table width="100%">
+  <tr>
+    <td width="33%">
+      <h3>A medium "hello world" QR code that uses an URL to serve the image in SVG format</h3>
+    </td>
+    <td width="33%">
+      <h3>A "hello world" QR code in version 10 that uses an URL to serve the image in PNG format</h3>
+    </td>
+    <td width="33%">
+      <h3>A "hello world" QR code in version 20 that uses an URL to serve the image in SVG format, and disable caching
+        for served image</h3>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" dark_color="darkblue" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark_color="darkred" finder_dark_color="#000" {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False {% templatetag closeblock %}" alt="Hello World!"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div><img src="{% qr_url_from_text "Hello World!" dark_color="darkblue" %}" alt="Hello World!"></div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' dark_color="darkred" finder_dark_color="#000" %}" alt="Hello World!">
+      </div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_text "Hello World!" size=8 version=20 cache_enabled=False %}" alt="Hello World!">
+      </div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Start an email</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_email "john.doe@domain.com" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_email "john.doe@domain.com" {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_email 'john.doe@domain.com' %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_email 'john.doe@domain.com' %}"></div>
-            </td>
-        </tr>
-    </table>
+<h2>QR Codes for Applications</h2>
+<p>Aside from generating a QR code from a given text, you can also generate codes for specific application purposes,
+  that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a
+  contact to your phone book, connect to a Wi-Fi, start a SMS, etc. See <a
+    href="https://github.com/zxing/zxing/wiki/Barcode-Contents">this documentation</a> about what a QR code can encode.
+</p>
+<p><em>Django QR Code</em> proposes several utility tags to ease the generation of such codes, without having to build
+  the appropriate text representation for each action you need. This remove the hassle of reading the specifications and
+  handling all the required escaping for reserved chars.</p>
+<p>Please note that some commands are common patterns, rather than formal specifications. Therefore, there is no
+  guarantee that all QR code readers will handle them properly.</p>
 
-    <h3>Compose a phone number</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_tel "+41769998877" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_tel "+41769998877" {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_tel '+41769998877' %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_tel '+41769998877' %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Start an email</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_email "john.doe@domain.com" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_email "john.doe@domain.com" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_email 'john.doe@domain.com' %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_email 'john.doe@domain.com' %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Start a SMS</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_sms "+41769998877" {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_sms "+41769998877" {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_sms '+41769998877' %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_sms '+41769998877' %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Compose a phone number</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_tel "+41769998877" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_tel "+41769998877" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_tel '+41769998877' %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_tel '+41769998877' %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Display a geolocation on default map app</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_geolocation coordinates=geolocation_coordinates {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_geolocation coordinates=geolocation_coordinates {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_geolocation coordinates=geolocation_coordinates %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_geolocation coordinates=geolocation_coordinates %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Start a SMS</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_sms "+41769998877" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_sms "+41769998877" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_sms '+41769998877' %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_sms '+41769998877' %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Display a geolocation on Google Maps</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_google_maps latitude=586000.32 longitude=250954.19 {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_maps latitude=586000.32 longitude=250954.19 {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_google_maps latitude=586000.32 longitude=250954.19 %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_google_maps coordinates=google_maps_coordinates {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_maps coordinates=google_maps_coordinates {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_google_maps coordinates=google_maps_coordinates %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_google_maps coordinates=google_maps_coordinates %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Display a geolocation on default map app</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500{% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_geolocation latitude=586000.32 longitude=250954.19 altitude=500 %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_geolocation coordinates=geolocation_coordinates {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_geolocation coordinates=geolocation_coordinates {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_geolocation coordinates=geolocation_coordinates %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_geolocation coordinates=geolocation_coordinates %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Configure Wi-Fi connexion</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_wifi wifi_config %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_wifi wifi_config %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config=wifi_config {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config=wifi_config {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_wifi wifi_config=wifi_config %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_wifi wifi_config=wifi_config %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config options=options_example {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config options=options_example {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_wifi wifi_config options=options_example %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_wifi wifi_config options=options_example %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Display a geolocation on Google Maps</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_google_maps latitude=586000.32 longitude=250954.19 {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_maps latitude=586000.32 longitude=250954.19 {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_google_maps latitude=586000.32 longitude=250954.19 %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_google_maps latitude=586000.32 longitude=250954.19 %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_google_maps coordinates=google_maps_coordinates {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_maps coordinates=google_maps_coordinates{% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_google_maps coordinates=google_maps_coordinates %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_google_maps coordinates=google_maps_coordinates %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Add contact to phone book</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_contact contact_detail {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_contact contact_detail %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_contact contact_detail %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_contact contact_detail=contact_detail {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail=contact_detail {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_contact contact_detail=contact_detail %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_contact contact_detail=contact_detail %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Configure Wi-Fi connexion</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_wifi wifi_config %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_wifi wifi_config %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config=wifi_config {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config=wifi_config {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_wifi wifi_config=wifi_config %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_wifi wifi_config=wifi_config %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_wifi wifi_config options=options_example {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_wifi wifi_config options=options_example {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_wifi wifi_config options=options_example %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_wifi wifi_config options=options_example %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Watch a YouTube video</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_youtube 'J9go2nj6b3M' {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_youtube 'J9go2nj6b3M' {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_youtube 'J9go2nj6b3M' %}</div>
-            </td>
-            <td>
-                <div><img src="{% qr_url_for_youtube 'J9go2nj6b3M' %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_youtube video_id {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_youtube video_id {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_youtube video_id %}</div>
-            </td>
-            <td>
-                <div><img src="{% qr_url_for_youtube video_id %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Add contact to phone book</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_contact contact_detail {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_contact contact_detail %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_contact contact_detail %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_contact contact_detail=contact_detail {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail=contact_detail {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_contact contact_detail=contact_detail %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_contact contact_detail=contact_detail %}"></div>
+    </td>
+  </tr>
+</table>
 
-    <h3>Open a Google Play app page</h3>
-    <table width="100%">
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_google_play 'ch.admin.meteoswiss' {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_play 'ch.admin.meteoswiss' {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_google_play 'ch.admin.meteoswiss' %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' %}"></div>
-            </td>
-        </tr>
-        <tr>
-            <td>Template code:</td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <strong><code>{% templatetag openblock %} qr_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}</code></strong>
-            </td>
-            <td width="33%">
-                <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}"</code></strong>
-            </td>
-        </tr>
-        <tr>
-            <td width="33%">
-                <div>{% qr_for_google_play 'ch.admin.meteoswiss' options=options_example  %}</div>
-            </td>
-            <td width="33%">
-                <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example %}"></div>
-            </td>
-        </tr>
-    </table>
+<h3>Watch a YouTube video</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_youtube 'J9go2nj6b3M' {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_youtube 'J9go2nj6b3M' {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_youtube 'J9go2nj6b3M' %}</div>
+    </td>
+    <td>
+      <div><img src="{% qr_url_for_youtube 'J9go2nj6b3M' %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_youtube video_id {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_youtube video_id {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_youtube video_id %}</div>
+    </td>
+    <td>
+      <div><img src="{% qr_url_for_youtube video_id %}"></div>
+    </td>
+  </tr>
+</table>
+
+<h3>Open a Google Play app page</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_google_play 'ch.admin.meteoswiss' {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_play 'ch.admin.meteoswiss' {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_google_play 'ch.admin.meteoswiss' %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_google_play 'ch.admin.meteoswiss' options=options_example %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_google_play 'ch.admin.meteoswiss' options=options_example %}"></div>
+    </td>
+  </tr>
+</table>
 
 {% endblock %}
 </body>
