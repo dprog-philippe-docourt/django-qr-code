@@ -11,6 +11,7 @@ Welcome to Django QR Code's documentation!
    :caption: Contents:
 
    pages/README.md
+   pages/module-colors
    pages/api
    pages/CHANGELOG.md
 
