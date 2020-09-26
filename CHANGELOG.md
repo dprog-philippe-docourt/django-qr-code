@@ -1,10 +1,11 @@
 # Change Log
 
 ## 2.0.0 (2020-09-??)
-* Removed dependency on Pillow / qrcode
+* Remove dependency on Pillow / qrcode
 * Switched to [Segno](https://pypi.org/project/segno/) for generating QR Codes
-* Added support for QR Codes with multiple colors
-* Added support for Micro QR Codes
+* Add support for QR Codes with multiple colors
+* Add support for Micro QR Codes
+* Use hyphens in URLs.
 
 ## 1.3.1 (2020-09-07)
 * Fix local testing script.

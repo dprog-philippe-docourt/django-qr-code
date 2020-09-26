@@ -21,6 +21,6 @@ from qr_code import urls as qr_code_urls
 
 urlpatterns = [
     path('', RedirectView.as_view(url='qr_code_demo/', permanent=True)),
-    path('qr_code_demo/', include(qr_code_demo_urls, namespace='qr_code_demo')),
-    path('qr_code/', include(qr_code_urls, namespace='qr_code')),
+    path('qr-code-demo/', include(qr_code_demo_urls, namespace='qr_code_demo')),
+    path('qr-code/', include(qr_code_urls, namespace='qr_code')),
 ]

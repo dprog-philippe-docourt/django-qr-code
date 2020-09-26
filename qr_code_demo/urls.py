@@ -5,5 +5,5 @@ from qr_code_demo import views
 app_name = "qr_code_demo"
 urlpatterns = [
     path('', views.index, name='index'),
-    path('qr_code/', include('qr_code.urls', namespace="qr_code")),
+    path('qr-code/', include('qr_code.urls', namespace="qr_code")),
 ]
