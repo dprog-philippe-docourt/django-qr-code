@@ -15,9 +15,6 @@ ENV DJANGO_SETTINGS_MODULE=demo_site.settings
 RUN mkdir -p "$APP_BASE_DIR"
 WORKDIR "$APP_BASE_DIR"
 
-# Install dumb-init is a simple process supervisor and init system designed to run as PID 1 inside minimal container environments.
-RUN pip install dumb-init==1.2.2
-
 # Install requirements (separate step for caching intermediate image).
 COPY requirements.txt "$APP_BASE_DIR/"
 RUN pip install -r requirements.txt
@@ -26,9 +23,6 @@ RUN pip install -r requirements-web-deployment.txt
 
 # Copy entrypoint script into the image.
 COPY ./docker-entrypoint.sh /
-
-# Runs "/usr/local/bin/dumb-init -- /docker-entrypoint"
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 
 # Invoke app's entrypoint via dumb-init so that sub-processes are handled properly.
 CMD ["/docker-entrypoint.sh"]
