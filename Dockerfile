@@ -3,6 +3,7 @@ FROM python:${PYTHON_VERSION}
 LABEL vendor="dProg - Philippe Docourt" maintainer="Philippe Docourt" description="Demo Site for Django QR code"
 
 ENV PYTHONUNBUFFERED 1
+ENV PYTHONIOENCODING utf-8  # Solve possible occurrences of UnicodeEncodeError when running on x86 architecture.
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as <app name>)
 # Directory in container for project source files.
