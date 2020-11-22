@@ -13,7 +13,7 @@ fi
     echo "--- RAM: $(free -h)"
 
     python_versions=("3.6 3.7 3.8")
-    django_versions=("2.2.16" "3.0.10" "3.1.1")
+    django_versions=("2.2.17" "3.0.11" "3.1.3")
 
     for python_version in ${python_versions[@]}
     do

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+set -e
+
 cd ..
 
 echo --- Build stage test container
-docker-compose down
+docker-compose down || true
 docker-compose build --build-arg PYTHON_VERSION=3.8
 
 echo --- Fire up staging site
