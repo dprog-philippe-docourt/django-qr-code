@@ -415,7 +415,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s' % (file_base_name, correction_level)
-            tests_data.append(dict(source='{% qr_from_text "' + COMPLEX_TEST_TEXT + '" image_format="svg" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" error_correction="{correction_level}" %}}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
@@ -491,7 +491,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s' % (file_base_name, correction_level)
-            tests_data.append(dict(source='{% qr_from_text "' + COMPLEX_TEST_TEXT + '" image_format="png" error_correction="' + correction_level + '" %}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" error_correction="{correction_level}" %}}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
