@@ -1,5 +1,8 @@
 # Change Log
 
+## 2.0.1 (2020-11-24)
+* Update the install_requires after the move from qrcode to segno.
+
 ## 2.0.0 (2020-11-22)
 * Remove dependency on Pillow / qrcode
 * Switch to [Segno](https://pypi.org/project/segno/) for generating QR Codes
