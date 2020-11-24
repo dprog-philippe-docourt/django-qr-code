@@ -23,7 +23,7 @@ This application depends on the `Segno QR Code generator <https://pypi.org/proje
 This app makes no usage of the Django models and therefore do not use any database.
 
 Only Python >= 3.6 is supported.""",
-    install_requires=['segno', 'django'],
+    install_requires=['segno', 'django>=2.2'],
     python_requires='>=3',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
