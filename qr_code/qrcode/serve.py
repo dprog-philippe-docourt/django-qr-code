@@ -106,7 +106,7 @@ def make_qr_code_url(text, qr_code_options=None, cache_enabled=None,
         url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
-    encoded_text = str(base64.urlsafe_b64encode(bytes(force_str(text), encoding='utf-8')), encoding='utf-8')
+    encoded_text = str(base64.b64encode(bytes(force_str(text), encoding='utf-8')), encoding='utf-8')
     params = dict(text=encoded_text, cache_enabled=cache_enabled)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
