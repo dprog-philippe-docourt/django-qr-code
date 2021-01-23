@@ -229,7 +229,7 @@ QR_CODE_URL_PROTECTION = {
 }
 ```
 
-Setting the option `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to a callable that always return `True` (even for anonymous users) will allow anyone to access QR code image generation from outside your Django app. The following settings will grant access to anonymous users to generated images:
+Setting the option `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to a callable that always returns `True` (even for anonymous users) will allow anyone to access QR code image generation from outside your Django app. The following settings will grant access to anonymous users to generated images:
 
 ```python
 from qr_code.qrcode import constants
