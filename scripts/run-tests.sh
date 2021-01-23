@@ -32,7 +32,7 @@ log_file_name=log.txt
             ${DOCKER_COMPOSE_COMMAND} up -d
 
             echo --- Force Django version
-            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code pip install "django~=${django_version}"
+            ${DOCKER_COMPOSE_COMMAND} exec django-qr-code pip install --upgrade "django~=${django_version}"
             echo Output code for tests with Python ${python_version} and Django ${django_version}: $?
 
             echo --- Setup test environment
