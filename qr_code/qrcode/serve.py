@@ -96,6 +96,8 @@ def make_qr_code_url(text, qr_code_options=None, cache_enabled=None,
     Any invalid argument related to the size or the format of the image is silently
     converted into the default value for that argument.
 
+    :param str text: Text to encode into a QR code
+    :param QrCodeOptions qr_code_options: The rendering options for the QR code.
     :param bool cache_enabled: Allows to skip caching the QR code (when set to *False*) when caching has
         been enabled.
     :param bool url_signature_enabled: Tells whether the random token for protecting the URL against
