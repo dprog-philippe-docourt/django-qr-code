@@ -6,7 +6,9 @@ import os
 from datetime import date
 from itertools import product
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.cache import caches
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
@@ -238,6 +240,8 @@ class TestQRUrlFromTextResult(SimpleTestCase):
                                                    SIGNING_SALT='my-signing-salt',
                                                    ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=True))
     def test_url_with_protection_settings_1(self):
+        # We need to clear cache every time we change the QR_CODE_URL_PROTECTION to avoid incidence between tests.
+        caches[settings.QR_CODE_CACHE_ALIAS].clear()
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
@@ -246,6 +250,8 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=False))
     def test_url_with_protection_settings_2(self):
+        # We need to clear cache every time we change the QR_CODE_URL_PROTECTION to avoid incidence between tests.
+        caches[settings.QR_CODE_CACHE_ALIAS].clear()
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
@@ -255,6 +261,8 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: False))
     def test_url_with_protection_settings_3(self):
+        # We need to clear cache every time we change the QR_CODE_URL_PROTECTION to avoid incidence between tests.
+        caches[settings.QR_CODE_CACHE_ALIAS].clear()
         self.test_svg_url()
         self.test_png_url()
         response = self.client.get(make_qr_code_url(TEST_TEXT, url_signature_enabled=False, cache_enabled=False))
@@ -264,6 +272,8 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     @override_settings(QR_CODE_URL_PROTECTION=dict(ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER=lambda user: True))
     def test_url_with_protection_settings_4(self):
+        # We need to clear cache every time we change the QR_CODE_URL_PROTECTION to avoid incidence between tests.
+        caches[settings.QR_CODE_CACHE_ALIAS].clear()
         self.test_svg_url()
         self.test_png_url()
         # The callable for ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER always return True, even for anonymous user.
@@ -669,5 +679,3 @@ def write_svg_content_to_file(base_file_name, image_content):
 def write_png_content_to_file(base_file_name, image_content):
     with open(os.path.join(get_resources_path(), base_file_name + PNG_REF_SUFFIX), 'wb') as file:
         file.write(image_content)
-
-
