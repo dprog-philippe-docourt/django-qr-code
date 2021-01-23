@@ -1,6 +1,7 @@
 """Tools for generating QR codes. This module depends on the Segno library."""
 import io
-from django.utils.encoding import force_str
+from typing import Mapping, Any
+
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import segno
@@ -10,15 +11,17 @@ from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
 
 
-def make_qr(text, qr_code_options):
+def make_qr(text: Any, qr_code_options: QRCodeOptions):
     """Creates a QR code
 
     :rtype: segno.QRCode
     """
-    return segno.make(force_str(text), **qr_code_options.kw_make())
+    # WARNING: For compatibility reasons, we still allow to pass __proxy__ class (lazy string). Moreover, it would be OK to pass anything that has __str__
+    # attribute (e. g. class instance that handles phone numbers).
+    return segno.make(str(text), **qr_code_options.kw_make())
 
 
-def make_qr_code_image(text, qr_code_options):
+def make_qr_code_image(text: Any, qr_code_options: QRCodeOptions) -> bytes:
     """
     Returns a bytes object representing a QR code image for the provided text.
 
@@ -32,7 +35,7 @@ def make_qr_code_image(text, qr_code_options):
     return out.getvalue()
 
 
-def make_embedded_qr_code(text, qr_code_options):
+def make_embedded_qr_code(text: Any, qr_code_options: QRCodeOptions) -> str:
     """
     Generates a <svg> or <img> tag representing the QR code for the given text.
     This tag can be embedded into an HTML document.
@@ -48,12 +51,12 @@ def make_embedded_qr_code(text, qr_code_options):
     return mark_safe(qr.svg_inline(**kw))
 
 
-def make_qr_code_with_args(text, qr_code_args):
+def make_qr_code_with_args(text: Any, qr_code_args: dict) -> str:
     options = _options_from_args(qr_code_args)
     return make_embedded_qr_code(text, options)
 
 
-def make_qr_code_url_with_args(text, qr_code_args):
+def make_qr_code_url_with_args(text: Any, qr_code_args: dict) -> str:
     cache_enabled = qr_code_args.pop('cache_enabled', DEFAULT_CACHE_ENABLED)
     url_signature_enabled = qr_code_args.pop('url_signature_enabled', DEFAULT_URL_SIGNATURE_ENABLED)
     options = _options_from_args(qr_code_args)
@@ -61,7 +64,7 @@ def make_qr_code_url_with_args(text, qr_code_args):
                             url_signature_enabled=url_signature_enabled)
 
 
-def _options_from_args(args):
+def _options_from_args(args: Mapping) -> QRCodeOptions:
     """Returns a QRCodeOptions instance from the provided arguments.
     """
     options = args.get('options')
