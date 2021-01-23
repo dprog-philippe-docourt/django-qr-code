@@ -76,7 +76,7 @@ class TestApps(SimpleTestCase):
     def test_apps_attributes(self):
         from qr_code.apps import QrCodeConfig
         self.assertEqual(QrCodeConfig.name, 'qr_code')
-        self.assertEqual(QrCodeConfig.verbose_name, 'Django QR code')
+        self.assertEqual(QrCodeConfig.verbose_name, 'Django QR Code')
 
 
 class TestQRCodeOptions(SimpleTestCase):
