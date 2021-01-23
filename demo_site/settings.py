@@ -134,3 +134,4 @@ QR_CODE_URL_PROTECTION = {
     constants.SIGNING_SALT: 'my-signing-salt',  # Optional signing salt for URL token.
     constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: lambda u: True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }
+SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'
