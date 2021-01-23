@@ -47,8 +47,8 @@ You need to load the tags provided by this app in your template with:
 
 The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code) contains a simple demo app. Please check out the [templates folder](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/qr_code_demo/templates/qr_code_demo) for an example of template, and the [setting](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/settings.py) and [urls](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/urls.py) files for an example of configuration and integration.
 
-### qr_from_text
-The tag `qr_from_text` generates an embedded `svg` or `img` tag within the HTML code produced by your template.
+### Generating Inline QR Code in your HTML (qr_from_text)
+The tag **`qr_from_text`** generates an embedded `svg` or `img` tag within the HTML code produced by your template.
 
 The following renders a tiny "hello world" QR code with a `svg` tag:
 ```djangotemplate
@@ -59,7 +59,10 @@ Here is a medium "hello world" QR code with an `img` tag:
 {% qr_from_text "Hello World!" size="m" image_format="png" error_correction="L" %}
 ```
 
+### QR Code Rendering Options
+
 The `size` parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
+
 * t or T: tiny (value: 6)
 * s or S: small (value: 12)
 * m or M: medium (value: 18)
@@ -93,14 +96,14 @@ Alternatively, you may use the `options` keyword argument with an instance of `Q
 from django.shortcuts import render
 from qr_code.qrcode.utils import QRCodeOptions
 
-def myview(request):
+def my_view(request):
     # Build context for rendering QR codes.
     context = dict(
         my_options=QRCodeOptions(size='t', border=6, error_correction='L'),
     )
 
     # Render the view.
-    return render(request, 'myapp/myview.html', context=context)
+    return render(request, 'my_app/my_view.html', context=context)
 ```
 
 and an example of template for the view above:
@@ -108,10 +111,23 @@ and an example of template for the view above:
 {% qr_from_text "Hello World!" options=my_options %}
 ```
 
-### qr_url_from_text
-The `qr_url_from_text` tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border and the matrix size. It also has an additional option **cache_enabled** to disable caching of served image.
+### Generating URLs to QR Code Images (qr_url_from_text)
+The **`qr_url_from_text`** tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border, and the matrix size. It also has an additional option **`cache_enabled`** to disable caching of served image.
 
-The image targeted by the generated URL is served by a view provided in `qr_code.urls`. Therefore you need to include the URLs provided by `qr_code.urls` in your app in order to make this tag work. This can be achieved with something like this:
+Here is a medium "hello world" QR code that uses an URL to serve the image in SVG format:
+
+```djangotemplate
+<img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
+```
+
+Here is a "hello world" QR code in version 10 that uses an URL to serve the image in PNG format:
+
+```djangotemplate
+<img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!">
+```
+
+The image targeted by the generated URL is served by a view provided in `qr_code.urls`. Therefore, you need to include the URLs provided by `qr_code.urls` in your app in order to make this tag work. This can be achieved with something like this:
+
 ```python
 from django.conf.urls import include
 from django.urls import path
@@ -121,9 +137,26 @@ urlpatterns = [
 ]
 ```
 
-A large QR code (version 40) requires 0.7 second to be generated on a powerful machine (2017), and probably more than one second on a really cheap hosting.
-The image served by the *qr_code* app can be cached to improve performances and reduce CPU usage required to generate the QR codes.
-In order to activate caching, you simply need to declare a cache alias with the setting `QR_CODE_CACHE_ALIAS` to indicate in which cache to store the generated QR codes.
+The QR code images are served via a URL named **`qr_code:serve_qr_code_image`**. You can customize the path under which the images are served (i. e. the path bound to the URL named `qr_code:serve_qr_code_image`) with the optionnal setting **`SERVE_QR_CODE_IMAGE_PATH`** which defaults to `images/serve-qr-code-image/`. Note that the trailing slash is mandatory and that defining this setting to an empty string leads to using the default value. The example below will serve any QR code image from `<base URL or your application>/qr-code-image/`:
+
+```python
+# In urls.py
+from django.conf.urls import include
+from django.urls import path
+
+urlpatterns = [
+    path('', include('qr_code.urls', namespace='qr_code')),
+]
+
+# In your settings
+SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'
+```
+
+### Caching Served Images
+
+A large QR code (version 40) requires 0.2 second to be generated on a powerful machine (in 2018), and probably more than half a second on a really cheap hosting.
+
+The image served by the *qr_code* app can be cached to improve performances and reduce CPU usage required to generate the QR codes. In order to activate caching, you simply need to declare a cache alias with the setting **`QR_CODE_CACHE_ALIAS`** to indicate in which cache to store the generated QR codes.
 
 For instance, you may declare an additional cache for your QR codes like this in your Django settings:
 ```python
@@ -139,35 +172,25 @@ CACHES = {
 }
 
 QR_CODE_CACHE_ALIAS = 'qr-code'
-
 ```
 
-The `QR_CODE_CACHE_ALIAS = 'qr-code'` tells the *qr_code* app to use that cache for storing the generated QR codes.
-All QR codes will be cached with the specified *TIMEOUT* when a non empty value is set to `QR_CODE_CACHE_ALIAS`.
+The `QR_CODE_CACHE_ALIAS = 'qr-code'` tells the *qr_code* app to use that cache for storing the generated QR codes. All QR codes will be cached with the specified *TIMEOUT* when a non-empty value is set to `QR_CODE_CACHE_ALIAS`.
+
 If you want to activate the cache for QR codes, but skip the caching for some specific codes, you can use the keyword argument `cache_enabled=False` when using `qr_url_from_text`.
 
-Here is a medium "hello world" QR code that uses an URL to serve the image in SVG format:
-```djangotemplate
-<img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
-```
-Here is a "hello world" QR code in version 10 that uses an URL to serve the image in PNG format:
-```djangotemplate
-<img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!">
-```
-
-Here is a "hello world" QR code in version 20 with an error correction level Q (25% of redundant data) that uses an URL to serve the image in SVG format, and disable caching for served image:
+Here is a "hello world" QR code in version 20 with an error correction level Q (25% of redundant data) that uses a URL to serve the image in SVG format, and disable caching for served image:
 ```djangotemplate
 <img src="{% qr_url_from_text "Hello World!" size=8 version=20 error_correction="Q" cache_enabled=False %}" alt="Hello World!">
 ```
 
-The default settings protect the URLs that serve images against external requests, and thus against possibly easy DOS attacks.
-However, if you are interested in providing those images as a service, there is a setting named `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to open access to some controlled users.
-This setting tells who can bypass the url signature token. It can be a boolean value used for any authenticated user, or a callable that takes a user as only parameter.
-Note that setting this option to `True` will only accept authenticated users. However, setting this option to a callable that always return `True` (even for anonymous users) will allow anyone to access those URLs from outside your Django app.
+### Protecting Access to QR Code Images
+
+The default settings protect the URLs that serve QR code images against external requests, and thus against possibly easy (D)DoS attacks.
 
 Here are the available settings to manage the protection for served images:
 ```python
 from qr_code.qrcode import constants
+
 QR_CODE_URL_PROTECTION = {
     constants.TOKEN_LENGTH: 30,                         # Optional random token length for URL protection. Defaults to 20.
     constants.SIGNING_KEY: 'my-secret-signing-key',     # Optional signing key for URL token. Uses SECRET_KEY if not defined.
@@ -176,14 +199,51 @@ QR_CODE_URL_PROTECTION = {
 }
 ```
 
-Here is a "hello world" QR code that uses an URL to serve the image in SVG format without the protection against external requests:
+#### Signing Request URLs
+
+By default, the application only serves QR code images for authenticated URLs (requests generated from your application and adressed to your application). The authentication uses a HMAC to sign the request query arguments. The authentication code is passed as a query argument named **`token`** which is automatically generated by `qr_url_from_text`. Whenever the signature is invalid, the application returns a *HTTP 403 Permission denied* response when processing the request for serving a QR code image.
+
+This mechanism ensures that, by default, nobody can send external requests to your application to obtain custom QR codes for free. This is especially useful if you display QR code URLs on public pages (no user authentication).
+
+The `token` query argument is not mandatory and, when a request reaches the `qr_code:serve_qr_code_image` URL without that token, the protection mechanism falls back to the user authentication mechanism (see chapter below).
+
+It is possible to explicitly remove the  signature token that protects a specific URL with the parameter **`url_signature_enabled=False`**. Here is a "hello world" QR code that uses a URL to serve the image in SVG format without the `token` query argument :
+
 ```djangotemplate
 <img src="{% qr_url_from_text "Hello World!" url_signature_enabled=False %}" alt="Hello World!">
 ```
-The `token` parameter will not be part of the query string of the generated URL. This makes it possible to build a simpler, predictable URL. See the setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` for enabling certain users to access those unprotected link.
+
+The `token` parameter will not be part of the query string of the generated URL, making possible to build a simpler, predictable URL. However, this will trigger the user authentication mechanism (see chapter below).
+
+#### Handling User Authentication when Serving QR Code Images
+
+If you are interested in providing the QR code images as a service, there is a setting named **`ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER`** to grant access to some controlled users. This setting tells who can bypass the url signature token (see chapter above). It can be a boolean value used for any authenticated user, or a callable that takes a user as only parameter.
+
+Setting the `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` option to `True` tells the application to serve QR code images to authenticated users only. Hence, to grant access to any authenticated user to generated images, you can use this in your settings:
+
+```python
+from qr_code.qrcode import constants
+
+QR_CODE_URL_PROTECTION = {
+    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: True
+}
+```
+
+Setting the option `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` to a callable that always return `True` (even for anonymous users) will allow anyone to access QR code image generation from outside your Django app. The following settings will grant access to anonymous users to generated images:
+
+```python
+from qr_code.qrcode import constants
+
+QR_CODE_URL_PROTECTION = {
+    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: lambda u: True
+}
+```
+
+Please note that, if your service is available on the Internet, allowing anyone to generate any kind of QR code via your Django application - as shown above - might generate a very heavy load on your server.
 
 ### QR Codes for Apps
-Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an email to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc.  See [this documentation](https://github.com/zxing/zxing/wiki/Barcode-Contents) about what a QR code can encode.
+
+Aside from generating a QR code from a given text, you can also generate codes for specific application purposes, that a reader can interpret as an action to take: open a mail client to send an e-mail to a given address, add a contact to your phone book, connect to a Wi-Fi, start a SMS, etc.  See [this documentation](https://github.com/zxing/zxing/wiki/Barcode-Contents) about what a QR code can encode.
 
 Django QR Code proposes several utility tags to ease the generation of such codes, without having to build the appropriate text representation for each action you need. This remove the hassle of reading the specifications and handling all the required escaping for reserved chars.
 
@@ -207,7 +267,7 @@ from datetime import date
 from django.shortcuts import render    
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates, QRCodeOptions
 
-def index(request):
+def application_qr_code_demo(request):
     # Use a ContactDetail instance to encapsulate the detail of the contact.
     contact_detail = ContactDetail(
         first_name='John',
@@ -245,7 +305,7 @@ def index(request):
     )
 
     # Render the index page.
-    return render(request, 'qr_code_demo/index.html', context=context)
+    return render(request, 'my_app/application_qr_code_demo.html', context=context)
 ```
 
 Then, in your template, you can render the appropriate QR codes for the given context:
@@ -289,12 +349,9 @@ Please check-out the [demo application](#demo-application) to see more examples.
 ## Notes
 
 ### Image Formats
-The SVG is the default image format.
-It is a vector image format so it can be scaled as wanted.
-However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels).
-The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
+The SVG is the default image format. It is a vector image format so it can be scaled up and down without quality loss. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
 
-SVG has [broad support](http://caniuse.com/#feat=svg) now and it will work properly on any modern web browser.
+SVG has [broad support](http://caniuse.com/#feat=svg) now, and it will work properly on any modern web browser.
 
 ### qr_from_text vs qr_url_from_text
 The tag `qr_url_from_text` has several advantages over `qr_from_text`, despite the fact that it requires a bit more of writing:
@@ -305,10 +362,9 @@ The tag `qr_url_from_text` has several advantages over `qr_from_text`, despite t
 * the page can be loaded asynchronously, which improves responsiveness
 * you can provide links to QR codes instead of displaying them, which is not possible with `qr_from_text`
 
-One disadvantage of `qr_url_from_text` is that it increases the number of requests to the server (one request to serve the page containing the URL and another to request the image.
+One disadvantage of `qr_url_from_text` is that it increases the number of requests to the server: one request to serve the page containing the URL and another to request the image.
 
-Be aware that serving image files (which are generated on the fly) from an URL can be abused and lead to DOS attack pretty easily, for instance by requesting very large QR codes from outside your application.
-This is the reason why the associated setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` in `QR_CODE_URL_PROTECTION` defaults to completely forbid external access to the API. Be careful when opening external access.
+Be aware that serving image files (which are generated on the fly) from a URL can be abused and lead to (D)DoS attack pretty easily, for instance by requesting very large QR codes from outside your application. This is the reason why the associated setting `ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER` in `QR_CODE_URL_PROTECTION` defaults to completely forbid external access to the API. Be careful when opening external access.
 
 ### QR Codes Caching
 Caching QR codes reduces CPU usage, but the usage of `qr_url_from_text` (which caching depends on) increases the number of requests to the server (one request to serve the page containing the URL and another to request the image).
@@ -316,7 +372,7 @@ Caching QR codes reduces CPU usage, but the usage of `qr_url_from_text` (which c
 Moreover, be aware that the largest QR codes, in version 40 with a border of 4 modules and rendered in SVG format, have a size of ~800 KB.
 Be sure that your cache options are reasonable and can be supported by your server(s), especially for in-memory caching.
 
-Note that even without caching generated QR codes, the app will return a *HTTP 304 Not Modified* status code whenever the same QR code is requested again by the same user.
+Note that even without caching the generated QR codes, the app will return a *HTTP 304 Not Modified* status code whenever the same QR code is requested again. The URL named **`qr_code:serve_qr_code_image`** adds the `ETag` and `Last-Modified` headers to the response if the headers aren't already set, enabling  *HTTP 304 Not Modified* response upon following requests.
 
 ## Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
@@ -353,3 +409,4 @@ This will run the test suite with all supported versions of Python and Django. T
 This app is used in the following projects:
 * [MyGym Web](https://mygym-web.ch/): a web platform for managing sports clubs. The QR codes are used for importing members' contact information in a phone book.
 * [Gymna-Score](https://gymna-score.acjg.ch/): a web platform for entering scores during gymnastics competitions organized by the Association Cantonale Jurassienne de Gymnastique (ACJG). The QR codes are used to provide an easy way for the public to follow an ongoing competition. They are also used to authenticate judges that need to enter scores.
+* [AC-Ju](https://www.ac-ju.ch/): a website that generates digital vouchers that can be redeemed at affiliate merchants.

@@ -1,7 +1,12 @@
 # Change Log
 
+## 2.1.0 (2021-01-23)
+* Change encoding from URL-safe Base64 to standard Base64 for `text` query argument (used for serving QR code images).
+* Introduce setting `SERVE_QR_CODE_IMAGE_PATH` to configure the path under which QR Code images are served.
+* Reorganize and improve documentation.
+
 ## 2.0.1 (2020-11-24)
-* Update the install_requires after the move from qrcode to segno.
+* Update the install_requires after the move from qrcode to Segno.
 
 ## 2.0.0 (2020-11-22)
 * Remove dependency on Pillow / qrcode
@@ -62,7 +67,7 @@ The changes mentioned above might break the compatibility with code using qr_cod
 ## 0.4.1 (2018-03-10)
 * Fixed unescaped chars when generating QR code for a contact.
 * Simplify handling of default values for QR code options.
-* Added documentation about what a QR code can encode.
+* Add documentation about what a QR code can encode.
 
 ## 0.4.0 (2018-03-09)
 * Added support for multiple new tags:
@@ -99,9 +104,9 @@ The changes mentioned above might break the compatibility with code using qr_cod
     * Conditional view processing (HTTP 304) for rendered QR codes
     * Protection against external requests
     * Settings to configure URLs accesses as a service for generating QR code images
-    * Added documentation for new features
-    * Added tests for new features
-    * Added examples to demo site
+    * Add documentation for new features
+    * Add tests for new features
+    * Add examples to demo site
 * More robust testing of make_embedded_qr_code's arguments.
 * Improved documentation.
 * Demo site is compatible with Django 1.8.
@@ -114,9 +119,9 @@ The changes mentioned above might break the compatibility with code using qr_cod
 * Several additions to the documentation.
 
 ## 0.2.0 (2017-08-04)
-* Added support for PNG image format via an `img` tag.
-* Added documentation for users and developers.
-* Improved examples in demo app.
+* Add support for PNG image format via an `img` tag.
+* Add documentation for users and developers.
+* Improve examples in demo app.
 
 ## 0.1.1 (2017-08-02)
 First public release.

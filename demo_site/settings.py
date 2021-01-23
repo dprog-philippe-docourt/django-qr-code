@@ -20,7 +20,7 @@ from qr_code.qrcode import constants
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '8l4)()f1&tg*dtxh6whlew#k-d5&79npe#j_dg9l0b)m8^g#8u'
@@ -71,14 +71,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'demo_site.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
 }
 
 
 # Password validation
-# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -96,7 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
+# https://docs.djangoproject.com/en/3.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -109,7 +109,7 @@ USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
+# https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -132,5 +132,6 @@ QR_CODE_URL_PROTECTION = {
     constants.TOKEN_LENGTH: 30,  # Optional random token length for URL protection. Defaults to 20.
     constants.SIGNING_KEY: 'my-secret-signing-key',  # Optional signing key for URL token. Uses SECRET_KEY if not defined.
     constants.SIGNING_SALT: 'my-signing-salt',  # Optional signing salt for URL token.
-    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False   # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
+    constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: lambda u: True  # Tells whether a registered user can request the QR code URLs from outside a site that uses this app. It can be a boolean value used for any user, or a callable that takes a user as parameter. Defaults to False (nobody can access the URL without the security token).
 }
+SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'

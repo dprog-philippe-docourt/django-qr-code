@@ -47,7 +47,7 @@ def serve_qr_code_image(request):
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
     try:
-        text = base64.urlsafe_b64decode(request.GET.get('text', ''))
+        text = base64.b64decode(request.GET.get('text', ''))
     except binascii.Error:
         raise SuspiciousOperation("Invalid base64 encoded string.")
     img = make_qr_code_image(text, qr_code_options=qr_code_options)
