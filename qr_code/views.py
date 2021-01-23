@@ -41,13 +41,13 @@ def cache_qr_code():
 
 @condition(etag_func=qr_code_etag, last_modified_func=qr_code_last_modified)
 @cache_qr_code()
-def serve_qr_code_image(request):
+def serve_qr_code_image(request) -> HttpResponse:
     """Serve an image that represents the requested QR code."""
     qr_code_options = get_qr_code_option_from_request(request)
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
     try:
-        text = base64.b64decode(request.GET.get('text', ''))
+        text = base64.b64decode(request.GET.get('text', '')).decode(encoding='utf-8')
     except binascii.Error:
         raise SuspiciousOperation("Invalid base64 encoded string.")
     img = make_qr_code_image(text, qr_code_options=qr_code_options)
@@ -55,14 +55,14 @@ def serve_qr_code_image(request):
                         content_type='image/svg+xml' if qr_code_options.image_format == 'svg' else 'image/png')
 
 
-def get_qr_code_option_from_request(request):
+def get_qr_code_option_from_request(request) -> QRCodeOptions:
     request_query = request.GET.dict()
     for key in ('text', 'token', 'cache_enabled'):
         request_query.pop(key, None)
     return QRCodeOptions(**request_query)
 
 
-def check_image_access_permission(request, qr_code_options):
+def check_image_access_permission(request, qr_code_options) -> None:
     """Handle image access protection (we do not allow external requests for anyone)."""
     token = request.GET.get('token', '')
     if token:
@@ -72,7 +72,7 @@ def check_image_access_permission(request, qr_code_options):
             raise PermissionDenied("You are not allowed to access this QR code.")
 
 
-def check_url_signature_token(qr_code_options, token):
+def check_url_signature_token(qr_code_options, token) -> None:
     url_protection_options = get_url_protection_options()
     signer = Signer(key=url_protection_options[constants.SIGNING_KEY],
                     salt=url_protection_options[constants.SIGNING_SALT])

@@ -1,9 +1,11 @@
 import base64
 import urllib.parse
 from collections.abc import Mapping
+from datetime import datetime
+from typing import Optional, Union
 
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.signing import Signer
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -14,7 +16,7 @@ from qr_code.qrcode import constants
 from qr_code.qrcode.utils import QRCodeOptions
 
 
-def _get_default_url_protection_options():
+def _get_default_url_protection_options() -> dict:
     return {
         constants.TOKEN_LENGTH: 20,
         constants.SIGNING_KEY: settings.SECRET_KEY,
@@ -23,12 +25,13 @@ def _get_default_url_protection_options():
     }
 
 
-def _get_url_protection_settings():
+def _get_url_protection_settings() -> Optional[Mapping]:
     if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
         return settings.QR_CODE_URL_PROTECTION
+    return None
 
 
-def _options_allow_external_request(url_protection_options, user):
+def _options_allow_external_request(url_protection_options: Mapping, user: Union[User, AnonymousUser, None]) -> bool:
     # Evaluate the callable if required.
     if callable(url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
         allows_external_request = url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user or AnonymousUser())
@@ -39,15 +42,15 @@ def _options_allow_external_request(url_protection_options, user):
     return allows_external_request
 
 
-def requires_url_protection_token(user=None):
+def requires_url_protection_token(user: Union[User, AnonymousUser, None] = None) -> bool:
     return not _options_allow_external_request(get_url_protection_options(), user)
 
 
-def allows_external_request_from_user(user=None):
+def allows_external_request_from_user(user: Union[User, AnonymousUser, None] = None) -> bool:
     return _options_allow_external_request(get_url_protection_options(), user)
 
 
-def get_url_protection_options():
+def get_url_protection_options() -> dict:
     options = _get_default_url_protection_options()
     settings_options = _get_url_protection_settings()
     if settings_options is not None:
@@ -55,7 +58,7 @@ def get_url_protection_options():
     return options
 
 
-def _make_random_token():
+def _make_random_token() -> str:
     url_protection_options = get_url_protection_options()
     return get_random_string(url_protection_options[constants.TOKEN_LENGTH])
 
@@ -63,7 +66,7 @@ def _make_random_token():
 _RANDOM_TOKEN = _make_random_token()
 
 
-def get_qr_url_protection_signed_token(qr_code_options):
+def get_qr_url_protection_signed_token(qr_code_options: QRCodeOptions):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
     signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
@@ -81,23 +84,23 @@ def get_qr_url_protection_token(qr_code_options, random_token):
     return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version or '', qr_code_options.image_format, qr_code_options.error_correction, random_token))))
 
 
-def qr_code_etag(request):
+def qr_code_etag(request) -> str:
     return '"%s:%s:version_%s"' % (request.path, request.GET.urlencode(), constants.QR_CODE_GENERATION_VERSION_DATE.isoformat())
 
 
-def qr_code_last_modified(request):
+def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(text, qr_code_options=None, cache_enabled=None,
-                     url_signature_enabled=None):
+def make_qr_code_url(text: str, qr_code_options: Optional[QRCodeOptions] = None, cache_enabled: Optional[bool] = None,
+                     url_signature_enabled: Optional[bool] = None) -> str:
     """Build an URL to a view that handle serving QR code image from the given parameters.
 
     Any invalid argument related to the size or the format of the image is silently
     converted into the default value for that argument.
 
     :param str text: Text to encode into a QR code
-    :param QrCodeOptions qr_code_options: The rendering options for the QR code.
+    :param QRCodeOptions qr_code_options: The rendering options for the QR code.
     :param bool cache_enabled: Allows to skip caching the QR code (when set to *False*) when caching has
         been enabled.
     :param bool url_signature_enabled: Tells whether the random token for protecting the URL against

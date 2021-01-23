@@ -1,2 +1,5 @@
 twine
 coverage
+mypy
+django-stubs
+

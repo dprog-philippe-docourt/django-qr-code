@@ -4,10 +4,24 @@ output_folder_name=tests_result
 if [ -d "../${output_folder_name}" ]; then
     mv "../${output_folder_name}" "../${output_folder_name}.back"
 fi
-mkdir "../${output_folder_name}"
+mkdir -p "../${output_folder_name}"
 log_file_name=log.txt
+
 (
     cd ../
+
+    echo "--- Run type checking"
+    pip install -r requirements-dev.txt
+    mypy qr_code
+    if [ $? -ne 0 ]; then
+        echo
+        echo --- Failed type checking. Abort tests!
+        exit 1
+    else
+        echo
+        echo --- Type checking OK!
+        echo
+    fi
 
     echo "--- Tests started on $(date)on $(hostname) ($(uname -a))"
     echo "--- Computer: $(hostname) ($(uname -a), CPU: $(nproc --all)"
