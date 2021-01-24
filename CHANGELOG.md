@@ -4,6 +4,8 @@
 * Change encoding from URL-safe Base64 to standard Base64 for `text` query argument (used for serving QR code images).
 * Introduce setting `SERVE_QR_CODE_IMAGE_PATH` to configure the path under which QR Code images are served.
 * Reorganize and improve documentation.
+* Fix #23
+* Introduce usage of type hints.
 
 ## 2.0.1 (2020-11-24)
 * Update the install_requires after the move from qrcode to Segno.
