@@ -29,7 +29,7 @@ log_file_name=log.txt
     echo "--- RAM: $(free -h)"
 
     python_versions=("3.6 3.7 3.8 3.9")
-    django_versions=("2.2.17" "3.0.11" "3.1.3")
+    django_versions=("2.2.23" "3.1.11" "3.2.3")
 
     for python_version in ${python_versions[@]}
     do

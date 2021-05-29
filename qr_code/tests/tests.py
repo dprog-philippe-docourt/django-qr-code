@@ -94,6 +94,10 @@ class TestQRCodeOptions(SimpleTestCase):
         options = QRCodeOptions(image_format='invalid-image-format')
         self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
 
+    def test_kw_save(self):
+        options = QRCodeOptions(border=0, image_format="png", size=13)
+        self.assertDictEqual(options.kw_save(), {'border': 0, 'kind': 'png', 'scale': 13})
+
 
 class TestContactDetail(SimpleTestCase):
     def test_make_qr_code_text(self):
