@@ -1,9 +1,18 @@
 # Change Log
 
+## 2.2.0 (2021-06-03)
+* Change encoding from URL-safe Base64 to standard Base64 for `text` query argument (used for serving QR code images).
+* Fix #31 by passing the border parameter for segno.QRCode.save.
+* Ensure compatibility with Django 3.2.
+* Drop support for Django 3.0.
+
+
 ## 2.1.0 (2021-01-23)
 * Change encoding from URL-safe Base64 to standard Base64 for `text` query argument (used for serving QR code images).
 * Introduce setting `SERVE_QR_CODE_IMAGE_PATH` to configure the path under which QR Code images are served.
 * Reorganize and improve documentation.
+* Fix #23
+* Introduce usage of type hints.
 
 ## 2.0.1 (2020-11-24)
 * Update the install_requires after the move from qrcode to Segno.
