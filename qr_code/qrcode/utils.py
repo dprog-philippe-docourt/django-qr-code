@@ -85,7 +85,7 @@ class QRCodeOptions:
         :raises: TypeError in case an unknown argument is given.
         """
         self._size = size
-        self._border = border
+        self._border = int(border)
         if _can_be_cast_to_int(version):
             version = int(version)  # type: ignore
             if not 1 <= version <= 40:
@@ -142,7 +142,7 @@ class QRCodeOptions:
         :rtype: dict
         """
         image_format = self._image_format
-        kw = dict(kind=image_format, scale=self._size_as_int())
+        kw = dict(border=self.border, kind=image_format, scale=self._size_as_int())
         # Change the color mapping into the keywords Segno expects
         # (remove the "_color" suffix from the module names)
         kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
