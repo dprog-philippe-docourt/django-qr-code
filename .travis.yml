@@ -7,8 +7,8 @@ python:
   - "3.9"
 env:
   - DJANGO_VERSION=2.2
-  - DJANGO_VERSION=3.0
   - DJANGO_VERSION=3.1
+  - DJANGO_VERSION=3.2
 # command to install dependencies
 install:
   - pip install django~=$DJANGO_VERSION
