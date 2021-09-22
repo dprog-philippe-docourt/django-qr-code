@@ -1,6 +1,6 @@
 import base64
 import urllib.parse
-from collections.abc import Mapping
+from collections import Mapping
 from datetime import datetime
 from typing import Optional, Union
 
