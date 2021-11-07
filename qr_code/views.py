@@ -24,7 +24,7 @@ def cache_qr_code():
     def decorator(view_func):
         @functools.wraps(view_func)
         def _wrapped_view(request, *view_args, **view_kwargs):
-            cache_enabled = request.GET.get('cache_enabled', True)
+            cache_enabled = int(request.GET.get('cache_enabled', 1)) == 1
             if cache_enabled and hasattr(settings, 'QR_CODE_CACHE_ALIAS') and settings.QR_CODE_CACHE_ALIAS:
                 # We found a cache alias for storing the generate qr code and cache is enabled, use it to cache the
                 # page.
@@ -59,6 +59,9 @@ def get_qr_code_option_from_request(request) -> QRCodeOptions:
     request_query = request.GET.dict()
     for key in ('text', 'token', 'cache_enabled'):
         request_query.pop(key, None)
+    # Force typing for booleans.
+    request_query['micro'] = int(request_query.get('micro', 0)) == 1
+    request_query['eci'] = int(request_query.get('eci', 0)) == 1
     return QRCodeOptions(**request_query)
 
 

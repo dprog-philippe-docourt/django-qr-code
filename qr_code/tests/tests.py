@@ -16,7 +16,7 @@ from django.utils.html import escape
 
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
-    DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION
+    DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI
 from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
@@ -91,6 +91,7 @@ class TestQRCodeOptions(SimpleTestCase):
         self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
         self.assertEqual(options.version, DEFAULT_VERSION)
         self.assertEqual(options.error_correction, DEFAULT_ERROR_CORRECTION)
+        self.assertEqual(options.eci, DEFAULT_ECI)
         options = QRCodeOptions(image_format='invalid-image-format')
         self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
 
@@ -359,6 +360,108 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             ref_image_data = get_png_content_from_file_name(ref_file_name)
             self.assertEqual(source_image_data, ref_image_data)
 
+    def test_svg_eci(self):
+        base_file_name = 'qrfromtext_eci'
+        for eci in [False, True]:
+            print('Testing SVG URL with ECI: %s' % eci)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(eci=eci), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(eci=eci, image_format='SVG'), cache_enabled=False)
+            # Using an invalid image format should fallback to SVG.
+            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, image_format='invalid-format-name', cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            self.assertEqual(urls[0], urls[5])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content.decode('utf-8')
+            ref_file_name = '%s_%s' % (base_file_name, str(eci).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_png_eci(self):
+        base_file_name = 'qrfromtext_eci'
+        for eci in [False, True]:
+            print('Testing PNG URL with ECI: %s' % eci)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(eci=eci, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(eci=eci, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, eci=eci, image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(eci=eci, image_format='PNG'), cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content
+            ref_file_name = '%s_%s' % (base_file_name, str(eci).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_png_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_svg_micro(self):
+        base_file_name = 'qrfromtext_micro'
+        for micro in [False, True]:
+            print('Testing SVG URL with micro: %s' % micro)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, image_format='SVG'), cache_enabled=False)
+            # Using an invalid image format should fallback to SVG.
+            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='invalid-format-name', cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            self.assertEqual(urls[0], urls[5])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content.decode('utf-8')
+            ref_file_name = '%s_%s' % (base_file_name, str(micro).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_png_micro(self):
+        base_file_name = 'qrfromtext_micro'
+        for micro in [False, True]:
+            print('Testing PNG URL with micro: %s' % micro)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, image_format='PNG'), cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content
+            ref_file_name = '%s_%s' % (base_file_name, str(micro).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_png_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
 
 class TestQRFromTextSvgResult(SimpleTestCase):
     """
@@ -438,6 +541,44 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
             self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
+    def test_eci(self):
+        file_base_name = 'qrfromtext_eci'
+        tests_data = []
+        for eci in [False, True]:
+            ref_file_name = '%s_%s' % (file_base_name, eci)
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" eci={eci} %}}', ref_file_name=ref_file_name.lower()))
+            # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" eci="{eci}" %}}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image_data = template.render(context)
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
+
+    def test_micro(self):
+        file_base_name = 'qrfromtext_micro'
+        tests_data = []
+        for micro in [False, True]:
+            ref_file_name = '%s_%s' % (file_base_name, micro)
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" micro={micro} %}}', ref_file_name=ref_file_name.lower()))
+            # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" micro="{micro}" %}}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image_data = template.render(context)
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_svg_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
+
 
 class TestQRFromTextPngResult(SimpleTestCase):
     """
@@ -502,6 +643,48 @@ class TestQRFromTextPngResult(SimpleTestCase):
         for correction_level in ERROR_CORRECTION_DICT.keys():
             ref_file_name = '%s_%s' % (file_base_name, correction_level)
             tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" error_correction="{correction_level}" %}}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image = template.render(context).strip()
+            source_image_data = source_image[32:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
+            source_image_data = base64.b64decode(source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_eci(self):
+        file_base_name = 'qrfromtext_eci'
+        tests_data = []
+        for eci in [False, True]:
+            ref_file_name = '%s_%s' % (file_base_name, eci)
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" eci={eci} %}}', ref_file_name=ref_file_name.lower()))
+            # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" eci="{eci}" %}}', ref_file_name=ref_file_name.lower()))
+
+        for test_data in tests_data:
+            print('Testing template: %s' % test_data['source'])
+            html_source = mark_safe('{% load qr_code %}' + test_data['source'])
+            template = Template(html_source)
+            context = Context()
+            source_image = template.render(context).strip()
+            source_image_data = source_image[32:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
+            source_image_data = base64.b64decode(source_image_data)
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(test_data['ref_file_name'], source_image_data)
+            ref_image_data = get_png_content_from_file_name(test_data['ref_file_name'])
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_micro(self):
+        file_base_name = 'qrfromtext_micro'
+        tests_data = []
+        for micro in [False, True]:
+            ref_file_name = '%s_%s' % (file_base_name, micro)
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" micro={micro}%}}', ref_file_name=ref_file_name.lower()))
+            # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" micro="{micro}"%}}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])

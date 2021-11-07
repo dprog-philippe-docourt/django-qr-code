@@ -28,8 +28,8 @@ log_file_name=log.txt
     echo "--- CPU: $(nproc --all)"
     echo "--- RAM: $(free -h)"
 
-    python_versions=("3.6 3.7 3.8 3.9")
-    django_versions=("2.2.23" "3.1.11" "3.2.4")
+    python_versions=("3.7 3.8 3.9 3.10")
+    django_versions=("2.2.24" "3.2.9")
 
     for python_version in ${python_versions[@]}
     do

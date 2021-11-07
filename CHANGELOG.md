@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.3.0 (2021-11-07)
+* Add support for `ECI mode` to control bytes encoding.
+* Fix handling of `micro` QR code option when using URLs to serve image via `{% qr_url_from_text %}`.
+* Fix handling of `cache_enabled` option when using URLs to serve image via `{% qr_url_from_text %}`.
+* Fix handling of `url_signature_enabled` option when using URLs to serve image via `{% qr_url_from_text %}`.
+
 ## 2.2.0 (2021-06-03)
 * Change encoding from URL-safe Base64 to standard Base64 for `text` query argument (used for serving QR code images).
 * Fix #31 by passing the border parameter for segno.QRCode.save.
