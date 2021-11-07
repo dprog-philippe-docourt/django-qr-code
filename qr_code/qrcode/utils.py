@@ -15,7 +15,7 @@ class QRCodeOptions:
     """
     def __init__(self, *, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
                  image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION,
-                 micro: bool = False, dark_color: Union[Tuple, str] = '#000', light_color: Union[Tuple, str] = '#fff',
+                 micro: bool = False, eci: bool = False, dark_color: Union[Tuple, str] = '#000', light_color: Union[Tuple, str] = '#fff',
                  finder_dark_color: bool = False, finder_light_color: bool = False,
                  data_dark_color: bool = False, data_light_color: bool = False,
                  version_dark_color: bool = False, version_light_color: bool = False,
@@ -36,6 +36,7 @@ class QRCodeOptions:
         :param str error_correction: How much error correction that might be required
                 to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
+        :param bool eci: Indicates if ECI protocol is enabled to control bytes encoding. Default: False
         :param dark_color: Color of the dark modules (default: black). The
                 color can be provided as ``(R, G, B)`` tuple, as hexadecimal
                 format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
@@ -98,9 +99,12 @@ class QRCodeOptions:
         else:
             version = None
         self._version = version
-        if not isinstance(micro, bool):
-            micro = micro == 'True'
+        # if not isinstance(micro, bool):
+        #     micro = micro == 'True'
         self._micro = micro
+        # if not isinstance(eci, bool):
+        #     eci = eci == 'True'
+        self._eci = eci
         try:
             error = error_correction.lower()
             self._error_correction = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
@@ -134,7 +138,7 @@ class QRCodeOptions:
         :rtype: dict
         """
         return dict(version=self._version, error=self._error_correction,
-                    micro=self._micro)
+                    micro=self._micro, eci=self._eci)
 
     def kw_save(self):
         """Internal method which returns a dict of parameters to save a QR code.
@@ -206,6 +210,10 @@ class QRCodeOptions:
     @property
     def micro(self):
         return self._micro
+
+    @property
+    def eci(self):
+        return self._eci
 
 
 def _can_be_cast_to_int(value: Any) -> bool:

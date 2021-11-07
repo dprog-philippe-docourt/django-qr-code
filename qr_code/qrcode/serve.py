@@ -2,7 +2,7 @@ import base64
 import urllib.parse
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
@@ -92,7 +92,7 @@ def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(text: str, qr_code_options: Optional[QRCodeOptions] = None, cache_enabled: Optional[bool] = None,
+def make_qr_code_url(text: Any, qr_code_options: Optional[QRCodeOptions] = None, cache_enabled: Optional[bool] = None,
                      url_signature_enabled: Optional[bool] = None) -> str:
     """Build an URL to a view that handle serving QR code image from the given parameters.
 
@@ -109,9 +109,14 @@ def make_qr_code_url(text: str, qr_code_options: Optional[QRCodeOptions] = None,
     qr_code_options = QRCodeOptions() if qr_code_options is None else qr_code_options
     if url_signature_enabled is None:
         url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
+    url_signature_enabled = 1 if url_signature_enabled else 0
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
-    encoded_text = str(base64.b64encode(bytes(force_str(text), encoding='utf-8')), encoding='utf-8')
+    cache_enabled = 1 if cache_enabled else 0
+    if isinstance(text, bytes):
+        encoded_text = str(base64.b64encode(text), encoding='utf-8')
+    else:
+        encoded_text = str(base64.b64encode(force_str(text).encode('utf-8')), encoding='utf-8')
     params = dict(text=encoded_text, cache_enabled=cache_enabled)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
@@ -125,7 +130,9 @@ def make_qr_code_url(text: str, qr_code_options: Optional[QRCodeOptions] = None,
     if qr_code_options.error_correction != constants.DEFAULT_ERROR_CORRECTION:
         params['error_correction'] = qr_code_options.error_correction
     if qr_code_options.micro:
-        params['micro'] = qr_code_options.micro
+        params['micro'] = 1
+    if qr_code_options.eci:
+        params['eci'] = 1
     params.update(qr_code_options.color_mapping())
     path = reverse('qr_code:serve_qr_code_image')
     if url_signature_enabled:

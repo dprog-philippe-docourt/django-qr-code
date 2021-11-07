@@ -85,11 +85,17 @@ The `border` parameter controls how many modules thick the border should be (the
 
 There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
 depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
-error correction may be required. The correction level can be configured with the `error_correction` parameter as follow:
+error correction may be required. The correction level can be configured with the `error_correction` parameter as follows:
 * l or L: error correction level L – up to 7% damage
 * m or M: error correction level M – up to 15% damage
 * q or Q: error correction level Q – up to 25% damage
 * h or H: error correction level H – up to 30% damage
+
+You may enforce the creation of a Micro QR Code with `micro=True`. The `micro` option defaults to `False`.
+
+You may enable  the creation of a Micro QR Code with `micro=True`. The `micro` option defaults to `False`.
+
+The `eci` option indicates if binary data which does not use the default encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot of QR code readers do not support the ECI mode, this feature is disabled by default and the data is encoded in the provided encoding using the usual “byte” mode. Set eci to `True` if an ECI header should be inserted into the QR Code. Note that the implementation may not know the ECI designator for the provided encoding and may raise an exception if the ECI designator cannot be found. The ECI mode is not supported by Micro QR Codes.
 
 Alternatively, you may use the `options` keyword argument with an instance of `QRCodeOptions` as value instead of listing every requested options. Here is a example of view: 
 ```python

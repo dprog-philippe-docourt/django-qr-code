@@ -18,7 +18,10 @@ def make_qr(text: Any, qr_code_options: QRCodeOptions):
     """
     # WARNING: For compatibility reasons, we still allow to pass __proxy__ class (lazy string). Moreover, it would be OK to pass anything that has __str__
     # attribute (e. g. class instance that handles phone numbers).
-    return segno.make(str(text), **qr_code_options.kw_make())
+    if isinstance(text, (bytes, int)):
+        return segno.make(text, **qr_code_options.kw_make())
+    else:
+        return segno.make(str(text), **qr_code_options.kw_make())
 
 
 def make_qr_code_image(text: Any, qr_code_options: QRCodeOptions) -> bytes:
@@ -58,7 +61,11 @@ def make_qr_code_with_args(text: Any, qr_code_args: dict) -> str:
 
 def make_qr_code_url_with_args(text: Any, qr_code_args: dict) -> str:
     cache_enabled = qr_code_args.pop('cache_enabled', DEFAULT_CACHE_ENABLED)
+    if not isinstance(cache_enabled, bool):
+        cache_enabled = not cache_enabled == 'False'
     url_signature_enabled = qr_code_args.pop('url_signature_enabled', DEFAULT_URL_SIGNATURE_ENABLED)
+    if not isinstance(url_signature_enabled, bool):
+        url_signature_enabled = not url_signature_enabled == 'False'
     options = _options_from_args(qr_code_args)
     return make_qr_code_url(text, options, cache_enabled=cache_enabled,
                             url_signature_enabled=url_signature_enabled)
