@@ -3,21 +3,21 @@ API Reference
 
 
 qrcode.maker
--------
+------------
 
 .. automodule:: qr_code.qrcode.maker
    :members:
 
 
 qrcode.serve
--------
+------------
 
 .. automodule:: qr_code.qrcode.serve
    :members:
 
 
 qrcode.utils
--------
+------------
 
 .. automodule:: qr_code.qrcode.utils
    :members:

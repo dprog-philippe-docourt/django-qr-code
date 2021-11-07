@@ -20,9 +20,11 @@
 import os
 import re
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+import django
 
+sys.path.insert(0, os.path.abspath('../'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'demo_site.settings')
+django.setup()
 
 # Symlink CHANGELOG.md from repo root to the pages dir.
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -72,7 +74,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Django QR Code'
-copyright = '2017-2020, Philippe Docourt'
+copyright = '2017-2021, Philippe Docourt'
 author = 'Philippe Docourt'
 
 # The version info for the project you're documenting, acts as replacement for
