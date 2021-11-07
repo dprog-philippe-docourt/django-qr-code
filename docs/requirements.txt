@@ -1,5 +1,5 @@
 recommonmark==0.7.1
-sphinx==4.2.0
+sphinx==1.8.5
 sphinx-autobuild==2021.3.14
-docutils<0.18
+docutils<=0.18
 -r ../requirements.txt
