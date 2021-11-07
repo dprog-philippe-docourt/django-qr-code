@@ -35,7 +35,7 @@ python manage.py collectstatic --no-input
 Start by adding `qr_code` to your `INSTALLED_APPS` setting like this:
 ```python
 INSTALLED_APPS = (
-    ...,
+    # ...,
     'qr_code',
 )
 ```
