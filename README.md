@@ -141,7 +141,7 @@ urlpatterns = [
 ]
 ```
 
-The QR code images are served via a URL named **`qr_code:serve_qr_code_image`**. You can customize the path under which the images are served (i. e. the path bound to the URL named `qr_code:serve_qr_code_image`) with the optionnal setting **`SERVE_QR_CODE_IMAGE_PATH`** which defaults to `images/serve-qr-code-image/`. Note that the trailing slash is mandatory and that defining this setting to an empty string leads to using the default value. The example below will serve any QR code image from `<base URL or your application>/qr-code-image/`:
+The QR code images are served via a URL named **`qr_code:serve_qr_code_image`**. You can customize the path under which the images are served (i.e. the path bound to the URL named `qr_code:serve_qr_code_image`) with the optionnal setting **`SERVE_QR_CODE_IMAGE_PATH`** which defaults to `images/serve-qr-code-image/`. Note that the trailing slash is mandatory and that defining this setting to an empty string leads to using the default value. The example below will serve any QR code image from `<base URL or your application>/qr-code-image/`:
 
 ```python
 # In urls.py
