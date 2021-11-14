@@ -44,7 +44,7 @@ class QRCodeOptions:
         :param str error_correction: How much error correction that might be required
             to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
         :param bool boost_error: Tells whether the QR code encoding engine tries to increase the error correction while
-            keeping the same level. Error correction is not increased when it impacts the the level of the code.
+            keeping the same version. Error correction is not increased when it impacts the version of the code.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
         :param encoding: Indicates the encoding in mode "byte". By default
             `encoding` is ``UTF-8``. When set to ``None``, the implementation tries to use the standard conform

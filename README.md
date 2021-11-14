@@ -93,6 +93,10 @@ error correction may be required. The correction level can be configured with th
 
 You may enforce the creation of a Micro QR Code with `micro=True`. The `micro` option defaults to `False`.
 
+The `encoding` used in mode "byte" (used for general text content). By default `encoding` is ``UTF-8``. When set to ``None``, the implementation tries to use the standard conform ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is inserted by default (see `eci` option). The `encoding` parameter is case insensitive.
+
+The `boost_error` indicates whether the QR code encoding engine tries to increase the error correction while keeping the same version. Error correction is not increased when it impacts the version of the code.
+
 The `eci` option indicates if binary data which does not use the default encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot of QR code readers do not support the ECI mode, this feature is disabled by default and the data is encoded in the provided encoding using the usual “byte” mode. Set eci to `True` if an ECI header should be inserted into the QR Code. Note that the implementation may not know the ECI designator for the provided encoding and may raise an exception if the ECI designator cannot be found. The ECI mode is not supported by Micro QR Codes.
 
 Alternatively, you may use the `options` keyword argument with an instance of `QRCodeOptions` as value instead of listing every requested options. Here is an example of view: 
@@ -173,9 +177,9 @@ The alphanumeric mode extends the numeric mode by various characters. Namely, ab
 Kanji can be encoded compactly and efficiently and requires significantly less space than encoding the characters in UTF-8.
 
 #### Byte mode
-The byte mode covers all data which cannot be represented by the other modes. The encoding engine (Segno) detects, according to ISO/IEC 18004, to encode the data with ISO 8859-1. In case the data cannot be represented by ISO 8859-1, UTF-8 is used as fallback.
+The byte mode covers all data which cannot be represented by the other modes. When the `encoding` option is set to `None`, the encoding engine (Segno) detects, according to ISO/IEC 18004, to encode the data with ISO 8859-1. In case the data cannot be represented by ISO 8859-1, UTF-8 is used as fallback.
 
-NOTE: When using `qr_from_text` or `qr_url_from_text`, the byte mode with UTF-8 encoding is forced. It appears to be one of the most portable way of encoding text for proper decoding among the readers.
+NOTE: When using `qr_from_text` or `qr_url_from_text`, the byte mode with UTF-8 encoding is forced by default . You may use the `encoding` option to change this behavior. It appears to be one of the most portable way of encoding text for proper decoding among the readers.
 
 #### Examples
 The following renders a tiny numeric QR code containing the value `2021` with a `svg` tag:
