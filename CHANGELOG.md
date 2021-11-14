@@ -2,6 +2,9 @@
 
 ## 3.0.0 (???)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
+* Several breaking changes in API:
+  * `text` parameters renamed to `data`.
+  * methods `make_qr_text` renamed to `make_qr_data`.
 * Drop support for Python 3.6.
 * Drop support for Django 3.1.
 
