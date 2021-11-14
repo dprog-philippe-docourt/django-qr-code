@@ -92,7 +92,7 @@ def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None, cache_enabled: Optional[bool] = None,
+def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None, force_text: bool = True, cache_enabled: Optional[bool] = None,
                      url_signature_enabled: Optional[bool] = None) -> str:
     """Build an URL to a view that handle serving QR code image from the given parameters.
 
@@ -101,6 +101,8 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
 
     :param str data: Data to encode into a QR code.
     :param QRCodeOptions qr_code_options: The rendering options for the QR code.
+    :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in
+        byte mode.
     :param bool cache_enabled: Allows to skip caching the QR code (when set to *False*) when caching has
         been enabled.
     :param bool url_signature_enabled: Tells whether the random token for protecting the URL against
@@ -113,11 +115,14 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
     cache_enabled = 1 if cache_enabled else 0
-    if isinstance(data, bytes):
-        encoded_data = str(base64.b64encode(data), encoding='utf-8')
-    else:
+    if force_text:
         encoded_data = str(base64.b64encode(force_str(data).encode('utf-8')), encoding='utf-8')
-    params = dict(data=encoded_data, cache_enabled=cache_enabled)
+        params = dict(text=encoded_data, cache_enabled=cache_enabled)
+    elif isinstance(data, int):
+        params = dict(int=data, cache_enabled=cache_enabled)
+    else:
+        encoded_data = base64.b64encode(data)
+        params = dict(bytes=encoded_data, cache_enabled=cache_enabled)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
         params['size'] = qr_code_options.size

@@ -156,6 +156,38 @@ urlpatterns = [
 SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'
 ```
 
+### Special encoding modes with qr_from_data and qr_url_from_data
+The tags **`qr_from_data`** and  **`qr_url_from_data`** produce results similar to those of `qr_from_text` and `qr_url_from_text`, but they avoid converting everything to UTF-8 encoded text.
+
+The ISO/IEC 18004 standard defines four modes in order to encode the data as efficiently as possible.
+
+#### Numeric mode
+The numeric mode is the most efficient way to encode digits. This mode does not cover negative numbers because it does not support the minus sign (or plus sign).
+
+The numeric mode is supported by QR Codes and Micro QR Codes. The encoding engine detects (Segno) the numeric mode if the data is provided as string (e.g. '54') or integer (e.g. 54) to `qr_from_data` or `qr_url_from_data`.
+
+#### Alphanumeric mode
+The alphanumeric mode extends the numeric mode by various characters. Namely, about the upper case letters ABCDEFGHIJKLMNOPQRSTUVWXYZ, a space character " " and other letters $%*+-./:.
+
+#### Kanji mode
+Kanji can be encoded compactly and efficiently and requires significantly less space than encoding the characters in UTF-8.
+
+#### Byte mode
+The byte mode covers all data which cannot be represented by the other modes. The encoding engine (Segno) detects, according to ISO/IEC 18004, to encode the data with ISO 8859-1. In case the data cannot be represented by ISO 8859-1, UTF-8 is used as fallback.
+
+NOTE: When using `qr_from_text` or `qr_url_from_text`, the byte mode with UTF-8 encoding is forced. It appears to be one of the most portable way of encoding text for proper decoding among the readers.
+
+#### Examples
+The following renders a tiny numeric QR code containing the value `2021` with a `svg` tag:
+```djangotemplate
+{% qr_from_data 2021 size="T" %}
+```
+
+Here is a micro QR code with an `img` tag containing the value `2021`:
+```djangotemplate
+{% qr_from_data 2021 micro=True image_format="png" %}
+```
+
 ### Caching Served Images
 
 A large QR code (version 40) requires 0.2 second to be generated on a powerful machine (in 2018), and probably more than half a second on a really cheap hosting.

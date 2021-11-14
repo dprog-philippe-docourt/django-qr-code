@@ -765,8 +765,6 @@ class TestQRForApplications(SimpleTestCase):
             ('epc', 'epc_data', {'epc_data': epc_data2}, 1),
             ('epc', 'epc_data=epc_data', {'epc_data': epc_data2}, 1),
             ('epc', 'epc_data', {'epc_data': epc_data3}, 2),
-            # ('epc', 'epc_data', {'epc_data': epc_data4}, 3),
-            # ('epc', 'epc_data', {'epc_data': epc_data5}, 4),
             ('contact', 'contact_detail', {'contact_detail': contact_detail1}, None),
             ('contact', 'contact_detail', {'contact_detail': contact_detail2}, None),
             ('contact', 'contact_detail=contact_detail', {'contact_detail': contact_detail2}, None),

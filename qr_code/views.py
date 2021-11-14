@@ -46,10 +46,23 @@ def serve_qr_code_image(request) -> HttpResponse:
     qr_code_options = get_qr_code_option_from_request(request)
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)
-    try:
-        data = base64.b64decode(request.GET.get('data', '')).decode('utf-8')
-    except binascii.Error:
-        raise SuspiciousOperation("Invalid base64 encoded string.")
+    if 'bytes' in request.GET:
+        try:
+            data = base64.b64decode(request.GET.get('bytes', b''))
+        except binascii.Error:
+            raise SuspiciousOperation("Invalid base64 encoded data.")
+    elif 'int' in request.GET:
+        try:
+            data = int(request.GET.get('int', None))
+        except (ValueError, TypeError):
+            raise SuspiciousOperation("Invalid integer value.")
+    else:
+        try:
+            data = base64.b64decode(request.GET.get('text', '')).decode('utf-8')
+        except binascii.Error:
+            raise SuspiciousOperation("Invalid base64 encoded text.")
+        except UnicodeDecodeError:
+            raise SuspiciousOperation("Invalid UTF-8 encoded text.")
     img = make_qr_code_image(data, qr_code_options=qr_code_options)
     return HttpResponse(content=img,
                         content_type='image/svg+xml' if qr_code_options.image_format == 'svg' else 'image/png')
@@ -57,7 +70,7 @@ def serve_qr_code_image(request) -> HttpResponse:
 
 def get_qr_code_option_from_request(request) -> QRCodeOptions:
     request_query = request.GET.dict()
-    for key in ('data', 'token', 'cache_enabled'):
+    for key in ('bytes', 'text', 'int', 'token', 'cache_enabled'):
         request_query.pop(key, None)
     # Force typing for booleans.
     request_query['micro'] = int(request_query.get('micro', 0)) == 1

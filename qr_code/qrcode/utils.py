@@ -17,7 +17,7 @@ class QRCodeOptions:
     Represents the options used to create and draw a QR code.
     """
     def __init__(self, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
-                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, boost_error: bool = True,
+                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, encoding: Optional[str] = None, boost_error: bool = True,
                  micro: bool = False, eci: bool = False, dark_color: Union[Tuple, str] = '#000', light_color: Union[Tuple, str] = '#fff',
                  finder_dark_color: bool = False, finder_light_color: bool = False,
                  data_dark_color: bool = False, data_light_color: bool = False,
@@ -28,27 +28,48 @@ class QRCodeOptions:
                  separator_color: bool = False, dark_module_color: bool = False,
                  quiet_zone_color: bool = False) -> None:
         """
-        :param size: The size of the QR code as an integer or a string.
-                    Default is *'m'*.
+        :param size: The size of the QR code as an integer or a string. Default is *'m'*.
         :type: str or int
         :param int border: The size of the border (blank space around the code).
-        :param int version: The version of the QR code gives the size of the matrix.
-                Default is *None* which mean automatic in order to avoid data overflow.
+        :param version: The version of the QR code gives the size of the matrix.
+            Default is *None* which mean automatic in order to avoid data overflow.
+        :param version: QR Code version. If the value is ``None`` (default), the
+            minimal version which fits for the input data will be used.
+            Valid values: "M1", "M2", "M3", "M4" (for Micro QR codes) or an
+            integer between 1 and 40 (for QR codes).
+            The `version` parameter is case insensitive.
+        :type version: int, str or None
         :param str image_format: The graphics format used to render the QR code.
-                It can be either *'svg'* or *'png'*. Default is *'svg'*.
+            It can be either *'svg'* or *'png'*. Default is *'svg'*.
         :param str error_correction: How much error correction that might be required
-                to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
+            to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
         :param bool boost_error: Tells whether the QR code encoding engine tries to increase the error correction while
-                keeping the same level. Error correction is not increased when it impacts the the level of the code.
+            keeping the same level. Error correction is not increased when it impacts the the level of the code.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
-        :param bool eci: Indicates if ECI protocol is enabled to control bytes encoding. Default: False
+        :param encoding: Indicates the encoding in mode "byte". By default
+            (`encoding` is ``None``) the implementation tries to use the
+            standard conform ISO/IEC 8859-1 encoding and if it does not fit, it
+            will use UTF-8. Note that no ECI mode indicator is inserted by
+            default (see :paramref:`eci`).
+            The `encoding` parameter is case insensitive.
+        :type encoding: str or None
+        :param bool eci: Indicates if binary data which does not use the default
+            encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot
+            of QR code readers do not support the ECI mode, this feature is
+            disabled by default and the data is encoded in the provided
+            `encoding` using the usual "byte" mode. Set `eci` to ``True`` if
+            an ECI header should be inserted into the QR Code. Note that
+            the implementation may not know the ECI designator for the provided
+            `encoding` and may raise an exception if the ECI designator cannot
+            be found.
+            The ECI mode is not supported by Micro QR Codes.
         :param dark_color: Color of the dark modules (default: black). The
-                color can be provided as ``(R, G, B)`` tuple, as hexadecimal
-                format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
-                name (i.e. ``red``).
+            color can be provided as ``(R, G, B)`` tuple, as hexadecimal
+            format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
+            name (i.e. ``red``).
         :param light_color: Color of the light modules (default: white).
-                See `color` for valid values. If light is set to ``None`` the
-                light modules will be transparent.
+            See `color` for valid values. If light is set to ``None`` the
+            light modules will be transparent.
         :param finder_dark_color: Color of the dark finder modules (default: same as ``dark_color``)
         :param finder_light_color: Color of the light finder modules (default: same as ``light_color``)
         :param data_dark_color: Color of the dark data modules (default: same as ``dark_color``)
@@ -77,9 +98,11 @@ class QRCodeOptions:
         The *border* parameter controls how many modules thick the border should be (blank space around the code).
         The default is 4, which is the minimum according to the specs.
 
-        The *version* parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to determine
-        this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is 177 x 177 matrix.
+        The *version* parameter is an integer from 1 to 40 that controls the size of the QR code matrix. Set to None to
+        determine this automatically. The smallest, version 1, is a 21 x 21 matrix. The biggest, version 40, is
+        177 x 177 matrix.
         The size grows by 4 modules/side.
+        For Micro QR codes, valid values are "M1", "M2", "M3", "M4".
 
         There are 4 error correction levels used for QR codes, with each one adding different amounts of "backup" data
         depending on how much damage the QR code is expected to suffer in its intended environment, and hence how much
@@ -116,6 +139,7 @@ class QRCodeOptions:
         except AttributeError:
             self._error_correction = DEFAULT_ERROR_CORRECTION
         self._boost_error = boost_error
+        self._encoding = encoding
         try:
             image_format = image_format.lower()
             self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
@@ -144,7 +168,8 @@ class QRCodeOptions:
         :rtype: dict
         """
         return dict(version=self._version, error=self._error_correction,
-                    micro=self._micro, eci=self._eci, boost_error=self._boost_error)
+                    micro=self._micro, eci=self._eci, boost_error=self._boost_error,
+                    encoding=self._encoding)
 
     def kw_save(self):
         """Internal method which returns a dict of parameters to save a QR code.
@@ -220,6 +245,10 @@ class QRCodeOptions:
     @property
     def micro(self):
         return self._micro
+
+    @property
+    def encoding(self):
+        return self._encoding
 
     @property
     def eci(self):

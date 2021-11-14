@@ -2,6 +2,7 @@
 
 ## 3.0.0 (???)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
+* Introduce `qr_from_data` and `qr_url_from_data` to allow optimized encoding of alphanumeric, numeric, and byte data (adopt appropriate encoding mode depending on data content).
 * Several breaking changes in API:
   * `text` parameters renamed to `data`.
   * methods `make_qr_text` renamed to `make_qr_data`.
