@@ -17,7 +17,7 @@ class QRCodeOptions:
     Represents the options used to create and draw a QR code.
     """
     def __init__(self, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
-                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, encoding: Optional[str] = None, boost_error: bool = True,
+                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, encoding: Optional[str] = 'utf-8', boost_error: bool = True,
                  micro: bool = False, eci: bool = False, dark_color: Union[Tuple, str] = '#000', light_color: Union[Tuple, str] = '#fff',
                  finder_dark_color: bool = False, finder_light_color: bool = False,
                  data_dark_color: bool = False, data_light_color: bool = False,
@@ -47,10 +47,9 @@ class QRCodeOptions:
             keeping the same level. Error correction is not increased when it impacts the the level of the code.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
         :param encoding: Indicates the encoding in mode "byte". By default
-            (`encoding` is ``None``) the implementation tries to use the
-            standard conform ISO/IEC 8859-1 encoding and if it does not fit, it
-            will use UTF-8. Note that no ECI mode indicator is inserted by
-            default (see :paramref:`eci`).
+            `encoding` is ``UTF-8``. When set to ``None``, the implementation tries to use the standard conform
+            ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is
+            inserted by default (see :paramref:`eci`).
             The `encoding` parameter is case insensitive.
         :type encoding: str or None
         :param bool eci: Indicates if binary data which does not use the default
@@ -139,7 +138,8 @@ class QRCodeOptions:
         except AttributeError:
             self._error_correction = DEFAULT_ERROR_CORRECTION
         self._boost_error = boost_error
-        self._encoding = encoding
+        # Handle encoding
+        self._encoding = None if encoding == '' else encoding
         try:
             image_format = image_format.lower()
             self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
@@ -479,7 +479,7 @@ def make_epc_data(name: str, iban: str, amount: Union[int, float, decimal.Decima
                 for non-EEA countries.
     :param str purpose: SEPA purpose code.
     """
-    return helpers._make_epc_qr_data(name=name, iban=iban, amount=amount, text=text, reference=reference, bic=bic, purpose=purpose)
+    return helpers._make_epc_qr_data(name=name, iban=iban, amount=amount, text=text, reference=reference, bic=bic, purpose=purpose, encoding=1)
 
 
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:

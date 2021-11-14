@@ -111,6 +111,7 @@ def qr_for_epc(epc_data, **kwargs) -> str:
         error_correction='M',
         boost_error=False,
         micro=False,
+        encoding='utf-8',
     )
     return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=True, qr_code_args=kwargs,
                                                 extra_qr_code_args=extra, force_text=False)
@@ -177,7 +178,9 @@ def qr_url_for_wifi(wifi_config, **kwargs) -> str:
 def qr_url_for_epc(epc_data, **kwargs) -> str:
     extra = dict(
         error_correction='M',
-        boost_error=False
+        boost_error=False,
+        micro=False,
+        encoding='utf-8',
     )
     return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=False, qr_code_args=kwargs,
                                                 extra_qr_code_args=extra, force_text=False)

@@ -121,7 +121,7 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
     elif isinstance(data, int):
         params = dict(int=data, cache_enabled=cache_enabled)
     else:
-        encoded_data = base64.b64encode(data)
+        encoded_data = str(base64.b64encode(data), encoding='utf-8')
         params = dict(bytes=encoded_data, cache_enabled=cache_enabled)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
@@ -138,6 +138,9 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
         params['micro'] = 1
     if qr_code_options.eci:
         params['eci'] = 1
+    if qr_code_options.boost_error:
+        params['boost_error'] = 1
+    params['encoding'] = qr_code_options.encoding if qr_code_options.encoding else ''
     params.update(qr_code_options.color_mapping())
     path = reverse('qr_code:serve_qr_code_image')
     if url_signature_enabled:

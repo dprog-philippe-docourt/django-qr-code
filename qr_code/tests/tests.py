@@ -16,7 +16,7 @@ from django.utils.html import escape
 
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
-    DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI
+    DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI, DEFAULT_BOOST_ERROR, DEFAULT_ENCODING
 from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
 from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates, EpcData
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
@@ -29,8 +29,8 @@ IMAGE_TAG_BASE64_DATA_RE = re.compile(r'data:image/png;base64,(?P<data>[\w/+=]+)
 TEST_TEXT = 'Hello World!'
 COMPLEX_TEST_TEXT = '/%+¼@#=<>àé'
 TEST_CONTACT_DETAIL = dict(
-            first_name='John',
-            last_name='Doe',
+            first_name='Jérémy Sébastien Ninõ',
+            last_name='Érard',
             first_name_reading='jAAn',
             last_name_reading='dOH',
             tel='+41769998877',
@@ -50,7 +50,7 @@ TEST_EPC_QR_1 = dict(
     name='Wikimedia Foerdergesellschaft',
     iban='DE33100205000001194700',
     amount=20,
-    text='To Wikipedia'
+    text='To Wikipedia, From Gérard Boéchat'
 )
 TEST_EPC_QR_2 = dict(
     name='Wikimedia Foerdergesellschaft',
@@ -104,6 +104,8 @@ class TestQRCodeOptions(SimpleTestCase):
         self.assertEqual(options.version, DEFAULT_VERSION)
         self.assertEqual(options.error_correction, DEFAULT_ERROR_CORRECTION)
         self.assertEqual(options.eci, DEFAULT_ECI)
+        self.assertEqual(options.boost_error, DEFAULT_BOOST_ERROR)
+        self.assertEqual(options.encoding.lower(), DEFAULT_ENCODING)
         options = QRCodeOptions(image_format='invalid-image-format')
         self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
 
@@ -123,12 +125,12 @@ class TestContactDetail(SimpleTestCase):
         c3 = ContactDetail(**data)
         del data['last_name']
         c4 = ContactDetail(**data)
-        self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
-        self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+        self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
+        self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
         self.assertEqual(c3.make_qr_code_data(),
-                         r"MECARD:N:O'Hara\;\,\:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+                         r"MECARD:N:O'Hara\;\,\:,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
         self.assertEqual(c4.make_qr_code_data(),
-                         r"MECARD:N:John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+                         r"MECARD:N:Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
 
 
 class TestWifiConfig(SimpleTestCase):
@@ -427,13 +429,13 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         base_file_name = 'qrfromtext_micro'
         for micro in [False, True]:
             print('Testing SVG URL with micro: %s' % micro)
-            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro), cache_enabled=False)
-            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, cache_enabled=False)
-            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='svg', cache_enabled=False)
-            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='SVG', cache_enabled=False)
-            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, image_format='SVG'), cache_enabled=False)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, encoding="iso-8859-1"), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, encoding="iso-8859-1", image_format='SVG'), cache_enabled=False)
             # Using an invalid image format should fallback to SVG.
-            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='invalid-format-name', cache_enabled=False)
+            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", image_format='invalid-format-name', cache_enabled=False)
             url = url1
             urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
             self.assertEqual(urls[0], urls[1])
@@ -454,11 +456,11 @@ class TestQRUrlFromTextResult(SimpleTestCase):
         base_file_name = 'qrfromtext_micro'
         for micro in [False, True]:
             print('Testing PNG URL with micro: %s' % micro)
-            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, image_format='png'), cache_enabled=False)
-            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, image_format='PNG'), cache_enabled=False)
-            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='png', cache_enabled=False)
-            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, image_format='PNG', cache_enabled=False)
-            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, image_format='PNG'), cache_enabled=False)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, encoding="iso-8859-1", image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(micro=micro, encoding="iso-8859-1", image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, micro=micro, encoding="iso-8859-1", image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(micro=micro, encoding="iso-8859-1", image_format='PNG'), cache_enabled=False)
             url = url1
             urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
             self.assertEqual(urls[0], urls[1])
@@ -469,6 +471,108 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
             ref_file_name = '%s_%s' % (base_file_name, str(micro).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_png_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_svg_boost_error(self):
+        base_file_name = 'qrfromtext_boost_error'
+        for boost_error in [False, True]:
+            print('Testing SVG URL with boost_error: %s' % boost_error)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(boost_error=boost_error), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(boost_error=boost_error, image_format='SVG'), cache_enabled=False)
+            # Using an invalid image format should fallback to SVG.
+            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, image_format='invalid-format-name', cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            self.assertEqual(urls[0], urls[5])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content.decode('utf-8')
+            ref_file_name = '%s_%s' % (base_file_name, str(boost_error).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_png_boost_error(self):
+        base_file_name = 'qrfromtext_boost_error'
+        for boost_error in [False, True]:
+            print('Testing PNG URL with boost_error: %s' % boost_error)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(boost_error=boost_error, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(boost_error=boost_error, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, boost_error=boost_error, image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(boost_error=boost_error, image_format='PNG'), cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content
+            ref_file_name = '%s_%s' % (base_file_name, str(boost_error).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_png_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_png_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_svg_encoding(self):
+        base_file_name = 'qrfromtext_encoding'
+        for encoding in [None, 'utf-8', 'iso-8859-1']:
+            print('Testing SVG URL with encoding: %s' % encoding)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding), cache_enabled=False)
+            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(encoding=encoding, image_format='SVG'), cache_enabled=False)
+            # Using an invalid image format should fallback to SVG.
+            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='invalid-format-name', cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            self.assertEqual(urls[0], urls[5])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content.decode('utf-8')
+            ref_file_name = '%s_%s' % (base_file_name, str(encoding).lower())
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(ref_file_name, source_image_data)
+            ref_image_data = get_svg_content_from_file_name(ref_file_name)
+            self.assertEqual(source_image_data, ref_image_data)
+
+    def test_png_encoding(self):
+        base_file_name = 'qrfromtext_encoding'
+        for encoding in [None, 'utf-8', 'iso-8859-1']:
+            print('Testing PNG URL with encoding: %s' % encoding)
+            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
+            url = url1
+            urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
+            self.assertEqual(urls[0], urls[1])
+            self.assertEqual(urls[0], urls[2])
+            self.assertEqual(urls[0], urls[3])
+            self.assertEqual(urls[0], urls[4])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            source_image_data = response.content
+            ref_file_name = '%s_%s' % (base_file_name, str(encoding).lower())
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -577,7 +681,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         tests_data = []
         for micro in [False, True]:
             ref_file_name = '%s_%s' % (file_base_name, micro)
-            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" micro={micro} %}}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" encoding="iso-8859-1" micro={micro} %}}', ref_file_name=ref_file_name.lower()))
             # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" micro="{micro}" %}}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
@@ -695,7 +799,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
         tests_data = []
         for micro in [False, True]:
             ref_file_name = '%s_%s' % (file_base_name, micro)
-            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" micro={micro}%}}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" encoding=None micro={micro}%}}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" encoding="iso-8859-1" micro={micro}%}}', ref_file_name=ref_file_name.lower()))
             # tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" micro="{micro}"%}}', ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
