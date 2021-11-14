@@ -18,7 +18,7 @@ from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI
 from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates
+from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates, EpcData
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 # Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
@@ -46,6 +46,18 @@ TEST_WIFI_CONFIG = dict(
             authentication=WifiConfig.AUTHENTICATION.WPA,
             password='wifi-password'
         )
+TEST_EPC_QR_1 = dict(
+    name='Wikimedia Foerdergesellschaft',
+    iban='DE33100205000001194700',
+    amount=20,
+    text='To Wikipedia'
+)
+TEST_EPC_QR_2 = dict(
+    name='Wikimedia Foerdergesellschaft',
+    iban='DE33100205000001194700',
+    amount=50.0,
+    reference='12983020'
+)
 OVERRIDE_CACHES_SETTING = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
                            'qr-code': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                                        'LOCATION': 'qr-code-cache', 'TIMEOUT': 3600}}
@@ -111,11 +123,11 @@ class TestContactDetail(SimpleTestCase):
         c3 = ContactDetail(**data)
         del data['last_name']
         c4 = ContactDetail(**data)
-        self.assertEqual(c1.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
-        self.assertEqual(c2.make_qr_code_text(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
-        self.assertEqual(c3.make_qr_code_text(),
+        self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
+        self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Doe,John;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+        self.assertEqual(c3.make_qr_code_data(),
                          r"MECARD:N:O'Hara\;\,\:,John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
-        self.assertEqual(c4.make_qr_code_text(),
+        self.assertEqual(c4.make_qr_code_data(),
                          r"MECARD:N:John;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
 
 
@@ -123,8 +135,8 @@ class TestWifiConfig(SimpleTestCase):
     def test_make_qr_code_text(self):
         wifi1 = WifiConfig(**TEST_WIFI_CONFIG)
         wifi2 = WifiConfig(hidden=True, **TEST_WIFI_CONFIG)
-        self.assertEqual(wifi1.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;;')
-        self.assertEqual(wifi2.make_qr_code_text(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;;')
+        self.assertEqual(wifi1.make_qr_code_data(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;;')
+        self.assertEqual(wifi2.make_qr_code_data(), 'WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;;')
 
 
 class TestCoordinates(SimpleTestCase):
@@ -722,6 +734,13 @@ class TestQRForApplications(SimpleTestCase):
         wifi_config2 = WifiConfig(
             **wifi_config1
         )
+        epc_data1 = dict(**TEST_EPC_QR_1)
+        epc_data2 = EpcData(
+            **epc_data1
+        )
+        epc_data3 = dict(**TEST_EPC_QR_2)
+        # epc_data4 = dict(**TEST_EPC_QR_3)
+        # epc_data5 = dict(**TEST_EPC_QR_4)
         google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
         geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         tag_prefix = 'qr_for_' if embedded else 'qr_url_for_'
@@ -732,27 +751,36 @@ class TestQRForApplications(SimpleTestCase):
             # Deactivate cache for URL.
             tag_args['cache_enabled'] = False
         raw_data = (
-            ('email', '"john.doe@domain.com"', None),
-            ('tel', ' "+41769998877"', None),
-            ('sms', ' "+41769998877"', None),
-            ('geolocation', 'latitude=586000.32 longitude=250954.19 altitude=500', None),
-            ('geolocation', 'coordinates=coordinates', {'coordinates': geolocation_coordinates}),
-            ('google_maps', 'latitude=586000.32 longitude=250954.19', None),
-            ('google_maps', 'coordinates=coordinates', {'coordinates': google_maps_coordinates}),
-            ('wifi', 'wifi_config', {'wifi_config': wifi_config1}),
-            ('wifi', 'wifi_config', {'wifi_config': wifi_config2}),
-            ('wifi', 'wifi_config=wifi_config', {'wifi_config': wifi_config2}),
-            ('contact', 'contact_detail', {'contact_detail': contact_detail1}),
-            ('contact', 'contact_detail', {'contact_detail': contact_detail2}),
-            ('contact', 'contact_detail=contact_detail', {'contact_detail': contact_detail2}),
-            ('youtube', '"J9go2nj6b3M"', None),
-            ('youtube', 'video_id', {'video_id': "J9go2nj6b3M"}),
-            ('google_play', '"ch.admin.meteoswiss"', None),
+            ('email', '"john.doe@domain.com"', None, None),
+            ('tel', ' "+41769998877"', None, None),
+            ('sms', ' "+41769998877"', None, None),
+            ('geolocation', 'latitude=586000.32 longitude=250954.19 altitude=500', None, None),
+            ('geolocation', 'coordinates=coordinates', {'coordinates': geolocation_coordinates}, None),
+            ('google_maps', 'latitude=586000.32 longitude=250954.19', None, None),
+            ('google_maps', 'coordinates=coordinates', {'coordinates': google_maps_coordinates}, None),
+            ('wifi', 'wifi_config', {'wifi_config': wifi_config1}, None),
+            ('wifi', 'wifi_config', {'wifi_config': wifi_config2}, None),
+            ('wifi', 'wifi_config=wifi_config', {'wifi_config': wifi_config2}, None),
+            ('epc', 'epc_data', {'epc_data': epc_data1}, 1),
+            ('epc', 'epc_data', {'epc_data': epc_data2}, 1),
+            ('epc', 'epc_data=epc_data', {'epc_data': epc_data2}, 1),
+            ('epc', 'epc_data', {'epc_data': epc_data3}, 2),
+            # ('epc', 'epc_data', {'epc_data': epc_data4}, 3),
+            # ('epc', 'epc_data', {'epc_data': epc_data5}, 4),
+            ('contact', 'contact_detail', {'contact_detail': contact_detail1}, None),
+            ('contact', 'contact_detail', {'contact_detail': contact_detail2}, None),
+            ('contact', 'contact_detail=contact_detail', {'contact_detail': contact_detail2}, None),
+            ('youtube', '"J9go2nj6b3M"', None, None),
+            ('youtube', 'video_id', {'video_id': "J9go2nj6b3M"}, None),
+            ('google_play', '"ch.admin.meteoswiss"', None, None),
         )
         tests_data = []
-        for tag_base_name, tag_data, template_context in raw_data:
+        for tag_base_name, tag_data, template_context, number in raw_data:
+            ref_file_name = 'qr_for_%s' % tag_base_name
+            if number is not None:
+                ref_file_name = f'{ref_file_name}_{number}'
             test_data = TestQRForApplications._make_test_data(tag_pattern='%s%s %s' % (tag_prefix, tag_base_name, tag_data),
-                                                              ref_file_name='qr_for_%s' % tag_base_name,
+                                                              ref_file_name=ref_file_name,
                                                               tag_args=tag_args,
                                                               template_context=template_context)
             tests_data.append(test_data)

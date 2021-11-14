@@ -1,23 +1,29 @@
 """Tags for Django template system that help generating QR codes."""
-from typing import Union, Any
+from typing import Optional, Any
 
 from django import template
 
 from qr_code.qrcode.maker import make_qr_code_with_args, make_qr_code_url_with_args
 from qr_code.qrcode.utils import make_email_text, make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, WifiConfig, ContactDetail, Coordinates
+    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData
 
 register = template.Library()
 
 
-def _make_contact_or_wifi_qr_code(contact_or_wifi, expected_cls, embedded: bool, qr_code_args: dict) -> str:
-    if not isinstance(contact_or_wifi, expected_cls):
-        # For compatibility with existing views and templates, try to build from dict.
-        contact_or_wifi = expected_cls(**contact_or_wifi)
-    if embedded:
-        return make_qr_code_with_args(contact_or_wifi.make_qr_code_text(), qr_code_args=qr_code_args)
+def _make_app_qr_code_from_obj_or_kwargs(obj_or_kwargs, expected_cls, embedded: bool, qr_code_args: dict,
+                                         extra_qr_code_args: Optional[dict] = None) -> str:
+    if isinstance(obj_or_kwargs, expected_cls):
+        obj = obj_or_kwargs
     else:
-        return make_qr_code_url_with_args(contact_or_wifi.make_qr_code_text(), qr_code_args=qr_code_args)
+        # For compatibility with existing views and templates, try to build from dict.
+        obj = expected_cls(**obj_or_kwargs)
+    final_args = {**qr_code_args}
+    if extra_qr_code_args:
+        final_args.update(extra_qr_code_args)
+    if embedded:
+        return make_qr_code_with_args(obj.make_qr_code_data(), qr_code_args=final_args)
+    else:
+        return make_qr_code_url_with_args(obj.make_qr_code_data(), qr_code_args=final_args)
 
 
 def _make_google_maps_qr_code(embedded: bool, **kwargs) -> str:
@@ -86,12 +92,22 @@ def qr_for_google_play(package_id: str, **kwargs) -> str:
 
 @register.simple_tag()
 def qr_for_contact(contact_detail, **kwargs) -> str:
-    return _make_contact_or_wifi_qr_code(contact_detail, ContactDetail, embedded=True, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(contact_detail, ContactDetail, embedded=True, qr_code_args=kwargs)
 
 
 @register.simple_tag()
 def qr_for_wifi(wifi_config, **kwargs) -> str:
-    return _make_contact_or_wifi_qr_code(wifi_config, WifiConfig, embedded=True, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(wifi_config, WifiConfig, embedded=True, qr_code_args=kwargs)
+
+
+@register.simple_tag()
+def qr_for_epc(epc_data, **kwargs) -> str:
+    extra = dict(
+        error_correction='M',
+        boost_error=False
+    )
+    return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=True, qr_code_args=kwargs,
+                                                extra_qr_code_args=extra)
 
 
 @register.simple_tag()
@@ -138,9 +154,19 @@ def qr_url_for_google_play(package_id: str, **kwargs) -> str:
 
 @register.simple_tag()
 def qr_url_for_contact(contact_detail, **kwargs) -> str:
-    return _make_contact_or_wifi_qr_code(contact_detail, ContactDetail, embedded=False, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(contact_detail, ContactDetail, embedded=False, qr_code_args=kwargs)
 
 
 @register.simple_tag()
 def qr_url_for_wifi(wifi_config, **kwargs) -> str:
-    return _make_contact_or_wifi_qr_code(wifi_config, WifiConfig, embedded=False, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(wifi_config, WifiConfig, embedded=False, qr_code_args=kwargs)
+
+
+@register.simple_tag()
+def qr_url_for_epc(epc_data, **kwargs) -> str:
+    extra = dict(
+        error_correction='M',
+        boost_error=False
+    )
+    return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=False, qr_code_args=kwargs,
+                                                extra_qr_code_args=extra)

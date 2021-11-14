@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.0.0 (???)
+* Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
+* Drop support for Python 3.6.
+* Drop support for Django 3.1.
+
 ## 2.3.0 (2021-11-07)
 * Add support for `ECI mode` to control bytes encoding.
 * Fix handling of `micro` QR code option when using URLs to serve image via `{% qr_url_from_text %}`.

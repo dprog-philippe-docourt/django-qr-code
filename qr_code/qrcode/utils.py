@@ -1,6 +1,7 @@
 """Utility classes and functions for configuring and setting up the content and the look of a QR code."""
 import decimal
 from collections import namedtuple
+from dataclasses import dataclass, asdict
 from datetime import date
 from typing import Optional, Any, Union, Tuple
 
@@ -8,13 +9,15 @@ from django.utils.html import escape
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
+from segno import helpers
+
 
 class QRCodeOptions:
     """
     Represents the options used to create and draw a QR code.
     """
-    def __init__(self, *, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
-                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION,
+    def __init__(self, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
+                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, boost_error: bool = True,
                  micro: bool = False, eci: bool = False, dark_color: Union[Tuple, str] = '#000', light_color: Union[Tuple, str] = '#fff',
                  finder_dark_color: bool = False, finder_light_color: bool = False,
                  data_dark_color: bool = False, data_light_color: bool = False,
@@ -35,6 +38,8 @@ class QRCodeOptions:
                 It can be either *'svg'* or *'png'*. Default is *'svg'*.
         :param str error_correction: How much error correction that might be required
                 to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
+        :param bool boost_error: Tells whether the QR code encoding engine tries to increase the error correction while
+                keeping the same level. Error correction is not increased when it impacts the the level of the code.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
         :param bool eci: Indicates if ECI protocol is enabled to control bytes encoding. Default: False
         :param dark_color: Color of the dark modules (default: black). The
@@ -110,6 +115,7 @@ class QRCodeOptions:
             self._error_correction = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
         except AttributeError:
             self._error_correction = DEFAULT_ERROR_CORRECTION
+        self._boost_error = boost_error
         try:
             image_format = image_format.lower()
             self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
@@ -138,7 +144,7 @@ class QRCodeOptions:
         :rtype: dict
         """
         return dict(version=self._version, error=self._error_correction,
-                    micro=self._micro, eci=self._eci)
+                    micro=self._micro, eci=self._eci, boost_error=self._boost_error)
 
     def kw_save(self):
         """Internal method which returns a dict of parameters to save a QR code.
@@ -208,6 +214,10 @@ class QRCodeOptions:
         return self._error_correction
 
     @property
+    def boost_error(self):
+        return self._boost_error
+
+    @property
     def micro(self):
         return self._micro
 
@@ -218,6 +228,30 @@ class QRCodeOptions:
 
 def _can_be_cast_to_int(value: Any) -> bool:
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
+
+
+@dataclass
+class EpcData:
+    """
+    Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
+
+    See :py:func:`make_epc_data` for fields meaning.
+    """
+    name: str
+    iban: str
+    amount: Union[int, float, decimal.Decimal]
+    text: Optional[str] = None
+    reference: Optional[str] = None
+    bic: Optional[str] = None
+    purpose: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """
+        Make the bytes data representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
+
+        :return: the EPC data that can be translated to a QR code.
+        """
+        return make_epc_data(**asdict(self))
 
 
 class ContactDetail:
@@ -256,7 +290,7 @@ class ContactDetail:
         self.nickname = nickname
         self.org = org
 
-    def make_qr_code_text(self) -> str:
+    def make_qr_code_data(self) -> str:
         """
         Make a text for configuring a contact in a phone book. The MeCARD format is used, with an optional, non-standard (but often recognized) ORG field.
 
@@ -324,7 +358,7 @@ class WifiConfig:
         self.password = password
         self.hidden = hidden
 
-    def make_qr_code_text(self) -> str:
+    def make_qr_code_data(self) -> str:
         """
         Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
 
@@ -382,6 +416,41 @@ def make_youtube_text(video_id: str) -> str:
 
 def make_google_play_text(package_id: str) -> str:
     return 'https://play.google.com/store/apps/details?id=%s' % escape(package_id)
+
+
+def make_epc_data(name: str, iban: str, amount: Union[int, float, decimal.Decimal], text: Optional[str] = None, reference: Optional[str] = None, bic: Optional[str] = None,
+                  purpose: Optional[str] = None) -> bytes:
+    """
+    Validates the input and creates the data for an European Payments Council Quick Response Code
+    (EPC QR Code) version 002.
+
+    This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
+
+    You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
+    EPC QR Code standard.
+
+    .. note::
+
+        Either the ``text`` or ``reference`` must be provided but not both
+
+    .. note::
+
+        Neither the IBAN, BIC, nor remittance reference number or any other
+        information is validated (aside from checks regarding the allowed string
+        lengths).
+
+    :param str name: Name of the recipient.
+    :param str iban: International Bank Account Number (IBAN)
+    :param amount: The amount to transfer.
+            The currency is always Euro, no other currencies are supported.
+    :type amount: int, float, decimal.Decimal
+    :param str text: Remittance Information (unstructured)
+    :param str reference: Remittance Information (structured)
+    :param str bic: Bank Identifier Code (BIC). Optional, only required
+                for non-EEA countries.
+    :param str purpose: SEPA purpose code.
+    """
+    return helpers._make_epc_qr_data(name=name, iban=iban, amount=amount, text=text, reference=reference, bic=bic, purpose=purpose)
 
 
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:

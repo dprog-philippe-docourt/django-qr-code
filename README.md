@@ -263,13 +263,14 @@ The following tags targeting apps are available:
 * `qr_for_google_play` and `qr_url_for_google_play`
 * `qr_for_contact` and `qr_url_for_contact`
 * `qr_for_wifi` and `qr_url_for_wifi`
+* `qr_for_epc` and `qr_url_for_epc`
 
 
 You could write a view like this:
 ```python
 from datetime import date
 from django.shortcuts import render    
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, Coordinates, QRCodeOptions
+from qr_code.qrcode.utils import ContactDetail, EpcData, WifiConfig, Coordinates, QRCodeOptions
 
 def application_qr_code_demo(request):
     # Use a ContactDetail instance to encapsulate the detail of the contact.
@@ -293,6 +294,15 @@ def application_qr_code_demo(request):
         authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
+    
+    # Use a EpcData instance to encapsulate the data of the European Payments Council Quick Response Code.
+    epc_data = EpcData(
+        name='Wikimedia Foerdergesellschaft',
+        iban='DE33100205000001194700',
+        amount=50.0,
+        currency_code='CHF',
+        text='To Wikipedia'
+    )
 
     # Build coordinates instances.
     google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
@@ -302,6 +312,7 @@ def application_qr_code_demo(request):
     context = dict(
         contact_detail=contact_detail,
         wifi_config=wifi_config,
+        epc_data=epc_data,
         video_id='J9go2nj6b3M',
         google_maps_coordinates=google_maps_coordinates,
         geolocation_coordinates=geolocation_coordinates,
@@ -327,6 +338,9 @@ Then, in your template, you can render the appropriate QR codes for the given co
 <img src="{% qr_url_for_wifi wifi_config size='T' error_correction='Q' %}">
 <p>or:</p>
 <img src="{% qr_url_for_wifi wifi_config options=options_example %}">
+
+<h3>EPC QR Code'</h3>
+<img src="{% qr_url_for_epc epc_data=epc_data %}">
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
 {% qr_for_youtube video_id image_format='png' size='T' %}
