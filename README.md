@@ -12,7 +12,7 @@ This application depends on the [Segno QR Code generator](https://pypi.org/proje
 
 This app makes no usage of the Django models and therefore do not use any database.
 
-Only Python >= 3.6 is supported.
+Only Python >= 3.7 is supported.
 
 ## Installation
 
@@ -93,9 +93,9 @@ error correction may be required. The correction level can be configured with th
 
 You may enforce the creation of a Micro QR Code with `micro=True`. The `micro` option defaults to `False`.
 
-The `encoding` used in mode "byte" (used for general text content). By default `encoding` is ``UTF-8``. When set to ``None``, the implementation tries to use the standard conform ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is inserted by default (see `eci` option). The `encoding` parameter is case insensitive.
+The `encoding` option controls the text encoding used in mode "byte" (used for any general text content). By default `encoding` is ``UTF-8``. When set to ``None``, the implementation (based on Segno) tries to use the standard conform ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is inserted by default (see `eci` option). The `encoding` parameter is case-insensitive.
 
-The `boost_error` indicates whether the QR code encoding engine tries to increase the error correction while keeping the same version. Error correction is not increased when it impacts the version of the code.
+The `boost_error` indicates whether the QR code encoding engine (Segno) tries to increase the error correction level if it does not affect the version. Error correction level is not increased when it impacts the version of the code.
 
 The `eci` option indicates if binary data which does not use the default encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot of QR code readers do not support the ECI mode, this feature is disabled by default and the data is encoded in the provided encoding using the usual “byte” mode. Set eci to `True` if an ECI header should be inserted into the QR Code. Note that the implementation may not know the ECI designator for the provided encoding and may raise an exception if the ECI designator cannot be found. The ECI mode is not supported by Micro QR Codes.
 
@@ -161,7 +161,7 @@ SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'
 ```
 
 ### Special encoding modes with qr_from_data and qr_url_from_data
-The tags **`qr_from_data`** and  **`qr_url_from_data`** produce results similar to those of `qr_from_text` and `qr_url_from_text`, but they avoid converting everything to UTF-8 encoded text.
+The tags **`qr_from_data`** and  **`qr_url_from_data`** produce results similar to those of `qr_from_text` and `qr_url_from_text`, but they avoid converting everything to text (UTF-8 encoded by default, or any supported charset depending on `encoding` option).
 
 The ISO/IEC 18004 standard defines four modes in order to encode the data as efficiently as possible.
 

@@ -43,14 +43,15 @@ class QRCodeOptions:
             It can be either *'svg'* or *'png'*. Default is *'svg'*.
         :param str error_correction: How much error correction that might be required
             to read the code. It can be either *'L'*, *'M'*, *'Q'*, or *'H'*. Default is *'M'*.
-        :param bool boost_error: Tells whether the QR code encoding engine tries to increase the error correction while
-            keeping the same version. Error correction is not increased when it impacts the version of the code.
+        :param bool boost_error: Tells whether the QR code encoding engine tries to increase the error correction level
+            if it does not affect the version. Error correction level is not increased when it impacts the version of
+            the code.
         :param bool micro: Indicates if a Micro QR Code should be created. Default: False
         :param encoding: Indicates the encoding in mode "byte". By default
             `encoding` is ``UTF-8``. When set to ``None``, the implementation tries to use the standard conform
             ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is
             inserted by default (see :paramref:`eci`).
-            The `encoding` parameter is case insensitive.
+            The `encoding` parameter is case-insensitive.
         :type encoding: str or None
         :param bool eci: Indicates if binary data which does not use the default
             encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot
