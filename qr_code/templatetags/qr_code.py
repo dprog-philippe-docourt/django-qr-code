@@ -1,11 +1,11 @@
 """Tags for Django template system that help generating QR codes."""
-from typing import Optional, Any
+from typing import Optional, Any, Union, Sequence
 
 from django import template
 
 from qr_code.qrcode.maker import make_qr_code_with_args, make_qr_code_url_with_args
-from qr_code.qrcode.utils import make_email_text, make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData
+from qr_code.qrcode.utils import make_google_play_text, make_tel_text, make_sms_text, \
+    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email
 
 register = template.Library()
 
@@ -59,8 +59,11 @@ def qr_from_data(data: Any, **kwargs) -> str:
 
 
 @register.simple_tag()
-def qr_for_email(email: Any, **kwargs) -> str:
-    return make_qr_code_with_args(make_email_text(email), qr_code_args=kwargs)
+def qr_for_email(email: Union[str, Email], **kwargs) -> str:
+    if isinstance(email, str):
+        # Handle simple case where e-mail is simple the electronic address.
+        email = Email(to=email)
+    return _make_app_qr_code_from_obj_or_kwargs(email, Email, embedded=True, qr_code_args=kwargs)
 
 
 @register.simple_tag()
@@ -99,6 +102,9 @@ def qr_for_google_play(package_id: str, **kwargs) -> str:
 def qr_for_contact(contact_detail, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(contact_detail, ContactDetail, embedded=True, qr_code_args=kwargs)
 
+@register.simple_tag()
+def qr_for_vcard(vcard, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(vcard, VCard, embedded=True, qr_code_args=kwargs)
 
 @register.simple_tag()
 def qr_for_wifi(wifi_config, **kwargs) -> str:
@@ -129,7 +135,10 @@ def qr_url_from_data(data: Any, **kwargs) -> str:
 
 @register.simple_tag()
 def qr_url_for_email(email: str, **kwargs) -> str:
-    return make_qr_code_url_with_args(make_email_text(email), qr_code_args=kwargs)
+    if isinstance(email, str):
+        # Handle simple case where e-mail is simple the electronic address.
+        email = Email(to=email)
+    return _make_app_qr_code_from_obj_or_kwargs(email, Email, embedded=False, qr_code_args=kwargs)
 
 
 @register.simple_tag()
@@ -167,6 +176,11 @@ def qr_url_for_google_play(package_id: str, **kwargs) -> str:
 @register.simple_tag()
 def qr_url_for_contact(contact_detail, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(contact_detail, ContactDetail, embedded=False, qr_code_args=kwargs)
+
+
+@register.simple_tag()
+def qr_url_for_vcard(vcard, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(vcard, VCard, embedded=False, qr_code_args=kwargs)
 
 
 @register.simple_tag()
