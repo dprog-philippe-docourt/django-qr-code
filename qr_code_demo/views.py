@@ -1,10 +1,10 @@
 from datetime import date
 from django.shortcuts import render
 
-from qr_code.qrcode.utils import MeCARD, VCard, WifiConfig, Coordinates, QRCodeOptions, Email, EpcData
+from qr_code.qrcode.utils import MeCard, VCard, WifiConfig, Coordinates, QRCodeOptions, Email, EpcData
 
 # Use a ContactDetail instance to encapsulate the detail of the contact.
-DEMO_MECARD_CONTACT = MeCARD(
+DEMO_MECARD_CONTACT = MeCard(
     name='Doe; John',
     phone='+41769998877',
     email='j.doe@company.com',

@@ -19,7 +19,7 @@ from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI, DEFAULT_BOOST_ERROR, DEFAULT_ENCODING
 from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
-from qr_code.qrcode.utils import ContactDetail, VCard, MeCARD, WifiConfig, QRCodeOptions, Coordinates, EpcData
+from qr_code.qrcode.utils import ContactDetail, VCard, MeCard, WifiConfig, QRCodeOptions, Coordinates, EpcData
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 # Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
@@ -42,7 +42,7 @@ TEST_CONTACT_DETAIL = dict(
             memo='Development Manager',
             org='Company Ltd',
         )
-TEST_MECARD_CONTACT = MeCARD(
+TEST_MECARD_CONTACT = MeCard(
     name='Ninõ;Jérémy Sébastien',
     phone='+41769998877',
     email='j.doe@company.com',

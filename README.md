@@ -304,14 +304,16 @@ The following tags targeting apps are available:
 * `qr_for_contact` and `qr_url_for_contact` (legacy, do not use in new projects)
 
 You could write a view like this:
+
 ```python
 from datetime import date
-from django.shortcuts import render    
-from qr_code.qrcode.utils import MeCARD, VCard, EpcData, WifiConfig, Coordinates, QRCodeOptions
+from django.shortcuts import render
+from qr_code.qrcode.utils import MeCard, VCard, EpcData, WifiConfig, Coordinates, QRCodeOptions
+
 
 def application_qr_code_demo(request):
     # Use a MeCARD instance to encapsulate the detail of the contact.
-    mecard_contact = MeCARD(
+    mecard_contact = MeCard(
         name='Doe; John',
         phone='+41769998877',
         email='j.doe@company.com',
@@ -320,7 +322,7 @@ def application_qr_code_demo(request):
         memo='Development Manager',
         org='Company Ltd'
     )
-    
+
     # Use a vCard instance to encapsulate the detail of the contact.
     vcard_contact = VCard(
         name='Doe; John',
@@ -343,7 +345,7 @@ def application_qr_code_demo(request):
         authentication=WifiConfig.AUTHENTICATION.WPA,
         password='wifi-password'
     )
-    
+
     # Use a EpcData instance to encapsulate the data of the European Payments Council Quick Response Code.
     epc_data = EpcData(
         name='Wikimedia Foerdergesellschaft',

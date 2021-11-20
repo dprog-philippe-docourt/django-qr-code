@@ -1,11 +1,11 @@
 """Tags for Django template system that help generating QR codes."""
-from typing import Optional, Any, Union, Sequence
+from typing import Optional, Any, Union
 
 from django import template
 
 from qr_code.qrcode.maker import make_qr_code_with_args, make_qr_code_url_with_args
 from qr_code.qrcode.utils import make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email, MeCARD
+    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email, MeCard
 
 register = template.Library()
 
@@ -110,7 +110,7 @@ def qr_for_vcard(vcard, **kwargs) -> str:
 
 @register.simple_tag()
 def qr_for_mecard(mecard, **kwargs) -> str:
-    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCARD, embedded=True, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCard, embedded=True, qr_code_args=kwargs)
 
 
 @register.simple_tag()
@@ -192,7 +192,7 @@ def qr_url_for_vcard(vcard, **kwargs) -> str:
 
 @register.simple_tag()
 def qr_url_for_mecard(mecard, **kwargs) -> str:
-    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCARD, embedded=False, qr_code_args=kwargs)
+    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCard, embedded=False, qr_code_args=kwargs)
 
 
 @register.simple_tag()

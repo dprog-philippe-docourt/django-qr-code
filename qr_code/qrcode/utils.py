@@ -266,7 +266,7 @@ class ContactDetail:
     Represents the detail of a contact for MeCARD encoding.
 
     .. note::
-        This is a legacy class. Please use :py:class:`MeCARD` instead for new projects.
+        This is a legacy class. Please use :py:class:`MeCard` instead for new projects.
 
     The following fields are provided:
         * first_name
@@ -397,7 +397,7 @@ class EpcData:
 
 
 @dataclass
-class MeCARD:
+class MeCard:
     """Represents the detail of a contact for MeCARD encoding.
 
     Fields meaning:
@@ -439,7 +439,7 @@ class MeCARD:
 
     def make_qr_code_data(self) -> str:
         """\
-        Creates a string encoding the contact information as MeCard.
+        Creates a string encoding the contact information as MeCARD.
 
         :rtype: str
         """
