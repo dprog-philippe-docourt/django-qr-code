@@ -43,7 +43,7 @@ TEST_CONTACT_DETAIL = dict(
             org='Company Ltd',
         )
 TEST_MECARD_CONTACT = MeCard(
-    name='Ninõ;Jérémy Sébastien',
+    name='Ninõ,Jérémy Sébastien',
     phone='+41769998877',
     email='j.doe@company.com',
     url='http://www.company.com',
@@ -157,23 +157,46 @@ class TestContactDetail(SimpleTestCase):
         self.assertEqual(c4.make_qr_code_data(),
                          r"MECARD:N:Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
 
-    # def test_make_qr_code_text_with_mecard(self):
-    #     data = asdict(TEST_MECARD_CONTACT)
-    #     c1 = MeCARD(**data)
-    #     data['nickname'] = 'buddy'
-    #     c2 = MeCARD(**data)
-    #     c3 = MeCARD(**data)
-    #     self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
-    #     self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
-    #
-    # def test_make_qr_code_text_with_vcard(self):
-    #     data = asdict(TEST_VCARD_CONTACT)
-    #     c1 = VCard(**data)
-    #     data['nickname'] = 'buddy'
-    #     c2 = VCard(**data)
-    #     self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
-    #     self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+    def test_make_qr_code_text_with_mecard(self):
+        data = asdict(TEST_MECARD_CONTACT)
+        c1 = MeCard(**data)
+        data['nickname'] = 'buddy'
+        c2 = MeCard(**data)
+        self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Ninõ,Jérémy Sébastien;TEL:+41769998877;EMAIL:j.doe@company.com;BDAY:19851002;URL:http\://www.company.com;MEMO:Development Manager;;ORG:Company Ltd;')
+        self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Ninõ,Jérémy Sébastien;TEL:+41769998877;EMAIL:j.doe@company.com;NICKNAME:buddy;BDAY:19851002;URL:http\://www.company.com;MEMO:Development Manager;;ORG:Company Ltd;')
 
+    def test_make_qr_code_text_with_vcard(self):
+        data = asdict(TEST_VCARD_CONTACT)
+        c1 = VCard(**data)
+        data['nickname'] = 'buddy'
+        c2 = VCard(**data)
+        self.assertEqual(c1.make_qr_code_data(), """BEGIN:VCARD\r
+VERSION:3.0\r
+N:Ninõ;Jérémy Sébastien\r
+FN:Ninõ Jérémy Sébastien\r
+ORG:Company Ltd\r
+EMAIL:j.doe@company.com\r
+TEL:+41769998877\r
+URL:http://www.company.com\r
+ADR:;;Cras des Fourches 987;Delémont;Jura;2800;Switzerland\r
+BDAY:1985-10-02\r
+NOTE:Development Manager\r
+END:VCARD\r
+""")
+        self.assertEqual(c2.make_qr_code_data(), """BEGIN:VCARD\r
+VERSION:3.0\r
+N:Ninõ;Jérémy Sébastien\r
+FN:Ninõ Jérémy Sébastien\r
+ORG:Company Ltd\r
+EMAIL:j.doe@company.com\r
+TEL:+41769998877\r
+URL:http://www.company.com\r
+NICKNAME:buddy\r
+ADR:;;Cras des Fourches 987;Delémont;Jura;2800;Switzerland\r
+BDAY:1985-10-02\r
+NOTE:Development Manager\r
+END:VCARD\r
+""")
 
 class TestWifiConfig(SimpleTestCase):
     def test_make_qr_code_text(self):

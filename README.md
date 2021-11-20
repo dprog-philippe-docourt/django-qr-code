@@ -314,7 +314,7 @@ from qr_code.qrcode.utils import MeCard, VCard, EpcData, WifiConfig, Coordinates
 def application_qr_code_demo(request):
     # Use a MeCARD instance to encapsulate the detail of the contact.
     mecard_contact = MeCard(
-        name='Doe; John',
+        name='Doe, John',
         phone='+41769998877',
         email='j.doe@company.com',
         url='http://www.company.com',

@@ -5,7 +5,7 @@ from qr_code.qrcode.utils import MeCard, VCard, WifiConfig, Coordinates, QRCodeO
 
 # Use a ContactDetail instance to encapsulate the detail of the contact.
 DEMO_MECARD_CONTACT = MeCard(
-    name='Doe; John',
+    name='Doe, John',
     phone='+41769998877',
     email='j.doe@company.com',
     url='http://www.company.com',

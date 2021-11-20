@@ -261,6 +261,53 @@ def _can_be_cast_to_int(value: Any) -> bool:
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
+@dataclass
+class EpcData:
+    """
+    Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
+
+    You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
+        EPC QR Code standard.
+
+        .. note::
+
+            Either the ``text`` or ``reference`` must be provided but not both
+
+        .. note::
+
+            Neither the IBAN, BIC, nor remittance reference number or any other
+            information is validated (aside from checks regarding the allowed string
+            lengths).
+
+    Fields meaning:
+        * name: Name of the recipient.
+        * iban: International Bank Account Number (IBAN)
+        * amount: The amount to transfer. The currency is always Euro, no other currencies are supported.
+        * text: Remittance Information (unstructured)
+        * reference: Remittance Information (structured)
+        * bic: Bank Identifier Code (BIC). Optional, only required for non-EEA countries.
+        * purpose: SEPA purpose code.
+    """
+    name: str
+    iban: str
+    amount: Union[int, float, decimal.Decimal]
+    text: Optional[str] = None
+    reference: Optional[str] = None
+    bic: Optional[str] = None
+    purpose: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """
+        Validates the input and creates the data for an European Payments Council Quick Response Code
+        (EPC QR Code) version 002.
+
+        This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
+
+        :rtype: str
+        """
+        return helpers._make_epc_qr_data(**asdict(self), encoding=1)
+
+
 class ContactDetail:
     """
     Represents the detail of a contact for MeCARD encoding.
@@ -268,7 +315,7 @@ class ContactDetail:
     .. note::
         This is a legacy class. Please use :py:class:`MeCard` instead for new projects.
 
-    The following fields are provided:
+    Fields meaning:
         * first_name
         * last_name
         * first_name_reading: the sound of the first name.
@@ -350,53 +397,6 @@ class ContactDetail:
 
 
 @dataclass
-class EpcData:
-    """
-    Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
-
-    You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
-        EPC QR Code standard.
-
-        .. note::
-
-            Either the ``text`` or ``reference`` must be provided but not both
-
-        .. note::
-
-            Neither the IBAN, BIC, nor remittance reference number or any other
-            information is validated (aside from checks regarding the allowed string
-            lengths).
-
-    Fields meaning:
-        * name: Name of the recipient.
-        * iban: International Bank Account Number (IBAN)
-        * amount: The amount to transfer. The currency is always Euro, no other currencies are supported.
-        * text: Remittance Information (unstructured)
-        * reference: Remittance Information (structured)
-        * bic: Bank Identifier Code (BIC). Optional, only required for non-EEA countries.
-        * purpose: SEPA purpose code.
-    """
-    name: str
-    iban: str
-    amount: Union[int, float, decimal.Decimal]
-    text: Optional[str] = None
-    reference: Optional[str] = None
-    bic: Optional[str] = None
-    purpose: Optional[str] = None
-
-    def make_qr_code_data(self) -> str:
-        """
-        Validates the input and creates the data for an European Payments Council Quick Response Code
-        (EPC QR Code) version 002.
-
-        This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
-
-        :rtype: str
-        """
-        return helpers._make_epc_qr_data(**asdict(self), encoding=1)
-
-
-@dataclass
 class MeCard:
     """Represents the detail of a contact for MeCARD encoding.
 
@@ -444,7 +444,8 @@ class MeCard:
         :rtype: str
         """
         kw = asdict(self)
-        kw['zipcode'] = str(self.zipcode)
+        if self.zipcode is not None and self.zipcode != '':
+            kw['zipcode'] = str(self.zipcode)
         org = kw.pop('org')
         contact_text = helpers.make_mecard_data(**kw)
         # Not standard, but recognized by several readers.
