@@ -3,6 +3,7 @@ import base64
 import re
 
 import os
+from dataclasses import asdict
 from datetime import date
 from itertools import product
 
@@ -18,7 +19,7 @@ from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.constants import ERROR_CORRECTION_DICT, DEFAULT_IMAGE_FORMAT, DEFAULT_MODULE_SIZE, \
     DEFAULT_ERROR_CORRECTION, DEFAULT_VERSION, DEFAULT_ECI, DEFAULT_BOOST_ERROR, DEFAULT_ENCODING
 from qr_code.qrcode.serve import make_qr_code_url, allows_external_request_from_user
-from qr_code.qrcode.utils import ContactDetail, WifiConfig, QRCodeOptions, Coordinates, EpcData
+from qr_code.qrcode.utils import ContactDetail, VCard, MeCARD, WifiConfig, QRCodeOptions, Coordinates, EpcData
 from qr_code.templatetags.qr_code import qr_from_text, qr_url_from_text
 
 # Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
@@ -41,6 +42,30 @@ TEST_CONTACT_DETAIL = dict(
             memo='Development Manager',
             org='Company Ltd',
         )
+TEST_MECARD_CONTACT = MeCARD(
+    name='Ninõ;Jérémy Sébastien',
+    phone='+41769998877',
+    email='j.doe@company.com',
+    url='http://www.company.com',
+    birthday=date(year=1985, month=10, day=2),
+    memo='Development Manager',
+    org='Company Ltd'
+)
+
+TEST_VCARD_CONTACT = VCard(
+    name='Ninõ;Jérémy Sébastien',
+    phone='+41769998877',
+    email='j.doe@company.com',
+    url='http://www.company.com',
+    birthday=date(year=1985, month=10, day=2),
+    street='Cras des Fourches 987',
+    city='Delémont',
+    zipcode=2800,
+    region='Jura',
+    country='Switzerland',
+    memo='Development Manager',
+    org='Company Ltd'
+)
 TEST_WIFI_CONFIG = dict(
             ssid='my-wifi',
             authentication=WifiConfig.AUTHENTICATION.WPA,
@@ -115,7 +140,7 @@ class TestQRCodeOptions(SimpleTestCase):
 
 
 class TestContactDetail(SimpleTestCase):
-    def test_make_qr_code_text(self):
+    def test_make_qr_code_text_with_contact_detail(self):
         data = dict(**TEST_CONTACT_DETAIL)
         c1 = ContactDetail(**data)
         data['nickname'] = 'buddy'
@@ -131,6 +156,23 @@ class TestContactDetail(SimpleTestCase):
                          r"MECARD:N:O'Hara\;\,\:,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
         self.assertEqual(c4.make_qr_code_data(),
                          r"MECARD:N:Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;TEL-AV:n/a;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;")
+
+    # def test_make_qr_code_text_with_mecard(self):
+    #     data = asdict(TEST_MECARD_CONTACT)
+    #     c1 = MeCARD(**data)
+    #     data['nickname'] = 'buddy'
+    #     c2 = MeCARD(**data)
+    #     c3 = MeCARD(**data)
+    #     self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
+    #     self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
+    #
+    # def test_make_qr_code_text_with_vcard(self):
+    #     data = asdict(TEST_VCARD_CONTACT)
+    #     c1 = VCard(**data)
+    #     data['nickname'] = 'buddy'
+    #     c2 = VCard(**data)
+    #     self.assertEqual(c1.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;ORG:Company Ltd;;')
+    #     self.assertEqual(c2.make_qr_code_data(), r'MECARD:N:Érard,Jérémy Sébastien Ninõ;SOUND:dOH,jAAn;TEL:+41769998877;EMAIL:j.doe@company.com;NOTE:Development Manager;BDAY:19851002;ADR:Cras des Fourches 987, 2800 Delémont, Jura, Switzerland;URL:http\://www.company.com;NICKNAME:buddy;ORG:Company Ltd;;')
 
 
 class TestWifiConfig(SimpleTestCase):

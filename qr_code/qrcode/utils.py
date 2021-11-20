@@ -449,7 +449,7 @@ class MeCARD:
         contact_text = helpers.make_mecard_data(**kw)
         # Not standard, but recognized by several readers.
         if org:
-            contact_text = f'ORG:{_escape_mecard_special_chars(org)};'
+            contact_text += f'ORG:{_escape_mecard_special_chars(org)};'
         return contact_text
 
 
