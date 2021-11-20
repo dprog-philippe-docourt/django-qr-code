@@ -198,6 +198,7 @@ NOTE:Development Manager\r
 END:VCARD\r
 """)
 
+
 class TestWifiConfig(SimpleTestCase):
     def test_make_qr_code_text(self):
         wifi1 = WifiConfig(**TEST_WIFI_CONFIG)
@@ -909,8 +910,6 @@ class TestQRForApplications(SimpleTestCase):
             **epc_data1
         )
         epc_data3 = dict(**TEST_EPC_QR_2)
-        # epc_data4 = dict(**TEST_EPC_QR_3)
-        # epc_data5 = dict(**TEST_EPC_QR_4)
         google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
         geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         tag_prefix = 'qr_for_' if embedded else 'qr_url_for_'
@@ -938,6 +937,10 @@ class TestQRForApplications(SimpleTestCase):
             ('contact', 'contact_detail', {'contact_detail': contact_detail1}, None),
             ('contact', 'contact_detail', {'contact_detail': contact_detail2}, None),
             ('contact', 'contact_detail=contact_detail', {'contact_detail': contact_detail2}, None),
+            ('mecard', 'mecard=mecard', {'mecard': TEST_MECARD_CONTACT}, None),
+            ('mecard', 'mecard', {'mecard': TEST_MECARD_CONTACT}, None),
+            ('vcard', 'vcard=vcard', {'vcard': TEST_VCARD_CONTACT}, None),
+            ('vcard', 'vcard', {'vcard': TEST_VCARD_CONTACT}, None),
             ('youtube', '"J9go2nj6b3M"', None, None),
             ('youtube', 'video_id', {'video_id': "J9go2nj6b3M"}, None),
             ('google_play', '"ch.admin.meteoswiss"', None, None),
