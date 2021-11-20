@@ -261,60 +261,12 @@ def _can_be_cast_to_int(value: Any) -> bool:
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
-@dataclass
-class EpcData:
-    """
-    Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
-
-    See :py:func:`make_epc_data` for fields meaning.
-    """
-    name: str
-    iban: str
-    amount: Union[int, float, decimal.Decimal]
-    text: Optional[str] = None
-    reference: Optional[str] = None
-    bic: Optional[str] = None
-    purpose: Optional[str] = None
-
-    def make_qr_code_data(self) -> str:
-        """
-        Validates the input and creates the data for an European Payments Council Quick Response Code
-        (EPC QR Code) version 002.
-
-        This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
-
-        You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
-        EPC QR Code standard.
-
-        .. note::
-
-            Either the ``text`` or ``reference`` must be provided but not both
-
-        .. note::
-
-            Neither the IBAN, BIC, nor remittance reference number or any other
-            information is validated (aside from checks regarding the allowed string
-            lengths).
-
-        :param str name: Name of the recipient.
-        :param str iban: International Bank Account Number (IBAN)
-        :param amount: The amount to transfer.
-                The currency is always Euro, no other currencies are supported.
-        :type amount: int, float, decimal.Decimal
-        :param str text: Remittance Information (unstructured)
-        :param str reference: Remittance Information (structured)
-        :param str bic: Bank Identifier Code (BIC). Optional, only required
-                    for non-EEA countries.
-        :param str purpose: SEPA purpose code.
-        """
-        return helpers._make_epc_qr_data(**asdict(self), encoding=1)
-
-
 class ContactDetail:
     """
     Represents the detail of a contact for MeCARD encoding.
 
-    NB: This is a legacy class. Please Use MCardData instead for new projects.
+    .. note::
+        This is a legacy class. Please use :py:class:`MeCARD` instead for new projects.
 
     The following fields are provided:
         * first_name
@@ -397,89 +349,143 @@ class ContactDetail:
         return _escape_mecard_special_chars(getattr(self, field_name))
 
 
-# @dataclass
-# class MeCARD:
-#     """Represents the detail of a contact for MeCARD encoding."""
-#     name: str
-#     displayname: str
-#     email: Union[str, Sequence[str], None] = None
-#     phone: Union[str, Sequence[str], None] = None
-#     fax: Union[str, Sequence[str], None] = None
-#     videophone: Union[str, Sequence[str], None] = None
-#     memo: Optional[str] = None
-#     nickname: Optional[str] = None
-#     birthday: Union[str, datetime.date, None] = None
-#     url: Union[str, Sequence[str], None] = None
-#     pobox: Optional[str] = None
-#     street: Optional[str] = None
-#     city: Optional[str] = None
-#     region: Optional[str] = None
-#     zipcode: Optional[str] = None
-#     country: Optional[str] = None
-#     org: Optional[str] = None
-#     lat: Optional[float] = None
-#     lng: Optional[float] = None
-#     source: Optional[str] = None
-#     rev: Union[str, datetime.date, None] = None
-#     title: Union[str, Sequence[str], None] = None
-#     photo_uri: Union[str, Sequence[str], None] = None
-#
-#     def make_qr_code_data(self):
-#         return make_mecard_text(asdict(self))
-#
-#
-# def make_mecard_text(name, reading=None, email=None, phone=None, videophone=None,
-#                      memo=None, nickname=None, birthday=None, url=None,
-#                      pobox=None, roomno=None, houseno=None, city=None,
-#                      prefecture=None, zipcode=None, country=None) -> str:
-#     """\
-#     Creates a string encoding the contact information as MeCard.
-#
-#     :param str name: Name. If it contains a comma, the first part
-#             is treated as lastname and the second part is treated as forename.
-#     :param reading: Designates a text string to be set as the kana name in the phonebook
-#     :type reading: str or None
-#     :param email: E-mail address. Multiple values are allowed.
-#     :type email: str, iterable of strings, or None
-#     :param phone: Phone number. Multiple values are allowed.
-#     :type phone: str, iterable of strings, or None
-#     :param videophone: Phone number for video calls. Multiple values are allowed.
-#     :type videophone: str, iterable of strings, or None
-#     :param memo: A notice for the contact.
-#     :type memo: str or None
-#     :param nickname: Nickname.
-#     :type nickname: str or None
-#     :param birthday: Birthday. If a string is provided, it should encode the date as YYYYMMDD value.
-#     :type birthday: str, datetime.date or None
-#     :param url: Homepage. Multiple values are allowed.
-#     :type url: str, iterable of strings, or None
-#     :param pobox: P.O. box (address information).
-#     :type pobox: str or None
-#     :param roomno: Room number (address information).
-#     :type roomno: str or None
-#     :param houseno: House number (address information).
-#     :type houseno: str or None
-#     :param city: City (address information).
-#     :type city: str or None
-#     :param prefecture: Prefecture (address information).
-#     :type prefecture: str or None
-#     :param zipcode: Zip code (address information).
-#     :type zipcode: str or None
-#     :param country: Country (address information).
-#     :type country: str or None
-#     :rtype: str
-#     """
-#     return helpers.make_vcard_data(name=name, reading=reading, email=email, phone=phone, videophone=videophone,
-#                      memo=memo, nickname=nickname, birthday=birthday, url=url,
-#                      pobox=pobox, roomno=roomno, houseno=houseno, city=city,
-#                      prefecture=prefecture, zipcode=zipcode, country=country)
+@dataclass
+class EpcData:
+    """
+    Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
+
+    You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
+        EPC QR Code standard.
+
+        .. note::
+
+            Either the ``text`` or ``reference`` must be provided but not both
+
+        .. note::
+
+            Neither the IBAN, BIC, nor remittance reference number or any other
+            information is validated (aside from checks regarding the allowed string
+            lengths).
+
+    Fields meaning:
+        * name: Name of the recipient.
+        * iban: International Bank Account Number (IBAN)
+        * amount: The amount to transfer. The currency is always Euro, no other currencies are supported.
+        * text: Remittance Information (unstructured)
+        * reference: Remittance Information (structured)
+        * bic: Bank Identifier Code (BIC). Optional, only required for non-EEA countries.
+        * purpose: SEPA purpose code.
+    """
+    name: str
+    iban: str
+    amount: Union[int, float, decimal.Decimal]
+    text: Optional[str] = None
+    reference: Optional[str] = None
+    bic: Optional[str] = None
+    purpose: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """
+        Validates the input and creates the data for an European Payments Council Quick Response Code
+        (EPC QR Code) version 002.
+
+        This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
+
+        :rtype: str
+        """
+        return helpers._make_epc_qr_data(**asdict(self), encoding=1)
+
+
+@dataclass
+class MeCARD:
+    """Represents the detail of a contact for MeCARD encoding.
+
+    Fields meaning:
+        * name: Name. If it contains a comma, the first part is treated as lastname and the second part is treated as forename.
+        * reading: Designates a text string to be set as the kana name in the phonebook
+        * email: E-mail address. Multiple values are allowed.
+        * phone: Phone number. Multiple values are allowed.
+        * videophone: Phone number for video calls. Multiple values are allowed.
+        * memo: A notice for the contact.
+        * nickname: Nickname.
+        * birthday: Birthday. If a string is provided, it should encode the date as YYYYMMDD value.
+        * url: Homepage. Multiple values are allowed.
+        * pobox: P.O. box (address information).
+        * roomno: Room number (address information).
+        * houseno: House number (address information).
+        * city: City (address information).
+        * prefecture: Prefecture (address information).
+        * zipcode: Zip code (address information).
+        * country: Country (address information).
+        * org: organization or company name (ORG field, non-standard,but often recognized by readers).
+    """
+    name: str
+    reading: Optional[str] = None
+    email: Union[str, Sequence[str], None] = None
+    phone: Union[str, Sequence[str], None] = None
+    videophone: Union[str, Sequence[str], None] = None
+    memo: Optional[str] = None
+    nickname: Optional[str] = None
+    birthday: Union[str, datetime.date, None] = None
+    url: Union[str, Sequence[str], None] = None
+    pobox: Optional[str] = None
+    roomno: Optional[str] = None
+    houseno: Optional[str] = None
+    city: Optional[str] = None
+    prefecture: Optional[str] = None
+    zipcode: Union[int, str, None] = None
+    country: Optional[str] = None
+    org: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """\
+        Creates a string encoding the contact information as MeCard.
+
+        :rtype: str
+        """
+        kw = asdict(self)
+        kw['zipcode'] = str(self.zipcode)
+        org = kw.pop('org')
+        contact_text = helpers.make_mecard_data(**kw)
+        # Not standard, but recognized by several readers.
+        if org:
+            contact_text = f'ORG:{_escape_mecard_special_chars(org)};'
+        return contact_text
 
 
 @dataclass
 class VCard:
-    """Represents the detail of a contact for vCard encoding."""
+    """Represents the detail of a contact for vCard encoding.
+
+    Only a subset of available `vCard 3.0 properties <https://tools.ietf.org/html/rfc2426>`
+
+    Fields meaning:
+        * name: The name. If it contains a semicolon, the first part is treated as lastname and the second part is treated as forename.
+        * displayname: Common name. Defaults to `name` without the semicolon if ``None``.
+        * email: E-mail address. Multiple values are allowed.
+        * phone: Phone number. Multiple values are allowed.
+        * fax: Fax number. Multiple values are allowed.
+        * videophone: Phone number for video calls. Multiple values are allowed.
+        * memo: A notice for the contact.
+        * nickname: Nickname.
+        * birthday: Birthday. If a string is provided, it should encode the date as ``YYYY-MM-DD`` value.
+        * url: Homepage. Multiple values are allowed.
+        * pobox: P.O. box (address information).
+        * street: Street address.
+        * city: City (address information).
+        * region: Region (address information).
+        * zipcode: Zip code (address information).
+        * country: Country (address information).
+        * org: Company / organization name.
+        * lat: Latitude.
+        * lng: Longitude.
+        * source: URL where to obtain the vCard.
+        * rev: Revision of the vCard / last modification date.
+        * title: Job Title. Multiple values are allowed.
+        * photo_uri: Photo URI. Multiple values are allowed.
+    """
     name: str
-    displayname: str
+    displayname: Optional[str] = None
     email: Union[str, Sequence[str], None] = None
     phone: Union[str, Sequence[str], None] = None
     fax: Union[str, Sequence[str], None] = None
@@ -492,7 +498,7 @@ class VCard:
     street: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
-    zipcode: Optional[str] = None
+    zipcode: Union[int, str, None] = None
     country: Optional[str] = None
     org: Optional[str] = None
     lat: Optional[float] = None
@@ -502,62 +508,22 @@ class VCard:
     title: Union[str, Sequence[str], None] = None
     photo_uri: Union[str, Sequence[str], None] = None
 
-    def make_qr_code_data(self):
+    def __post_init__(self):
+        if self.displayname is None:
+            self.displayname = self.name.replace(' ; ', ' ').replace('; ', ' ').replace(';', ' ')
+
+    def make_qr_code_data(self) -> str:
         """\
         Creates a string encoding the contact information as vCard 3.0.
 
         Only a subset of available `vCard 3.0 properties <https://tools.ietf.org/html/rfc2426>`
         is supported.
 
-        :param str name: The name. If it contains a semicolon, , the first part
-                is treated as lastname and the second part is treated as forename.
-        :param str displayname: Common name.
-        :param email: E-mail address. Multiple values are allowed.
-        :type email: str, iterable of strings, or None
-        :param phone: Phone number. Multiple values are allowed.
-        :type phone: str, iterable of strings, or None
-        :param fax: Fax number. Multiple values are allowed.
-        :type fax: str, iterable of strings, or None
-        :param videophone: Phone number for video calls. Multiple values are allowed.
-        :type videophone: str, iterable of strings, or None
-        :param memo: A notice for the contact.
-        :type memo: str or None
-        :param nickname: Nickname.
-        :type nickname: str or None
-        :param birthday: Birthday. If a string is provided, it should encode the
-                         date as ``YYYY-MM-DD`` value.
-        :type birthday: str, datetime.date or None
-        :param url: Homepage. Multiple values are allowed.
-        :type url: str, iterable of strings, or None
-        :param pobox: P.O. box (address information).
-        :type pobox: str or None
-        :param street: Street address.
-        :type street: str or None
-        :param city: City (address information).
-        :type city: str or None
-        :param region: Region (address information).
-        :type region: str or None
-        :param zipcode: Zip code (address information).
-        :type zipcode: str or None
-        :param country: Country (address information).
-        :type country: str or None
-        :param org: Company / organization name.
-        :type org: str or None
-        :param lat: Latitude.
-        :type lat: float or None
-        :param lng: Longitude.
-        :type lng: float or None
-        :param source: URL where to obtain the vCard.
-        :type source: str or None
-        :param rev: Revision of the vCard / last modification date.
-        :type rev: str, datetime.date or None
-        :param title: Job Title. Multiple values are allowed.
-        :type title: str, iterable of strings, or None
-        :param photo_uri: Photo URI. Multiple values are allowed.
-        :type photo_uri: str, iterable of strings, or None
         :rtype: str
         """
-        return helpers.make_vcard_data(**asdict(self))
+        kw = asdict(self)
+        kw['zipcode'] = str(self.zipcode)
+        return helpers.make_vcard_data(**kw)
 
 
 @dataclass
@@ -565,7 +531,7 @@ class WifiConfig:
     """\
     Represents a WIFI configuration.
 
-    The following fields are provided:
+    Fields meaning:
         * ssid: the name of the SSID
         * authentication: the authentication type for the SSID; can be AUTHENTICATION.wep or AUTHENTICATION.wpa, or AUTHENTICATION.nopass for no password. Or, omit for no password.
         * password: the password, ignored if "authentication" is 'nopass' (in which case it may be omitted).
@@ -585,6 +551,7 @@ class WifiConfig:
         Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
 
         :return: the WIFI configuration text that can be translated to a QR code.
+        :rtype: str
         """
 
         wifi_config = 'WIFI:'
@@ -604,6 +571,11 @@ class WifiConfig:
 class Coordinates:
     """\
     Represents a set of coordinates with an optional altitude.
+
+    Fields meaning:
+        * latitude: The latitude.
+        * latitude: The longitude.
+        * latitude: The optional altitude.
     """
     latitude: float
     longitude: float
@@ -648,27 +620,26 @@ def make_google_play_text(package_id: str) -> str:
 
 @dataclass
 class Email:
+    """Represents the data of an e-mail.
+
+    Fields meaning:
+        * to: The email address (recipient). Multiple values are allowed.
+        * cc: The carbon copy recipient. Multiple values are allowed.
+        * bcc: The blind carbon copy recipient. Multiple values are allowed.
+        * subject: The subject.
+        * body: The message body.
+    """
     to: Union[str, Sequence[str]]
     cc: Union[str, Sequence[str], None] = None
     bcc: Union[str, Sequence[str], None] = None
     subject: Optional[str] = None
     body: Optional[str] = None
 
-    def make_qr_code_data(self):
+    def make_qr_code_data(self) -> str:
         """\
         Creates either a simple "mailto:" URL or complete e-mail message with
         (blind) carbon copies and a subject and a body.
 
-        :param to: The email address (recipient). Multiple values are allowed.
-        :type to: str or iterable of strings
-        :param cc: The carbon copy recipient. Multiple values are allowed.
-        :type cc: str, iterable of strings, or None
-        :param bcc: The blind carbon copy recipient. Multiple values are allowed.
-        :type bcc: str, iterable of strings, or None
-        :param subject: The subject.
-        :type subject: str or None
-        :param body: The message body.
-        :type body: str or None
         :rtype: str
         """
         return helpers.make_make_email_data(**asdict(self))

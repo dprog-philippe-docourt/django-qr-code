@@ -1,13 +1,18 @@
 # Change Log
 
-## 3.0.0 (???)
+## 3.0.0 (2021.??.??)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
+* Add support for vCard v3 QR code.
+* Revamp support for MeCARD QR code to provide a cleaner API (old API remains available for compatibility).
 * Introduce `qr_from_data` and `qr_url_from_data` to allow optimized encoding of alphanumeric, numeric, and byte data (adopt appropriate encoding mode depending on data content).
 * Introduce support for `boost_error` flag.
 * Introduce support for `encoding` parameter.
-* Several breaking changes in API:
-  * `text` parameters renamed to `data`.
-  * methods `make_qr_text` renamed to `make_qr_data`.
+* Several breaking changes in API and generated QR codes:
+  * `text` parameters renamed to `data`;
+  * methods `make_qr_text` renamed to `make_qr_data`;
+  * uses UTF-8 encoding by default for application and text QR codes (you must set the new `encoding` option and/or use the new `qr_from_data` and `qr_url_from_data` template tags to emulate old behavior);
+  * encoded geolocations always contain a decimal separator.
+* Add support for Python 3.10
 * Drop support for Python 3.6.
 * Drop support for Django 3.1.
 

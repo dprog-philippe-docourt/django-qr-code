@@ -16,8 +16,7 @@ def make_qr(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True):
 
     :param str data: The data to encode
     :param qr_code_options: Options to create and serialize the QR code.
-    :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in
-        byte mode.
+    :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in byte mode.
     :rtype: segno.QRCode
     """
     # WARNING: For compatibility reasons, we still allow to pass __proxy__ class (lazy string). Moreover, it would be OK to pass anything that has __str__
@@ -33,8 +32,7 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
 
     :param str data: The data to encode
     :param qr_code_options: Options to create and serialize the QR code.
-    :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in
-        byte mode.
+    :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in byte mode.
     :rtype: bytes
     """
     qr = make_qr(data, qr_code_options, force_text=force_text)

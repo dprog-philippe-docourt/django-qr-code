@@ -286,6 +286,26 @@
       <div><img src="{% qr_url_for_email 'john.doe@domain.com' %}"></div>
     </td>
   </tr>
+
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_email email {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_email email {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_email email %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_email email %}"></div>
+    </td>
+  </tr>
 </table>
 
 <h3>Compose a phone number</h3>
@@ -486,18 +506,18 @@
   </tr>
   <tr>
     <td width="33%">
-      <strong><code>{% templatetag openblock %} qr_for_contact contact_detail {% templatetag closeblock %}</code></strong>
+      <strong><code>{% templatetag openblock %} qr_for_mecard mecard_contact {% templatetag closeblock %}</code></strong>
     </td>
     <td width="33%">
-      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail {% templatetag closeblock %}"&gt;</code></strong>
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_mecard mecard_contact {% templatetag closeblock %}"&gt;</code></strong>
     </td>
   </tr>
   <tr>
     <td width="33%">
-      <div>{% qr_for_contact contact_detail %}</div>
+      <div>{% qr_for_mecard mecard_contact %}</div>
     </td>
     <td width="33%">
-      <div><img src="{% qr_url_for_contact contact_detail %}"></div>
+      <div><img src="{% qr_url_for_mecard mecard_contact %}"></div>
     </td>
   </tr>
   <tr>
@@ -505,18 +525,57 @@
   </tr>
   <tr>
     <td width="33%">
-      <strong><code>{% templatetag openblock %} qr_for_contact contact_detail=contact_detail {% templatetag closeblock %}</code></strong>
+      <strong><code>{% templatetag openblock %} qr_for_mecard mecard=mecard_contact {% templatetag closeblock %}</code></strong>
     </td>
     <td width="33%">
-      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_contact contact_detail=contact_detail {% templatetag closeblock %}"&gt;</code></strong>
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_mecard mecard=mecard_contact {% templatetag closeblock %}"&gt;</code></strong>
     </td>
   </tr>
   <tr>
     <td width="33%">
-      <div>{% qr_for_contact contact_detail=contact_detail %}</div>
+      <div>{% qr_for_mecard mecard=mecard_contact %}</div>
     </td>
     <td width="33%">
-      <div><img src="{% qr_url_for_contact contact_detail=contact_detail %}"></div>
+      <div><img src="{% qr_url_for_mecard mecard=mecard_contact %}"></div>
+    </td>
+  </tr>
+
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_vcard vcard_contact {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_vcard vcard_contact {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_vcard vcard_contact %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_vcard vcard_contact %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_vcard vcard=vcard_contact {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_vcard vcard=vcard_contact {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_vcard vcard=vcard_contact %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_vcard vcard=vcard_contact %}"></div>
     </td>
   </tr>
 </table>
@@ -605,6 +664,28 @@
   </tr>
 </table>
 
+<h3>European Payments Council Quick Response Code (EPC QR Code)</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_epc epc_data {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_for_epc epc_data {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_url_for_epc epc_data %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_epc epc_data %}"></div>
+    </td>
+  </tr>
+</table>
 {% endblock %}
 </body>
 </html>

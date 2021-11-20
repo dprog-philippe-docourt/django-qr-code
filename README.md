@@ -297,31 +297,44 @@ The following tags targeting apps are available:
 * `qr_for_google_maps` and `qr_url_for_google_maps`
 * `qr_for_youtube` and `qr_url_for_youtube`
 * `qr_for_google_play` and `qr_url_for_google_play`
-* `qr_for_contact` and `qr_url_for_contact`
+* `qr_for_mecard` and `qr_url_for_mecard`
+* `qr_for_vcard` and `qr_url_for_vcard`
 * `qr_for_wifi` and `qr_url_for_wifi`
 * `qr_for_epc` and `qr_url_for_epc`
-
+* `qr_for_contact` and `qr_url_for_contact` (legacy, do not use in new projects)
 
 You could write a view like this:
 ```python
 from datetime import date
 from django.shortcuts import render    
-from qr_code.qrcode.utils import ContactDetail, EpcData, WifiConfig, Coordinates, QRCodeOptions
+from qr_code.qrcode.utils import MeCARD, VCard, EpcData, WifiConfig, Coordinates, QRCodeOptions
 
 def application_qr_code_demo(request):
-    # Use a ContactDetail instance to encapsulate the detail of the contact.
-    contact_detail = ContactDetail(
-        first_name='John',
-        last_name='Doe',
-        first_name_reading='jAAn',
-        last_name_reading='dOH',
-        tel='+41769998877',
+    # Use a MeCARD instance to encapsulate the detail of the contact.
+    mecard_contact = MeCARD(
+        name='Doe; John',
+        phone='+41769998877',
         email='j.doe@company.com',
         url='http://www.company.com',
         birthday=date(year=1985, month=10, day=2),
-        address='Cras des Fourches 987, 2800 Delémont, Jura, Switzerland',
         memo='Development Manager',
-        org='Company Ltd',
+        org='Company Ltd'
+    )
+    
+    # Use a vCard instance to encapsulate the detail of the contact.
+    vcard_contact = VCard(
+        name='Doe; John',
+        phone='+41769998877',
+        email='j.doe@company.com',
+        url='http://www.company.com',
+        birthday=date(year=1985, month=10, day=2),
+        street='Cras des Fourches 987',
+        city='Delémont',
+        zipcode=2800,
+        region='Jura',
+        country='Switzerland',
+        memo='Development Manager',
+        org='Company Ltd'
     )
 
     # Use a WifiConfig instance to encapsulate the configuration of the connexion.
@@ -336,7 +349,6 @@ def application_qr_code_demo(request):
         name='Wikimedia Foerdergesellschaft',
         iban='DE33100205000001194700',
         amount=50.0,
-        currency_code='CHF',
         text='To Wikipedia'
     )
 
@@ -346,7 +358,8 @@ def application_qr_code_demo(request):
 
     # Build context for rendering QR codes.
     context = dict(
-        contact_detail=contact_detail,
+        mecard_contact=mecard_contact,
+        vcard_contact=vcard_contact,
         wifi_config=wifi_config,
         epc_data=epc_data,
         video_id='J9go2nj6b3M',
@@ -361,12 +374,19 @@ def application_qr_code_demo(request):
 
 Then, in your template, you can render the appropriate QR codes for the given context:
 ```djangotemplate
-<h3>Add contact '{{ contact_detail.first_name }} {{ contact_detail.last_name }}' to phone book</h3>
-{% qr_for_contact contact_detail=contact_detail size='S' %}
+<h3>Add contact '{{ mecard_contact.name }}' to phone book</h3>
+{% qr_for_mecard mecard=mecard_contact size='S' %}
 <p>or:</p>
-{% qr_for_contact contact_detail size='S' %}
+{% qr_for_contact mecard_contact size='S' %}
 <p>or:</p>
-{% qr_for_contact contact_detail options=options_example %}
+{% qr_for_contact mecard_contact options=options_example %}
+
+<h3>Add contact '{{ vcard_contact.name }}' to phone book</h3>
+{% qr_for_vcard vcard=vcard_contact size='S' %}
+<p>or:</p>
+{% qr_for_contact vcard_contact size='S' %}
+<p>or:</p>
+{% qr_for_contact vcard_contact options=options_example %}
 
 <h3>Configure Wi-Fi connexion to '{{ wifi_config.ssid }}'</h3>
 <img src="{% qr_url_for_wifi wifi_config=wifi_config size='T' error_correction='Q' %}">
@@ -377,6 +397,8 @@ Then, in your template, you can render the appropriate QR codes for the given co
 
 <h3>EPC QR Code'</h3>
 <img src="{% qr_url_for_epc epc_data=epc_data %}">
+<p>or:</p>
+<img src="{% qr_url_for_epc epc_data size='H' %}">
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
 {% qr_for_youtube video_id image_format='png' size='T' %}

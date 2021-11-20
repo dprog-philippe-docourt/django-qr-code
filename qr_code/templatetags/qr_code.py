@@ -5,7 +5,7 @@ from django import template
 
 from qr_code.qrcode.maker import make_qr_code_with_args, make_qr_code_url_with_args
 from qr_code.qrcode.utils import make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email
+    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email, MeCARD
 
 register = template.Library()
 
@@ -102,9 +102,16 @@ def qr_for_google_play(package_id: str, **kwargs) -> str:
 def qr_for_contact(contact_detail, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(contact_detail, ContactDetail, embedded=True, qr_code_args=kwargs)
 
+
 @register.simple_tag()
 def qr_for_vcard(vcard, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(vcard, VCard, embedded=True, qr_code_args=kwargs)
+
+
+@register.simple_tag()
+def qr_for_mecard(mecard, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCARD, embedded=True, qr_code_args=kwargs)
+
 
 @register.simple_tag()
 def qr_for_wifi(wifi_config, **kwargs) -> str:
@@ -181,6 +188,11 @@ def qr_url_for_contact(contact_detail, **kwargs) -> str:
 @register.simple_tag()
 def qr_url_for_vcard(vcard, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(vcard, VCard, embedded=False, qr_code_args=kwargs)
+
+
+@register.simple_tag()
+def qr_url_for_mecard(mecard, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(mecard, MeCARD, embedded=False, qr_code_args=kwargs)
 
 
 @register.simple_tag()
