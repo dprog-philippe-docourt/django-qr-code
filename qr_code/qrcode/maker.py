@@ -52,8 +52,26 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
     # set it automatically
     kw.pop('kind')
     if qr_code_options.image_format == 'png':
+        if isinstance(data, bytes):
+            alt = ''
+            encodings = ['utf-8', 'iso-8859-1', 'shift-jis']
+            if qr_code_options.encoding:
+                ei = encodings.index(qr_code_options.encoding)
+                if ei > 0:
+                    encodings[ei] = encodings[0]
+                    encodings[0] = qr_code_options.encoding
+            for e in encodings:
+                try:
+                    alt = data.decode(e)
+                    break
+                except UnicodeDecodeError:
+                    pass
+        elif not isinstance(data, str):
+            alt = str(data)
+        else:
+            alt = data
         return mark_safe('<img src="{0}" alt="{1}">'
-                         .format(qr.png_data_uri(**kw), escape(data)))
+                         .format(qr.png_data_uri(**kw), escape(alt)))
     return mark_safe(qr.svg_inline(**kw))
 
 

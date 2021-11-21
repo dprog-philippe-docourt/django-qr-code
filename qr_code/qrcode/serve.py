@@ -121,7 +121,12 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
     elif isinstance(data, int):
         params = dict(int=data, cache_enabled=cache_enabled)
     else:
-        encoded_data = str(base64.b64encode(data), encoding='utf-8')
+        if isinstance(data, str):
+            b64data = base64.b64encode(force_str(data).encode('utf-8'))
+        else:
+            b64data = base64.b64encode(data)
+        encoded_data = str(b64data, encoding='utf-8')
+        # encoded_data = f'{type(data).__name__}:{encoded_data}'
         params = dict(bytes=encoded_data, cache_enabled=cache_enabled)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
