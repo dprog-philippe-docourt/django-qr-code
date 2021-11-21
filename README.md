@@ -422,7 +422,7 @@ Then, in your template, you can render the appropriate QR codes for the given co
 {% qr_for_google_maps latitude=google_maps_coordinates.latitude longitude=google_maps_coordinates.longitude options=options_example %}
 ```
 
-Please check-out the [demo application](#demo-application) to see more examples.
+Please check out the [demo application](#demo-application) to see more examples.
 
 ## Notes
 

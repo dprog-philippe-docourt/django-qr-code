@@ -674,12 +674,12 @@
       <strong><code>{% templatetag openblock %} qr_for_epc epc_data {% templatetag closeblock %}</code></strong>
     </td>
     <td width="33%">
-      <strong><code>&lt;img src="{% templatetag openblock %} qr_for_epc epc_data {% templatetag closeblock %}"&gt;</code></strong>
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_epc epc_data {% templatetag closeblock %}"&gt;</code></strong>
     </td>
   </tr>
   <tr>
     <td width="33%">
-      <div>{% qr_url_for_epc epc_data %}</div>
+      <div>{% qr_for_epc epc_data %}</div>
     </td>
     <td width="33%">
       <div><img src="{% qr_url_for_epc epc_data %}"></div>
