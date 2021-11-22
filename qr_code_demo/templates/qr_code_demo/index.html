@@ -686,6 +686,73 @@
     </td>
   </tr>
 </table>
+
+<h2>Data encoded with dedicated mode</h2>
+
+<h3>Numeric mode</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_data 1234 {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_data 1234 {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_data 1234 %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_data 1234 %}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>Template code (numeric passed as string):</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_data "1234" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_data "1234" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_data "1234" %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_data "1234" %}"></div>
+    </td>
+  </tr>
+</table>
+
+<h3>Alphanumeric mode</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_data "AB.CD +/- 1234*" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_data "AB.CD +/- 1234*" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_data "AB.CD +/- 1234*" %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_data "AB.CD +/- 1234*" %}"></div>
+    </td>
+  </tr>
+</table>
 {% endblock %}
 </body>
 </html>

@@ -614,16 +614,17 @@ class TestQRFromDataSvgResult(SimpleTestCase):
     def test_mode(self):
         file_base_name = 'qrfromdata_mode'
         tests_data = []
-        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123"]
+        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"]
+        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None]
         for mode_index in range(len(data_for_mode)):
             ref_file_name = '%s_%s' % (file_base_name, mode_index)
-            tests_data.append(dict(source=f'{{% qr_from_data "{data_for_mode[mode_index]}" image_format="svg" %}}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_data data image_format="svg" %}}', ref_file_name=ref_file_name.lower()))
 
         for i, test_data in enumerate(tests_data):
             print('Testing template: %s' % test_data['source'])
             html_source = mark_safe('{% load qr_code %}' + test_data['source'])
             template = Template(html_source)
-            context = Context()
+            context = Context(dict(data=data_for_mode[i], encoding=encodings[i]))
             source_image_data = template.render(context)
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(test_data['ref_file_name'], source_image_data)
@@ -795,18 +796,19 @@ class TestQRFromDataPngResult(SimpleTestCase):
     def test_mode(self):
         file_base_name = 'qrfromdata_mode'
         tests_data = []
-        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123"]
+        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"]
+        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None]
         for mode_index in range(len(data_for_mode)):
             ref_file_name = '%s_%s' % (file_base_name, mode_index)
-            tests_data.append(dict(source=f'{{% qr_from_data "{data_for_mode[mode_index]}" image_format="png" %}}', ref_file_name=ref_file_name.lower()))
+            tests_data.append(dict(source=f'{{% qr_from_data data image_format="png" encoding=encoding %}}', ref_file_name=ref_file_name.lower()))
 
         for i, test_data in enumerate(tests_data):
             print('Testing template: %s' % test_data['source'])
             html_source = mark_safe('{% load qr_code %}' + test_data['source'])
             template = Template(html_source)
-            context = Context()
+            context = Context(dict(data=data_for_mode[i], encoding=encodings[i]))
             source_image = template.render(context).strip()
-            source_image_data = source_image[32:-len('" alt="%s"' % escape(data_for_mode[i]))]
+            source_image_data = source_image[32:source_image.index('" alt="')]
             source_image_data = base64.b64decode(source_image_data)
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(test_data['ref_file_name'], source_image_data)

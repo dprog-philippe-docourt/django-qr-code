@@ -312,7 +312,7 @@ from qr_code.qrcode.utils import MeCard, VCard, EpcData, WifiConfig, Coordinates
 
 
 def application_qr_code_demo(request):
-    # Use a MeCARD instance to encapsulate the detail of the contact.
+    # Use a MeCard instance to encapsulate the detail of the contact.
     mecard_contact = MeCard(
         name='Doe, John',
         phone='+41769998877',
@@ -323,7 +323,7 @@ def application_qr_code_demo(request):
         org='Company Ltd'
     )
 
-    # Use a vCard instance to encapsulate the detail of the contact.
+    # Use a VCard instance to encapsulate the detail of the contact.
     vcard_contact = VCard(
         name='Doe; John',
         phone='+41769998877',
