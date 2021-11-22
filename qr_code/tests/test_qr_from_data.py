@@ -614,8 +614,9 @@ class TestQRFromDataSvgResult(SimpleTestCase):
     def test_mode(self):
         file_base_name = 'qrfromdata_mode'
         tests_data = []
-        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"]
-        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None]
+        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:",
+                         '義務教育諸学校教科用図書検定基準'.encode('cp932'), 'ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？'.encode('shift-jis')]
+        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None, None, 'shift-jis']
         for mode_index in range(len(data_for_mode)):
             ref_file_name = '%s_%s' % (file_base_name, mode_index)
             tests_data.append(dict(source=f'{{% qr_from_data data image_format="svg" %}}', ref_file_name=ref_file_name.lower()))
@@ -796,8 +797,8 @@ class TestQRFromDataPngResult(SimpleTestCase):
     def test_mode(self):
         file_base_name = 'qrfromdata_mode'
         tests_data = []
-        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"]
-        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None]
+        data_for_mode = [TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_UTF_8, COMPLEX_TEST_TEXT_AS_ISO_8859_1, 123, "123", "ABCD1234", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", '義務教育諸学校教科用図書検定基準'.encode('cp932'), 'ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？'.encode('shift-jis')]
+        encodings = ['utf-8', 'utf-8', 'iso-8859-1', None, None, None, None, None, 'shift-jis']
         for mode_index in range(len(data_for_mode)):
             ref_file_name = '%s_%s' % (file_base_name, mode_index)
             tests_data.append(dict(source=f'{{% qr_from_data data image_format="png" encoding=encoding %}}', ref_file_name=ref_file_name.lower()))

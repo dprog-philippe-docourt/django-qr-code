@@ -70,6 +70,8 @@ def index(request):
             amount=20,
             text='To Wikipedia, From Gérard Boéchat'
         ),
+        shift_js_encoded='ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？'.encode('shift-jis'),
+        kanji_encoded='義務教育諸学校教科用図書検定基準'.encode('cp932'),
         options_example=DEMO_OPTIONS
     )
 

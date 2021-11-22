@@ -688,6 +688,9 @@
 </table>
 
 <h2>Data encoded with dedicated mode</h2>
+<p>The tags <code>qr_from_data</code> and <code>qr_url_from_data</code> produce results similar to those of <code>qr_from_text</code> and <code>qr_url_from_text</code>, but they avoid converting everything to text (UTF-8 encoded by default, or any supported charset depending on encoding option).</p>
+
+<p>The ISO/IEC 18004 standard defines four modes in order to encode the data as efficiently as possible.</p>
 
 <h3>Numeric mode</h3>
 <table width="100%">
@@ -750,6 +753,52 @@
     </td>
     <td width="33%">
       <div><img src="{% qr_url_from_data "AB.CD +/- 1234*" %}"></div>
+    </td>
+  </tr>
+</table>
+
+<h3>Kanji mode with Kanji encoded text</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_data kanji_encoded {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_data kanji_encoded {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_data kanji_encoded %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_data kanji_encoded %}"></div>
+    </td>
+  </tr>
+</table>
+
+<h3>Shift-JIS pre-encoded text using byte mode</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_from_data shift_js_encoded encoding="shift-jis" {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_from_data shift_js_encoded encoding="shift-jis" {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_from_data shift_js_encoded encoding="shift-jis" %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_from_data shift_js_encoded encoding="shift-jis" %}"></div>
     </td>
   </tr>
 </table>
