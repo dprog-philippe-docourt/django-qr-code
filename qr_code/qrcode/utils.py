@@ -314,7 +314,7 @@ class EpcData:
 
         :rtype: str
         """
-        return helpers._make_epc_qr_data(**asdict(self), encoding=1)
+        return helpers._make_epc_qr_data(**asdict(self), encoding=1)    # type: ignore
 
 
 class ContactDetail:

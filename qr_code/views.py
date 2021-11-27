@@ -64,12 +64,12 @@ def serve_qr_code_image(request) -> HttpResponse:
             raise SuspiciousOperation("Invalid base64 encoded data.")
     elif 'int' in request.GET:
         try:
-            data = int(request.GET.get('int', None))
+            data = int(request.GET.get('int', None))    # type: ignore
         except (ValueError, TypeError):
             raise SuspiciousOperation("Invalid integer value.")
     else:
         try:
-            data = base64.b64decode(request.GET.get('text', '')).decode('utf-8')
+            data = base64.b64decode(request.GET.get('text', '')).decode('utf-8')    # type: ignore
             force_text = True
         except binascii.Error:
             raise SuspiciousOperation("Invalid base64 encoded text.")

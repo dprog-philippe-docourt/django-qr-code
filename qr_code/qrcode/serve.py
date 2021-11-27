@@ -111,23 +111,21 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
     qr_code_options = QRCodeOptions() if qr_code_options is None else qr_code_options
     if url_signature_enabled is None:
         url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
-    url_signature_enabled = 1 if url_signature_enabled else 0
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
-    cache_enabled = 1 if cache_enabled else 0
+    cache_enabled_arg = 1 if cache_enabled else 0
     if force_text:
         encoded_data = str(base64.b64encode(force_str(data).encode('utf-8')), encoding='utf-8')
-        params = dict(text=encoded_data, cache_enabled=cache_enabled)
+        params = dict(text=encoded_data, cache_enabled=cache_enabled_arg)
     elif isinstance(data, int):
-        params = dict(int=data, cache_enabled=cache_enabled)
+        params = dict(int=data, cache_enabled=cache_enabled_arg)
     else:
         if isinstance(data, str):
             b64data = base64.b64encode(force_str(data).encode('utf-8'))
         else:
             b64data = base64.b64encode(data)
         encoded_data = str(b64data, encoding='utf-8')
-        # encoded_data = f'{type(data).__name__}:{encoded_data}'
-        params = dict(bytes=encoded_data, cache_enabled=cache_enabled)
+        params = dict(bytes=encoded_data, cache_enabled=cache_enabled_arg)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
         params['size'] = qr_code_options.size

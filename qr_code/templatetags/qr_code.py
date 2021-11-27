@@ -141,7 +141,7 @@ def qr_url_from_data(data: Any, **kwargs) -> str:
 
 
 @register.simple_tag()
-def qr_url_for_email(email: str, **kwargs) -> str:
+def qr_url_for_email(email: Union[str, Email], **kwargs) -> str:
     if isinstance(email, str):
         # Handle simple case where e-mail is simple the electronic address.
         email = Email(to=email)
