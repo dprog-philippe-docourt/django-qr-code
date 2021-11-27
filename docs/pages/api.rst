@@ -21,6 +21,14 @@ qrcode.utils
 
 .. automodule:: qr_code.qrcode.utils
    :members:
+   :special-members:
+
+
+qrcode.views
+--------------------
+
+.. automodule:: qr_code.views
+   :members:
 
 
 templatetags.qr_code

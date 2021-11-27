@@ -42,7 +42,17 @@ def cache_qr_code():
 @condition(etag_func=qr_code_etag, last_modified_func=qr_code_last_modified)
 @cache_qr_code()
 def serve_qr_code_image(request) -> HttpResponse:
-    """Serve an image that represents the requested QR code."""
+    """Serve an image that represents the requested QR code.
+
+    IMPORTANT NOTE: Each boolean option mentioned below (value True/False) must be passed as `<option name>=1` for `True`, respectively `<option name>=0` for `False`.
+
+    You may pass any argument available for :py:func:`qr_code.qrcode.utils.QRCodeOptions.__init__` to adjust the appearance of the returned QR code. The arguments must be passed as query
+    string arguments in the URL. Additionally, the following arguments are available:
+        * cache_enabled: boolean – Tells the generator to work around the caching mechanism if it is empty (default: True/undefined).
+        * token: str – By default, the application only serves QR code images for authenticated URLs (requests generated from your application and addressed to your application).
+            The authentication uses a HMAC to sign the request query arguments. The authentication code is passed as a query argument named `token` which is automatically generated
+            by `qr_url_from_text` or `qr_url_from_data`.
+    """
     qr_code_options = get_qr_code_option_from_request(request)
     # Handle image access protection (we do not allow external requests for anyone).
     check_image_access_permission(request, qr_code_options)

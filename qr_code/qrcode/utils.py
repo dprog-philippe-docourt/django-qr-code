@@ -112,6 +112,15 @@ class QRCodeOptions:
             * m or M: error correction level M – up to 15% damage
             * q or Q: error correction level Q – up to 25% damage
             * h or H: error correction level H – up to 30% damage
+
+        You may enforce the creation of a Micro QR Code with `micro=True`. The `micro` option defaults to `False`.
+
+        The `encoding` option controls the text encoding used in mode "byte" (used for any general text content). By default `encoding` is ``UTF-8``. When set to ``None``, the implementation (based on Segno) tries to use the standard conform ISO/IEC 8859-1 encoding and if it does not fit, it will use UTF-8. Note that no ECI mode indicator is inserted by default (see `eci` option). The `encoding` parameter is case-insensitive.
+
+        The `boost_error` indicates whether the QR code encoding engine (Segno) tries to increase the error correction level if it does not affect the version. Error correction level is not increased when it impacts the version of the code.
+
+        The `eci` option indicates if binary data which does not use the default encoding (ISO/IEC 8859-1) should enforce the ECI mode. Since a lot of QR code readers do not support the ECI mode, this feature is disabled by default and the data is encoded in the provided encoding using the usual “byte” mode. Set eci to `True` if an ECI header should be inserted into the QR Code. Note that the implementation may not know the ECI designator for the provided encoding and may raise an exception if the ECI designator cannot be found. The ECI mode is not supported by Micro QR Codes.
+
         :raises: TypeError in case an unknown argument is given.
         """
         self._size = size
