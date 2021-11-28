@@ -1,5 +1,6 @@
 """Tests for qr_code application."""
 import base64
+import hashlib
 import re
 
 from itertools import product
@@ -403,16 +404,35 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(source_image_data, ref_image_data)
 
     def test_svg_encoding(self):
-        base_file_name = 'qrfromtext_encoding'
-        for encoding in [None, 'utf-8', 'iso-8859-1']:
-            print('Testing SVG URL with encoding: %s' % encoding)
-            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding), cache_enabled=False)
-            url2 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, cache_enabled=False)
-            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='svg', cache_enabled=False)
-            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='SVG', cache_enabled=False)
-            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(encoding=encoding, image_format='SVG'), cache_enabled=False)
+        file_base_name = 'qrfromtext_encoding'
+        data_for_encoding = [
+            (TEST_TEXT, 'utf-8'),
+            (TEST_TEXT, 'iso-8859-1'),
+            (TEST_TEXT, None),
+            (COMPLEX_TEST_TEXT, 'utf-8'),
+            (COMPLEX_TEST_TEXT, 'iso-8859-1'),
+            (COMPLEX_TEST_TEXT, None),
+            ("ABCD1234", 'utf-8'),
+            ("ABCD1234", 'iso-8859-1'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'utf-8'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'iso-8859-1'),
+            ('義務教育諸学校教科用図書検定基準', 'utf-8'),
+            ('義務教育諸学校教科用図書検定基準', 'cp932'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'utf-8'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'shift-jis'),
+        ]
+        for text, encoding in data_for_encoding:
+            text_id = hashlib.md5(text.encode("utf-8")).hexdigest()
+            ref_file_name = f'{file_base_name}_{text_id}_{str(encoding).lower()}'
+
+            print(f"Testing SVG URL with encoding {encoding}' for text '{text}' ({text_id})")
+            url1 = make_qr_code_url(text, QRCodeOptions(encoding=encoding), cache_enabled=False)
+            url2 = qr_url_from_text(text, encoding=encoding, cache_enabled=False)
+            url3 = qr_url_from_text(text, encoding=encoding, image_format='svg', cache_enabled=False)
+            url4 = qr_url_from_text(text, encoding=encoding, image_format='SVG', cache_enabled=False)
+            url5 = qr_url_from_text(text, options=QRCodeOptions(encoding=encoding, image_format='SVG'), cache_enabled=False)
             # Using an invalid image format should fallback to SVG.
-            url6 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='invalid-format-name', cache_enabled=False)
+            url6 = qr_url_from_text(text, encoding=encoding, image_format='invalid-format-name', cache_enabled=False)
             url = url1
             urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5, url6)
             self.assertEqual(urls[0], urls[1])
@@ -423,21 +443,39 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode('utf-8')
-            ref_file_name = '%s_%s' % (base_file_name, str(encoding).lower())
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
-            self.assertEqual(source_image_data, ref_image_data)
+            self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
     def test_png_encoding(self):
-        base_file_name = 'qrfromtext_encoding'
-        for encoding in [None, 'utf-8', 'iso-8859-1']:
-            print('Testing PNG URL with encoding: %s' % encoding)
-            url1 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding, image_format='png'), cache_enabled=False)
-            url2 = make_qr_code_url(COMPLEX_TEST_TEXT, QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
-            url3 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='png', cache_enabled=False)
-            url4 = qr_url_from_text(COMPLEX_TEST_TEXT, encoding=encoding, image_format='PNG', cache_enabled=False)
-            url5 = qr_url_from_text(COMPLEX_TEST_TEXT, options=QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
+        file_base_name = 'qrfromtext_encoding'
+        data_for_encoding = [
+            (TEST_TEXT, 'utf-8'),
+            (TEST_TEXT, 'iso-8859-1'),
+            (TEST_TEXT, None),
+            (COMPLEX_TEST_TEXT, 'utf-8'),
+            (COMPLEX_TEST_TEXT, 'iso-8859-1'),
+            (COMPLEX_TEST_TEXT, None),
+            ("ABCD1234", 'utf-8'),
+            ("ABCD1234", 'iso-8859-1'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'utf-8'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'iso-8859-1'),
+            ('義務教育諸学校教科用図書検定基準', 'utf-8'),
+            ('義務教育諸学校教科用図書検定基準', 'cp932'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'utf-8'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'shift-jis'),
+        ]
+        for text, encoding in data_for_encoding:
+            text_id = hashlib.md5(text.encode("utf-8")).hexdigest()
+            ref_file_name = f'{file_base_name}_{text_id}_{str(encoding).lower()}'
+
+            print(f"Testing PNG URL with encoding {encoding}' for text '{text}' ({text_id})")
+            url1 = make_qr_code_url(text, QRCodeOptions(encoding=encoding, image_format='png'), cache_enabled=False)
+            url2 = make_qr_code_url(text, QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
+            url3 = qr_url_from_text(text, encoding=encoding, image_format='png', cache_enabled=False)
+            url4 = qr_url_from_text(text, encoding=encoding, image_format='PNG', cache_enabled=False)
+            url5 = qr_url_from_text(text, options=QRCodeOptions(encoding=encoding, image_format='PNG'), cache_enabled=False)
             url = url1
             urls = get_urls_without_token_for_comparison(url1, url2, url3, url4, url5)
             self.assertEqual(urls[0], urls[1])
@@ -447,7 +485,6 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = '%s_%s' % (base_file_name, str(encoding).lower())
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -591,9 +628,26 @@ class TestQRFromTextSvgResult(SimpleTestCase):
     def test_encoding(self):
         file_base_name = 'qrfromtext_encoding'
         tests_data = []
-        for encoding in [None, 'utf-8', 'iso-8859-1']:
-            ref_file_name = '%s_%s' % (file_base_name, encoding)
-            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" encoding="{encoding}" %}}', ref_file_name=ref_file_name.lower()))
+        data_for_encoding = [
+            (TEST_TEXT, 'utf-8'),
+            (TEST_TEXT, 'iso-8859-1'),
+            (TEST_TEXT, None),
+            (COMPLEX_TEST_TEXT, 'utf-8'),
+            (COMPLEX_TEST_TEXT, 'iso-8859-1'),
+            (COMPLEX_TEST_TEXT, None),
+            ("ABCD1234", 'utf-8'),
+            ("ABCD1234", 'iso-8859-1'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'utf-8'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'iso-8859-1'),
+            ('義務教育諸学校教科用図書検定基準', 'utf-8'),
+            ('義務教育諸学校教科用図書検定基準', 'cp932'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'utf-8'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'shift-jis'),
+        ]
+        for text, encoding in data_for_encoding:
+            text_id = hashlib.md5(text.encode("utf-8")).hexdigest()
+            ref_file_name = f'{file_base_name}_{text_id}_{str(encoding).lower()}'
+            tests_data.append(dict(source=f'{{% qr_from_text "{text}" image_format="svg" encoding="{encoding}" %}}', text=text, ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
@@ -756,17 +810,35 @@ class TestQRFromTextPngResult(SimpleTestCase):
     def test_encoding(self):
         file_base_name = 'qrfromtext_encoding'
         tests_data = []
-        for encoding in [None, 'utf-8', 'iso-8859-1']:
-            ref_file_name = '%s_%s' % (file_base_name, encoding)
-            tests_data.append(dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" encoding="{encoding}" %}}', ref_file_name=ref_file_name.lower()))
+        data_for_encoding = [
+            (TEST_TEXT, 'utf-8'),
+            (TEST_TEXT, 'iso-8859-1'),
+            (TEST_TEXT, None),
+            (COMPLEX_TEST_TEXT, 'utf-8'),
+            (COMPLEX_TEST_TEXT, 'iso-8859-1'),
+            (COMPLEX_TEST_TEXT, None),
+            ("ABCD1234", 'utf-8'),
+            ("ABCD1234", 'iso-8859-1'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'utf-8'),
+            ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:", 'iso-8859-1'),
+            ('義務教育諸学校教科用図書検定基準', 'utf-8'),
+            ('義務教育諸学校教科用図書検定基準', 'cp932'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'utf-8'),
+            ('ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？', 'shift-jis'),
+        ]
+        for text, encoding in data_for_encoding:
+            text_id = hashlib.md5(text.encode("utf-8")).hexdigest()
+            ref_file_name = f'{file_base_name}_{text_id}_{str(encoding).lower()}'
+            tests_data.append(dict(source=f'{{% qr_from_text "{text}" image_format="png" encoding="{encoding}" %}}', text=text, ref_file_name=ref_file_name.lower()))
 
         for test_data in tests_data:
             print('Testing template: %s' % test_data['source'])
+            text = test_data['text']
             html_source = mark_safe('{% load qr_code %}' + test_data['source'])
             template = Template(html_source)
             context = Context()
             source_image = template.render(context).strip()
-            source_image_data = source_image[32:-len('" alt="%s"' % escape(COMPLEX_TEST_TEXT))]
+            source_image_data = source_image[32:-len('" alt="%s"' % escape(text))]
             source_image_data = base64.b64decode(source_image_data)
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(test_data['ref_file_name'], source_image_data)
