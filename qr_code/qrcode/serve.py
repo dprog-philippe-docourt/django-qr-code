@@ -20,13 +20,13 @@ def _get_default_url_protection_options() -> dict:
     return {
         constants.TOKEN_LENGTH: 20,
         constants.SIGNING_KEY: settings.SECRET_KEY,
-        constants.SIGNING_SALT: 'qr_code_url_protection_salt',
-        constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False
+        constants.SIGNING_SALT: "qr_code_url_protection_salt",
+        constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER: False,
     }
 
 
 def _get_url_protection_settings() -> Optional[Mapping]:
-    if hasattr(settings, 'QR_CODE_URL_PROTECTION') and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
+    if hasattr(settings, "QR_CODE_URL_PROTECTION") and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
         return settings.QR_CODE_URL_PROTECTION
     return None
 
@@ -81,7 +81,21 @@ def get_qr_url_protection_token(qr_code_options, random_token):
     The token contains image attributes so that a user cannot use a token provided somewhere on a website to
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
-    return '.'.join(list(map(str, (qr_code_options.size, qr_code_options.border, qr_code_options.version or '', qr_code_options.image_format, qr_code_options.error_correction, random_token))))
+    return ".".join(
+        list(
+            map(
+                str,
+                (
+                    qr_code_options.size,
+                    qr_code_options.border,
+                    qr_code_options.version or "",
+                    qr_code_options.image_format,
+                    qr_code_options.error_correction,
+                    random_token,
+                ),
+            )
+        )
+    )
 
 
 def qr_code_etag(request) -> str:
@@ -92,8 +106,13 @@ def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
-def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None, force_text: bool = True, cache_enabled: Optional[bool] = None,
-                     url_signature_enabled: Optional[bool] = None) -> str:
+def make_qr_code_url(
+    data: Any,
+    qr_code_options: Optional[QRCodeOptions] = None,
+    force_text: bool = True,
+    cache_enabled: Optional[bool] = None,
+    url_signature_enabled: Optional[bool] = None,
+) -> str:
     """Build an URL to a view that handle serving QR code image from the given parameters.
 
     Any invalid argument related to the size or the format of the image is silently
@@ -115,42 +134,42 @@ def make_qr_code_url(data: Any, qr_code_options: Optional[QRCodeOptions] = None,
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
     cache_enabled_arg = 1 if cache_enabled else 0
     if force_text:
-        encoded_data = str(base64.b64encode(force_str(data).encode('utf-8')), encoding='utf-8')
+        encoded_data = str(base64.b64encode(force_str(data).encode("utf-8")), encoding="utf-8")
         params = dict(text=encoded_data, cache_enabled=cache_enabled_arg)
     elif isinstance(data, int):
         params = dict(int=data, cache_enabled=cache_enabled_arg)
     else:
         if isinstance(data, str):
-            b64data = base64.b64encode(force_str(data).encode('utf-8'))
+            b64data = base64.b64encode(force_str(data).encode("utf-8"))
         else:
             b64data = base64.b64encode(data)
-        encoded_data = str(b64data, encoding='utf-8')
+        encoded_data = str(b64data, encoding="utf-8")
         params = dict(bytes=encoded_data, cache_enabled=cache_enabled_arg)
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
-        params['size'] = qr_code_options.size
+        params["size"] = qr_code_options.size
     if qr_code_options.border != constants.DEFAULT_BORDER_SIZE:
-        params['border'] = qr_code_options.border
+        params["border"] = qr_code_options.border
     if qr_code_options.version != constants.DEFAULT_VERSION:
-        params['version'] = qr_code_options.version
+        params["version"] = qr_code_options.version
     if qr_code_options.image_format != constants.DEFAULT_IMAGE_FORMAT:
-        params['image_format'] = qr_code_options.image_format
+        params["image_format"] = qr_code_options.image_format
     if qr_code_options.error_correction != constants.DEFAULT_ERROR_CORRECTION:
-        params['error_correction'] = qr_code_options.error_correction
+        params["error_correction"] = qr_code_options.error_correction
     if qr_code_options.micro:
-        params['micro'] = 1
+        params["micro"] = 1
     if qr_code_options.eci:
-        params['eci'] = 1
+        params["eci"] = 1
     if qr_code_options.boost_error:
-        params['boost_error'] = 1
-    params['encoding'] = qr_code_options.encoding if qr_code_options.encoding else ''
+        params["boost_error"] = 1
+    params["encoding"] = qr_code_options.encoding if qr_code_options.encoding else ""
     params.update(qr_code_options.color_mapping())
-    path = reverse('qr_code:serve_qr_code_image')
+    path = reverse("qr_code:serve_qr_code_image")
     if url_signature_enabled:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace
         # existing plain data query arguments in order to allow usage of the URL as an API (without token since external
         # users cannot generate the signed token!).
         token = get_qr_url_protection_signed_token(qr_code_options)
-        params['token'] = token
-    url = '%s?%s' % (path, urllib.parse.urlencode(params))
+        params["token"] = token
+    url = "%s?%s" % (path, urllib.parse.urlencode(params))
     return mark_safe(url)

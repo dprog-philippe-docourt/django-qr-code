@@ -7,8 +7,7 @@ from datetime import date
 from typing import Optional, Any, Union, Sequence
 
 from django.utils.html import escape
-from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, \
-    DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
+from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
 from segno import helpers
 
@@ -17,17 +16,36 @@ class QRCodeOptions:
     """
     Represents the options used to create and draw a QR code.
     """
-    def __init__(self, size: Union[int, str] = DEFAULT_MODULE_SIZE, border: int = 4, version: Union[int, str, None] = None,
-                 image_format: str = 'svg', error_correction: str = DEFAULT_ERROR_CORRECTION, encoding: Optional[str] = 'utf-8', boost_error: bool = True,
-                 micro: bool = False, eci: bool = False, dark_color: Union[tuple, str] = '#000', light_color: Union[tuple, str] = '#fff',
-                 finder_dark_color: bool = False, finder_light_color: bool = False,
-                 data_dark_color: bool = False, data_light_color: bool = False,
-                 version_dark_color: bool = False, version_light_color: bool = False,
-                 format_dark_color: bool = False, format_light_color: bool = False,
-                 alignment_dark_color: bool = False, alignment_light_color: bool = False,
-                 timing_dark_color: bool = False, timing_light_color: bool = False,
-                 separator_color: bool = False, dark_module_color: bool = False,
-                 quiet_zone_color: bool = False) -> None:
+
+    def __init__(
+        self,
+        size: Union[int, str] = DEFAULT_MODULE_SIZE,
+        border: int = 4,
+        version: Union[int, str, None] = None,
+        image_format: str = "svg",
+        error_correction: str = DEFAULT_ERROR_CORRECTION,
+        encoding: Optional[str] = "utf-8",
+        boost_error: bool = True,
+        micro: bool = False,
+        eci: bool = False,
+        dark_color: Union[tuple, str] = "#000",
+        light_color: Union[tuple, str] = "#fff",
+        finder_dark_color: bool = False,
+        finder_light_color: bool = False,
+        data_dark_color: bool = False,
+        data_light_color: bool = False,
+        version_dark_color: bool = False,
+        version_light_color: bool = False,
+        format_dark_color: bool = False,
+        format_light_color: bool = False,
+        alignment_dark_color: bool = False,
+        alignment_light_color: bool = False,
+        timing_dark_color: bool = False,
+        timing_light_color: bool = False,
+        separator_color: bool = False,
+        dark_module_color: bool = False,
+        quiet_zone_color: bool = False,
+    ) -> None:
         """
         :param size: The size of the QR code as an integer or a string. Default is *'m'*.
         :type: str or int
@@ -129,8 +147,8 @@ class QRCodeOptions:
             version = int(version)  # type: ignore
             if not 1 <= version <= 40:
                 version = None
-        elif version in ('m1', 'm2', 'm3', 'm4', 'M1', 'M2', 'M3', 'M4'):
-            version = version.lower()   # type: ignore
+        elif version in ("m1", "m2", "m3", "m4", "M1", "M2", "M3", "M4"):
+            version = version.lower()  # type: ignore
             # Set / change the micro setting otherwise Segno complains about
             # conflicting parameters
             micro = True
@@ -145,42 +163,50 @@ class QRCodeOptions:
         self._eci = eci
         try:
             error = error_correction.lower()
-            self._error_correction = error if error in ('l', 'm', 'q', 'h') else DEFAULT_ERROR_CORRECTION
+            self._error_correction = error if error in ("l", "m", "q", "h") else DEFAULT_ERROR_CORRECTION
         except AttributeError:
             self._error_correction = DEFAULT_ERROR_CORRECTION
         self._boost_error = boost_error
         # Handle encoding
-        self._encoding = None if encoding == '' else encoding
+        self._encoding = None if encoding == "" else encoding
         try:
             image_format = image_format.lower()
-            self._image_format = image_format if image_format in ('svg', 'png') else DEFAULT_IMAGE_FORMAT
+            self._image_format = image_format if image_format in ("svg", "png") else DEFAULT_IMAGE_FORMAT
         except AttributeError:
             self._image_format = DEFAULT_IMAGE_FORMAT
-        self._colors = dict(dark_color=dark_color, light_color=light_color,
-                            finder_dark_color=finder_dark_color,
-                            finder_light_color=finder_light_color,
-                            data_dark_color=data_dark_color,
-                            data_light_color=data_light_color,
-                            version_dark_color=version_dark_color,
-                            version_light_color=version_light_color,
-                            format_dark_color=format_dark_color,
-                            format_light_color=format_light_color,
-                            alignment_dark_color=alignment_dark_color,
-                            alignment_light_color=alignment_light_color,
-                            timing_dark_color=timing_dark_color,
-                            timing_light_color=timing_light_color,
-                            separator_color=separator_color,
-                            dark_module_color=dark_module_color,
-                            quiet_zone_color=quiet_zone_color)
+        self._colors = dict(
+            dark_color=dark_color,
+            light_color=light_color,
+            finder_dark_color=finder_dark_color,
+            finder_light_color=finder_light_color,
+            data_dark_color=data_dark_color,
+            data_light_color=data_light_color,
+            version_dark_color=version_dark_color,
+            version_light_color=version_light_color,
+            format_dark_color=format_dark_color,
+            format_light_color=format_light_color,
+            alignment_dark_color=alignment_dark_color,
+            alignment_light_color=alignment_light_color,
+            timing_dark_color=timing_dark_color,
+            timing_light_color=timing_light_color,
+            separator_color=separator_color,
+            dark_module_color=dark_module_color,
+            quiet_zone_color=quiet_zone_color,
+        )
 
     def kw_make(self):
         """Internal method which returns a dict of parameters to create a QR code.
 
         :rtype: dict
         """
-        return dict(version=self._version, error=self._error_correction,
-                    micro=self._micro, eci=self._eci, boost_error=self._boost_error,
-                    encoding=self._encoding)
+        return dict(
+            version=self._version,
+            error=self._error_correction,
+            micro=self._micro,
+            eci=self._eci,
+            boost_error=self._boost_error,
+            encoding=self._encoding,
+        )
 
     def kw_save(self):
         """Internal method which returns a dict of parameters to save a QR code.
@@ -192,10 +218,10 @@ class QRCodeOptions:
         # Change the color mapping into the keywords Segno expects
         # (remove the "_color" suffix from the module names)
         kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
-        if image_format == 'svg':
-            kw['unit'] = 'mm'
-            scale = decimal.Decimal(kw['scale']) / 10
-            kw['scale'] = scale
+        if image_format == "svg":
+            kw["unit"] = "mm"
+            scale = decimal.Decimal(kw["scale"]) / 10
+            kw["scale"] = scale
         return kw
 
     def color_mapping(self):
@@ -207,10 +233,10 @@ class QRCodeOptions:
         """
         colors = {k: v for k, v in self._colors.items() if v is not False}
         # Remove common default "dark" and "light" values
-        if colors.get('dark_color') in ('#000', '#000000', 'black'):
-            del colors['dark_color']
-        if colors.get('light_color') in ('#fff', '#FFF', '#ffffff', '#FFFFFF', 'white'):
-            del colors['light_color']
+        if colors.get("dark_color") in ("#000", "#000000", "black"):
+            del colors["dark_color"]
+        if colors.get("light_color") in ("#fff", "#FFF", "#ffffff", "#FFFFFF", "white"):
+            del colors["light_color"]
         return colors
 
     def _size_as_int(self):
@@ -297,6 +323,7 @@ class EpcData:
         * bic: Bank Identifier Code (BIC). Optional, only required for non-EEA countries.
         * purpose: SEPA purpose code.
     """
+
     name: str
     iban: str
     amount: Union[int, float, decimal.Decimal]
@@ -314,7 +341,7 @@ class EpcData:
 
         :rtype: str
         """
-        return helpers._make_epc_qr_data(**asdict(self), encoding=1)    # type: ignore
+        return helpers._make_epc_qr_data(**asdict(self), encoding=1)  # type: ignore
 
 
 class ContactDetail:
@@ -340,8 +367,22 @@ class ContactDetail:
         * org: organization or company name (non-standard,but often recognized, ORG field).
     """
 
-    def __init__(self, first_name: Optional[str] = None, last_name: Optional[str] = None, first_name_reading: Optional[str] = None, last_name_reading: Optional[str] = None, tel: Optional[str] = None, tel_av: Optional[str] = None, email: Optional[str] = None, memo: Optional[str] = None,
-                 birthday: Optional[date] = None, address: Optional[str] = None, url: Optional[str] = None, nickname: Optional[str] = None, org: Optional[str] = None):
+    def __init__(
+        self,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        first_name_reading: Optional[str] = None,
+        last_name_reading: Optional[str] = None,
+        tel: Optional[str] = None,
+        tel_av: Optional[str] = None,
+        email: Optional[str] = None,
+        memo: Optional[str] = None,
+        birthday: Optional[date] = None,
+        address: Optional[str] = None,
+        url: Optional[str] = None,
+        nickname: Optional[str] = None,
+        org: Optional[str] = None,
+    ):
         self.first_name = first_name
         self.last_name = last_name
         self.first_name_reading = first_name_reading
@@ -367,38 +408,38 @@ class ContactDetail:
 
         # See this for an archive of the format specifications:
         # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
-        contact_text = 'MECARD:'
+        contact_text = "MECARD:"
         for name_components_pair in (
-                ('N:%s;', (_escape_mecard_special_chars(self.last_name), _escape_mecard_special_chars(self.first_name))),
-                ('SOUND:%s;', (_escape_mecard_special_chars(self.last_name_reading), _escape_mecard_special_chars(self.first_name_reading)))
+            ("N:%s;", (_escape_mecard_special_chars(self.last_name), _escape_mecard_special_chars(self.first_name))),
+            ("SOUND:%s;", (_escape_mecard_special_chars(self.last_name_reading), _escape_mecard_special_chars(self.first_name_reading))),
         ):
             if name_components_pair[1][0] and name_components_pair[1][1]:
-                name = '%s,%s' % name_components_pair[1]
+                name = "%s,%s" % name_components_pair[1]
             else:
-                name = name_components_pair[1][0] or name_components_pair[1][1] or ''
+                name = name_components_pair[1][0] or name_components_pair[1][1] or ""
             if name:
                 contact_text += name_components_pair[0] % name
         if self.tel:
-            contact_text += 'TEL:%s;' % _escape_mecard_special_chars(self.tel)
+            contact_text += "TEL:%s;" % _escape_mecard_special_chars(self.tel)
         if self.tel_av:
-            contact_text += 'TEL-AV:%s;' % _escape_mecard_special_chars(self.tel_av)
+            contact_text += "TEL-AV:%s;" % _escape_mecard_special_chars(self.tel_av)
         if self.email:
-            contact_text += 'EMAIL:%s;' % _escape_mecard_special_chars(self.email)
+            contact_text += "EMAIL:%s;" % _escape_mecard_special_chars(self.email)
         if self.memo:
-            contact_text += 'NOTE:%s;' % _escape_mecard_special_chars(self.memo)
+            contact_text += "NOTE:%s;" % _escape_mecard_special_chars(self.memo)
         if self.birthday:
             # Format date to YYMMDD.
-            contact_text += 'BDAY:%s;' % self.birthday.strftime('%Y%m%d')
+            contact_text += "BDAY:%s;" % self.birthday.strftime("%Y%m%d")
         if self.address:
-            contact_text += 'ADR:%s;' % self.address
+            contact_text += "ADR:%s;" % self.address
         if self.url:
-            contact_text += 'URL:%s;' % _escape_mecard_special_chars(self.url)
+            contact_text += "URL:%s;" % _escape_mecard_special_chars(self.url)
         if self.nickname:
-            contact_text += 'NICKNAME:%s;' % _escape_mecard_special_chars(self.nickname)
+            contact_text += "NICKNAME:%s;" % _escape_mecard_special_chars(self.nickname)
         # Not standard, but recognized by several readers.
         if self.org:
-            contact_text += 'ORG:%s;' % _escape_mecard_special_chars(self.org)
-        contact_text += ';'
+            contact_text += "ORG:%s;" % _escape_mecard_special_chars(self.org)
+        contact_text += ";"
         return contact_text
 
     def escaped_value(self, field_name: str):
@@ -428,6 +469,7 @@ class MeCard:
         * country: Country (address information).
         * org: organization or company name (ORG field, non-standard,but often recognized by readers).
     """
+
     name: str
     reading: Optional[str] = None
     email: Union[str, Sequence[str], None] = None
@@ -453,13 +495,13 @@ class MeCard:
         :rtype: str
         """
         kw = asdict(self)
-        if self.zipcode is not None and self.zipcode != '':
-            kw['zipcode'] = str(self.zipcode)
-        org = kw.pop('org')
+        if self.zipcode is not None and self.zipcode != "":
+            kw["zipcode"] = str(self.zipcode)
+        org = kw.pop("org")
         contact_text = helpers.make_mecard_data(**kw)
         # Not standard, but recognized by several readers.
         if org:
-            contact_text += f'ORG:{_escape_mecard_special_chars(org)};'
+            contact_text += f"ORG:{_escape_mecard_special_chars(org)};"
         return contact_text
 
 
@@ -494,6 +536,7 @@ class VCard:
         * title: Job Title. Multiple values are allowed.
         * photo_uri: Photo URI. Multiple values are allowed.
     """
+
     name: str
     displayname: Optional[str] = None
     email: Union[str, Sequence[str], None] = None
@@ -520,7 +563,7 @@ class VCard:
 
     def __post_init__(self):
         if self.displayname is None:
-            self.displayname = self.name.replace(' ; ', ' ').replace('; ', ' ').replace(';', ' ')
+            self.displayname = self.name.replace(" ; ", " ").replace("; ", " ").replace(";", " ")
 
     def make_qr_code_data(self) -> str:
         """\
@@ -532,7 +575,7 @@ class VCard:
         :rtype: str
         """
         kw = asdict(self)
-        kw['zipcode'] = str(self.zipcode)
+        kw["zipcode"] = str(self.zipcode)
         return helpers.make_vcard_data(**kw)
 
 
@@ -547,10 +590,11 @@ class WifiConfig:
         * password: the password, ignored if "authentication" is 'nopass' (in which case it may be omitted).
         * hidden: tells whether the SSID is hidden or not; can be True or False.
     """
-    AUTHENTICATION = namedtuple('AUTHENTICATION', 'nopass WEP WPA')._make(range(3)) # type: ignore
-    AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, 'nopass'), (AUTHENTICATION.WEP, 'WEP'), (AUTHENTICATION.WPA, 'WPA'))
 
-    def __init__(self, ssid: str = '', authentication: int = AUTHENTICATION.nopass, password: str = '', hidden: bool = False) -> None:
+    AUTHENTICATION = namedtuple("AUTHENTICATION", "nopass WEP WPA")._make(range(3))  # type: ignore
+    AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, "nopass"), (AUTHENTICATION.WEP, "WEP"), (AUTHENTICATION.WPA, "WPA"))
+
+    def __init__(self, ssid: str = "", authentication: int = AUTHENTICATION.nopass, password: str = "", hidden: bool = False) -> None:
         self.ssid = ssid
         self.authentication = authentication
         self.password = password
@@ -564,16 +608,16 @@ class WifiConfig:
         :rtype: str
         """
 
-        wifi_config = 'WIFI:'
+        wifi_config = "WIFI:"
         if self.ssid:
-            wifi_config += 'S:%s;' % _escape_mecard_special_chars(self.ssid)
+            wifi_config += "S:%s;" % _escape_mecard_special_chars(self.ssid)
         if self.authentication:
-            wifi_config += 'T:%s;' % WifiConfig.AUTHENTICATION_CHOICES[self.authentication][1]
+            wifi_config += "T:%s;" % WifiConfig.AUTHENTICATION_CHOICES[self.authentication][1]
         if self.password:
-            wifi_config += 'P:%s;' % _escape_mecard_special_chars(self.password)
+            wifi_config += "P:%s;" % _escape_mecard_special_chars(self.password)
         if self.hidden:
-            wifi_config += 'H:%s;' % str(self.hidden).lower()
-        wifi_config += ';'
+            wifi_config += "H:%s;" % str(self.hidden).lower()
+        wifi_config += ";"
         return wifi_config
 
 
@@ -587,45 +631,46 @@ class Coordinates:
         * latitude: The longitude.
         * latitude: The optional altitude.
     """
+
     latitude: float
     longitude: float
     altitude: Optional[float] = None
 
     def __str__(self) -> str:
         if self.altitude:
-            return 'latitude: %s, longitude: %s, altitude: %s' % (self.latitude, self.longitude, self.altitude)
-        return 'latitude: %s, longitude: %s' % (self.latitude, self.longitude)
+            return "latitude: %s, longitude: %s, altitude: %s" % (self.latitude, self.longitude, self.altitude)
+        return "latitude: %s, longitude: %s" % (self.latitude, self.longitude)
 
     def float_to_str(self, f):
-        return '{0:.8f}'.format(f).rstrip('0')
+        return "{0:.8f}".format(f).rstrip("0")
 
     def make_geolocation_text(self) -> str:
-        geo = f'geo:{self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}'
+        geo = f"geo:{self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"
         if self.altitude:
-            return f'{geo},{self.float_to_str(self.altitude)}'
+            return f"{geo},{self.float_to_str(self.altitude)}"
         return geo
 
     def make_google_maps_text(self) -> str:
-        geo = f'https://maps.google.com/local?q={self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}'
+        geo = f"https://maps.google.com/local?q={self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"
         if self.altitude:
-            return f'{geo},{self.float_to_str(self.altitude)}'
+            return f"{geo},{self.float_to_str(self.altitude)}"
         return geo
 
 
 def make_tel_text(phone_number: Any) -> str:
-    return 'tel:%s' % phone_number
+    return "tel:%s" % phone_number
 
 
 def make_sms_text(phone_number: Any) -> str:
-    return 'sms:%s' % phone_number
+    return "sms:%s" % phone_number
 
 
 def make_youtube_text(video_id: str) -> str:
-    return f'https://www.youtube.com/watch/?v={escape(video_id)}'
+    return f"https://www.youtube.com/watch/?v={escape(video_id)}"
 
 
 def make_google_play_text(package_id: str) -> str:
-    return f'https://play.google.com/store/apps/details?id={escape(package_id)}'
+    return f"https://play.google.com/store/apps/details?id={escape(package_id)}"
 
 
 @dataclass
@@ -639,6 +684,7 @@ class Email:
         * subject: The subject.
         * body: The message body.
     """
+
     to: Union[str, Sequence[str]]
     cc: Union[str, Sequence[str], None] = None
     bcc: Union[str, Sequence[str], None] = None
@@ -658,7 +704,7 @@ class Email:
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:
     if not string_to_escape:
         return string_to_escape
-    special_chars = ['\\', '"', ';', ',', ':']
+    special_chars = ["\\", '"', ";", ",", ":"]
     for sc in special_chars:
-        string_to_escape = string_to_escape.replace(sc, '\\%s' % sc)
+        string_to_escape = string_to_escape.replace(sc, "\\%s" % sc)
     return string_to_escape
