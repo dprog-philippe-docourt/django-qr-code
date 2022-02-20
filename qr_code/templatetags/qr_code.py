@@ -4,14 +4,26 @@ from typing import Optional, Any, Union
 from django import template
 
 from qr_code.qrcode.maker import make_qr_code_with_args, make_qr_code_url_with_args
-from qr_code.qrcode.utils import make_google_play_text, make_tel_text, make_sms_text, \
-    make_youtube_text, WifiConfig, ContactDetail, Coordinates, EpcData, VCard, Email, MeCard
+from qr_code.qrcode.utils import (
+    make_google_play_text,
+    make_tel_text,
+    make_sms_text,
+    make_youtube_text,
+    WifiConfig,
+    ContactDetail,
+    Coordinates,
+    EpcData,
+    VCard,
+    Email,
+    MeCard,
+)
 
 register = template.Library()
 
 
-def _make_app_qr_code_from_obj_or_kwargs(obj_or_kwargs, expected_cls, embedded: bool, qr_code_args: dict,
-                                         extra_qr_code_args: Optional[dict] = None, force_text: bool = True) -> str:
+def _make_app_qr_code_from_obj_or_kwargs(
+    obj_or_kwargs, expected_cls, embedded: bool, qr_code_args: dict, extra_qr_code_args: Optional[dict] = None, force_text: bool = True
+) -> str:
     if isinstance(obj_or_kwargs, expected_cls):
         obj = obj_or_kwargs
     else:
@@ -27,10 +39,10 @@ def _make_app_qr_code_from_obj_or_kwargs(obj_or_kwargs, expected_cls, embedded: 
 
 
 def _make_google_maps_qr_code(embedded: bool, **kwargs) -> str:
-    if 'coordinates' in kwargs:
-        coordinates = kwargs.pop('coordinates')
+    if "coordinates" in kwargs:
+        coordinates = kwargs.pop("coordinates")
     else:
-        coordinates = Coordinates(kwargs.pop('latitude'), kwargs.pop('longitude'))
+        coordinates = Coordinates(kwargs.pop("latitude"), kwargs.pop("longitude"))
     if embedded:
         return make_qr_code_with_args(coordinates.make_google_maps_text(), qr_code_args=kwargs)
     else:
@@ -38,10 +50,10 @@ def _make_google_maps_qr_code(embedded: bool, **kwargs) -> str:
 
 
 def _make_geolocation_qr_code(embedded: bool, **kwargs) -> str:
-    if 'coordinates' in kwargs:
-        coordinates = kwargs.pop('coordinates')
+    if "coordinates" in kwargs:
+        coordinates = kwargs.pop("coordinates")
     else:
-        coordinates = Coordinates(kwargs.pop('latitude'), kwargs.pop('longitude'), kwargs.pop('altitude'))
+        coordinates = Coordinates(kwargs.pop("latitude"), kwargs.pop("longitude"), kwargs.pop("altitude"))
     if embedded:
         return make_qr_code_with_args(coordinates.make_geolocation_text(), qr_code_args=kwargs)
     else:
@@ -121,13 +133,14 @@ def qr_for_wifi(wifi_config, **kwargs) -> str:
 @register.simple_tag()
 def qr_for_epc(epc_data, **kwargs) -> str:
     extra = dict(
-        error_correction='M',
+        error_correction="M",
         boost_error=False,
         micro=False,
-        encoding='utf-8',
+        encoding="utf-8",
     )
-    return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=True, qr_code_args=kwargs,
-                                                extra_qr_code_args=extra, force_text=False)
+    return _make_app_qr_code_from_obj_or_kwargs(
+        epc_data, EpcData, embedded=True, qr_code_args=kwargs, extra_qr_code_args=extra, force_text=False
+    )
 
 
 @register.simple_tag()
@@ -203,10 +216,11 @@ def qr_url_for_wifi(wifi_config, **kwargs) -> str:
 @register.simple_tag()
 def qr_url_for_epc(epc_data, **kwargs) -> str:
     extra = dict(
-        error_correction='M',
+        error_correction="M",
         boost_error=False,
         micro=False,
-        encoding='utf-8',
+        encoding="utf-8",
     )
-    return _make_app_qr_code_from_obj_or_kwargs(epc_data, EpcData, embedded=False, qr_code_args=kwargs,
-                                                extra_qr_code_args=extra, force_text=False)
+    return _make_app_qr_code_from_obj_or_kwargs(
+        epc_data, EpcData, embedded=False, qr_code_args=kwargs, extra_qr_code_args=extra, force_text=False
+    )
