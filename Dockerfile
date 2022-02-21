@@ -20,6 +20,7 @@ WORKDIR "$APP_BASE_DIR"
 
 # Install requirements (separate step for caching intermediate image).
 COPY requirements.txt "$APP_BASE_DIR/"
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 COPY requirements-web-deployment.txt "$APP_BASE_DIR/"
 RUN pip install -r requirements-web-deployment.txt
