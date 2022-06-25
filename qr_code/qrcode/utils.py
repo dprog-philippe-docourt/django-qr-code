@@ -385,7 +385,7 @@ SUMMARY:{self.summary}"""
         if self.url:
             event_str += f"\nURL:{self.url}"
         event_str += "\nEND:VEVENT\nEND:VCALENDAR"
-        print(event_str)
+        # print(event_str)
         return event_str
 
 
