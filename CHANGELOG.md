@@ -1,7 +1,9 @@
 # Change Log
 
 ## 3.1.0 (2022-06-25)
-* Added more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
+* Add more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
+* Add support for simple iCalendar event (VEVENT).
+* Add support for Django 4.0.
 
 ## 3.0.0 (2021-11-27)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.

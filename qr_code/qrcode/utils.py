@@ -4,8 +4,10 @@ import decimal
 from collections import namedtuple
 from dataclasses import dataclass, asdict
 from datetime import date
-from typing import Optional, Any, Union, Sequence
+from enum import Enum
+from typing import Optional, Any, Union, Sequence, List
 
+import pytz
 from django.utils.html import escape
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
@@ -294,6 +296,97 @@ class QRCodeOptions:
 
 def _can_be_cast_to_int(value: Any) -> bool:
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
+
+
+class EventClass(Enum):
+    PUBLIC = 1
+    PRIVATE = 2
+    CONFIDENTIAL = 3
+
+
+class EventStatus(Enum):
+    TENTATIVE = 1
+    CONFIRMED = 2
+    CANCELLED = 3
+
+
+class EventTransparency(Enum):
+    OPAQUE = 1
+    TRANSPARENT = 2
+
+
+@dataclass
+class VEvent:
+    """
+    Data for representing VEVENT for iCalendar (.ics) event.
+
+    Only a subset of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html is supported.
+
+    Fields meaning:
+        * uid: Event identifier
+        * summary: This property defines a short summary or subject for the calendar event.
+        * start: Start of event
+        * end: End of event
+        * dtstamp: The property indicates the date/time that the instance of the iCalendar object was created. Defaults to current time in UTC.
+        * description: This property provides a more complete description of the calendar component, than that provided by the "SUMMARY" property.
+        * organizer: E-mail of organizer
+        * status: Status of event
+        * location: Location of event
+        * event_class: Either PUBLIC, PRIVATE or CONFIDENTIAL (see `utils.EventClass`).
+        * categories: This property defines the categories for calendar event.
+        * transparency: Tell whether the event can have its Time Transparency set to "TRANSPARENT" in order to prevent blocking of the event in searches for busy time.
+        * url: This property defines a Uniform Resource Locator (URL) associated with the iCalendar object.
+    """
+    uid: str
+    summary: str
+    start: datetime.datetime
+    end: datetime.datetime
+    dtstamp: Optional[str] = None
+    description: Optional[str] = None
+    organizer: Optional[str] = None
+    status: Optional[EventStatus] = None
+    location: Optional[str] = None
+    event_class: Optional[EventClass] = None
+    categories: Optional[List[str]] = None
+    transparency: Optional[EventTransparency] = None
+    url: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """\
+        Creates a string encoding the event information.
+
+        Only a subset of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html is supported.
+        """
+        utc_start = self.start.astimezone(pytz.utc)
+        utc_end = self.end.astimezone(pytz.utc)
+        event_str = f"""BEGIN:VCALENDAR
+PRODID:Django QR Code
+VERSION:2.0
+BEGIN:VEVENT
+DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
+UID:{self.uid}
+DTSTART:{utc_start.strftime("%Y%m%dT%H%M%SZ")}
+DTEND:{utc_end.strftime("%Y%m%dT%H%M%SZ")}
+SUMMARY:{self.summary}"""
+        if self.event_class:
+            event_str += f"\nCLASS:{self.event_class.name}"
+        if self.categories:
+            event_str += f"\nCATEGORIES:{','.join(self.categories)}"
+        if self.transparency:
+            event_str += f"\nTRANSP:{self.transparency.name}"
+        if self.description:
+            event_str += f'\nDESCRIPTION:{self.description}'
+        if self.organizer:
+            event_str += f'\nORGANIZER:MAILTO:{self.organizer}'
+        if self.status:
+            event_str += f"\nSTATUS:{self.status.name}"
+        if self.location:
+            event_str += f"\nLOCATION:{self.location}"
+        if self.url:
+            event_str += f"\nURL:{self.url}"
+        event_str += "\nEND:VEVENT\nEND:VCALENDAR"
+        print(event_str)
+        return event_str
 
 
 @dataclass

@@ -1,14 +1,16 @@
 """Tests for qr_code application."""
 import base64
+import datetime
 
 from dataclasses import asdict
 from datetime import date
 
+import pytz
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.utils import ContactDetail, VCard, MeCard, WifiConfig, Coordinates, EpcData
+from qr_code.qrcode.utils import ContactDetail, VCard, MeCard, WifiConfig, Coordinates, EpcData, VEvent, EventClass, EventTransparency, EventStatus
 from qr_code.tests import REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE
 from qr_code.tests.utils import (
     write_svg_content_to_file,
@@ -18,7 +20,43 @@ from qr_code.tests.utils import (
     write_png_content_to_file,
 )
 
-
+US_EASTERN_TZ = pytz.timezone('US/Eastern')
+EUROPE_ZURICH_TZ = pytz.timezone('Europe/Zurich')
+TEST_EVENT1 = VEvent(
+    uid="django-qr-code-test-id-1",
+    summary="Vacations",
+    start=US_EASTERN_TZ.localize(datetime.datetime(2022, 7, 6, hour=8, minute=30)),
+    end=US_EASTERN_TZ.localize(datetime.datetime(2022, 7, 17, hour=12)),
+    location="New-York",
+    categories=["holidays"],
+    event_class=EventClass.PUBLIC,
+    transparency=EventTransparency.TRANSPARENT,
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+)
+TEST_EVENT2 = VEvent(
+    uid="django-qr-code-test-id-2",
+    summary="Café avec Marcel!",
+    start=EUROPE_ZURICH_TZ.localize(datetime.datetime(2022, 6, 27, hour=8, minute=15)),
+    end=EUROPE_ZURICH_TZ.localize(datetime.datetime(2022, 6, 27, hour=9)),
+    categories=["PERSO,FRIENDS"],
+    event_class=EventClass.PRIVATE,
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+)
+TEST_EVENT3 = VEvent(
+    uid="django-qr-code-test-id-3",
+    summary="Vacations",
+    start=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 6, hour=8, minute=30)),
+    end=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 17, hour=12)),
+    location="New-York",
+    categories=["holidays"],
+    status=EventStatus.TENTATIVE,
+    organizer="foo@bar.com",
+    url="https://bar.com",
+    description="""Meeting to provide technical review for "Phoenix" design.
+    Happy Face Conference Room. Phoenix design team MUST attend this meeting.
+    RSVP to team leader.""",
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+)
 TEST_CONTACT_DETAIL = dict(
     first_name="Jérémy Sébastien Ninõ",
     last_name="Érard",
@@ -231,6 +269,9 @@ class TestQRForApplications(SimpleTestCase):
             ("vcard", "vcard=vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
             ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
             ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT2}, 2),
+            ("event", "event", {"event": TEST_EVENT1}, 1),
+            ("event", "event", {"event": TEST_EVENT2}, 2),
+            ("event", "event", {"event": TEST_EVENT3}, 3),
             ("youtube", '"J9go2nj6b3M"', None, None),
             ("youtube", "video_id", {"video_id": "J9go2nj6b3M"}, None),
             ("google_play", '"ch.admin.meteoswiss"', None, None),

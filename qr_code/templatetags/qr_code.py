@@ -15,7 +15,7 @@ from qr_code.qrcode.utils import (
     EpcData,
     VCard,
     Email,
-    MeCard,
+    MeCard, VEvent,
 )
 
 register = template.Library()
@@ -144,6 +144,11 @@ def qr_for_epc(epc_data, **kwargs) -> str:
 
 
 @register.simple_tag()
+def qr_for_event(event, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(event, VEvent, embedded=True, qr_code_args=kwargs)
+
+
+@register.simple_tag()
 def qr_url_from_text(text: str, **kwargs) -> str:
     return make_qr_code_url_with_args(data=text, qr_code_args=kwargs)
 
@@ -224,3 +229,8 @@ def qr_url_for_epc(epc_data, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         epc_data, EpcData, embedded=False, qr_code_args=kwargs, extra_qr_code_args=extra, force_text=False
     )
+
+
+@register.simple_tag()
+def qr_url_for_event(event, **kwargs) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(event, VEvent, embedded=False, qr_code_args=kwargs)
