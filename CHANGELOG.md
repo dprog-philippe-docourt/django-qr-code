@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.1.0 (2022-06-25)
+* Added more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
+
 ## 3.0.0 (2021-11-27)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
 * Add support for vCard v3 QR code.

@@ -56,6 +56,24 @@ TEST_VCARD_CONTACT = VCard(
     memo="Development Manager",
     org="Company Ltd",
 )
+TEST_VCARD_CONTACT2 = VCard(
+    name="Ninõ;Jérémy Sébastien",
+    phone="+41769998877",
+    email="j.doe@company.com",
+    url="http://www.company.com",
+    birthday=date(year=1985, month=10, day=2),
+    street="Cras des Fourches 987",
+    city="Delémont",
+    zipcode=2800,
+    region="Jura",
+    country="Switzerland",
+    memo="Development Manager",
+    org="Company Ltd",
+    photo_uri="http://www.company.com/profile/12",
+    cellphone=["+41769998877", "+41769998878"],
+    homephone="+41321112233",
+    workphone="+41329992233"
+)
 TEST_WIFI_CONFIG = dict(ssid="my-wifi", authentication=WifiConfig.AUTHENTICATION.WPA, password="wifi-password")
 TEST_EPC_QR_1 = dict(
     name="Wikimedia Foerdergesellschaft", iban="DE33100205000001194700", amount=20, text="To Wikipedia, From Gérard Boéchat"
@@ -210,8 +228,9 @@ class TestQRForApplications(SimpleTestCase):
             ("contact", "contact_detail=contact_detail", {"contact_detail": contact_detail2}, None),
             ("mecard", "mecard=mecard", {"mecard": TEST_MECARD_CONTACT}, None),
             ("mecard", "mecard", {"mecard": TEST_MECARD_CONTACT}, None),
-            ("vcard", "vcard=vcard", {"vcard": TEST_VCARD_CONTACT}, None),
-            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT}, None),
+            ("vcard", "vcard=vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
+            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
+            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT2}, 2),
             ("youtube", '"J9go2nj6b3M"', None, None),
             ("youtube", "video_id", {"video_id": "J9go2nj6b3M"}, None),
             ("google_play", '"ch.admin.meteoswiss"', None, None),

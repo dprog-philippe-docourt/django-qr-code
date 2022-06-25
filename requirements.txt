@@ -1,2 +1,2 @@
-django>=3.2.12
-segno>=1.4.1
+django>=3.2.13
+segno>=1.5.2

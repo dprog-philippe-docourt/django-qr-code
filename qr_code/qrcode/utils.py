@@ -509,32 +509,41 @@ class MeCard:
 class VCard:
     """Represents the detail of a contact for vCard encoding.
 
+    Creates a QR code which encodes a `vCard <https://en.wikipedia.org/wiki/VCard>`_
+    version 3.0.
+
     Only a subset of available `vCard 3.0 properties <https://tools.ietf.org/html/rfc2426>`
+    is supported.
 
     Fields meaning:
-        * name: The name. If it contains a semicolon, the first part is treated as lastname and the second part is treated as forename.
-        * displayname: Common name. Defaults to `name` without the semicolon if ``None``.
-        * email: E-mail address. Multiple values are allowed.
-        * phone: Phone number. Multiple values are allowed.
-        * fax: Fax number. Multiple values are allowed.
-        * videophone: Phone number for video calls. Multiple values are allowed.
-        * memo: A notice for the contact.
-        * nickname: Nickname.
-        * birthday: Birthday. If a string is provided, it should encode the date as ``YYYY-MM-DD`` value.
-        * url: Homepage. Multiple values are allowed.
-        * pobox: P.O. box (address information).
-        * street: Street address.
-        * city: City (address information).
-        * region: Region (address information).
-        * zipcode: Zip code (address information).
-        * country: Country (address information).
-        * org: Company / organization name.
-        * lat: Latitude.
-        * lng: Longitude.
-        * source: URL where to obtain the vCard.
-        * rev: Revision of the vCard / last modification date.
-        * title: Job Title. Multiple values are allowed.
-        * photo_uri: Photo URI. Multiple values are allowed.
+    name: The name. If it contains a semicolon, , the first part
+            is treated as lastname and the second part is treated as forename.
+    displayname: Common name.
+    email: E-mail address. Multiple values are allowed.
+    phone: Phone number. Multiple values are allowed.
+    fax: Fax number. Multiple values are allowed.
+    videophone: Phone number for video calls. Multiple values are allowed.
+    memo: A notice for the contact.
+    nickname: Nickname.
+    birthday: Birthday. If a string is provided, it should encode the
+                     date as ``YYYY-MM-DD`` value.
+    url: Homepage. Multiple values are allowed.
+    pobox: P.O. box (address information).
+    street: Street address.
+    city: City (address information).
+    region: Region (address information).
+    zipcode: Zip code (address information).
+    country: Country (address information).
+    org: Company / organization name.
+    lat: Latitude.
+    lng: Longitude.
+    source: URL where to obtain the vCard.
+    rev: Revision of the vCard / last modification date.
+    title: Job Title. Multiple values are allowed.
+    photo_uri: Photo URI. Multiple values are allowed.
+    cellphone: Cell phone number. Multiple values are allowed.
+    homephone: Home phone number. Multiple values are allowed.
+    workphone: Work phone number. Multiple values are allowed.
     """
 
     name: str
@@ -560,6 +569,9 @@ class VCard:
     rev: Union[str, datetime.date, None] = None
     title: Union[str, Sequence[str], None] = None
     photo_uri: Union[str, Sequence[str], None] = None
+    cellphone: Union[str, Sequence[str], None] = None
+    homephone: Union[str, Sequence[str], None] = None
+    workphone: Union[str, Sequence[str], None] = None
 
     def __post_init__(self):
         if self.displayname is None:
