@@ -58,6 +58,16 @@ TEST_EVENT3 = VEvent(
     RSVP to team leader.""",
     dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
 )
+TEST_EVENT4 = VEvent(
+    uid="django-qr-code-test-id-4",
+    summary="Vacations",
+    start=datetime.datetime(2022, 8, 6, hour=8, minute=30),
+    end=datetime.datetime(2022, 8, 17, hour=12),
+    location="New-York",
+    categories=["holidays"],
+    status=EventStatus.CANCELLED,
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+)
 TEST_CONTACT_DETAIL = dict(
     first_name="Jérémy Sébastien Ninõ",
     last_name="Érard",
@@ -273,6 +283,7 @@ class TestQRForApplications(SimpleTestCase):
             ("event", "event", {"event": TEST_EVENT1}, 1),
             ("event", "event", {"event": TEST_EVENT2}, 2),
             ("event", "event", {"event": TEST_EVENT3}, 3),
+            ("event", "event", {"event": TEST_EVENT4}, 4),
             ("youtube", '"J9go2nj6b3M"', None, None),
             ("youtube", "video_id", {"video_id": "J9go2nj6b3M"}, None),
             ("google_play", '"ch.admin.meteoswiss"', None, None),

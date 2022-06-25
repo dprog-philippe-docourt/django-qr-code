@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from django.shortcuts import render
 
-from qr_code.qrcode.utils import MeCard, VCard, WifiConfig, Coordinates, QRCodeOptions, Email, EpcData
+from qr_code.qrcode.utils import MeCard, VCard, WifiConfig, Coordinates, QRCodeOptions, Email, EpcData, VEvent, EventClass, EventStatus, EventTransparency
 
 # Use a ContactDetail instance to encapsulate the detail of the contact.
 DEMO_MECARD_CONTACT = MeCard(
@@ -27,6 +27,24 @@ DEMO_VCARD_CONTACT = VCard(
     country="Switzerland",
     memo="Development Manager",
     org="Company Ltd",
+)
+
+DEMO_EVENT = VEvent(
+    uid="some-event-id",
+    summary="Vacations",
+    start=datetime(2022, 8, 6, hour=8, minute=30),
+    end=datetime(2022, 8, 17, hour=12),
+    location="New-York",
+    categories=["PERSO", "holidays"],
+    status=EventStatus.CONFIRMED,
+    event_class=EventClass.PRIVATE,
+    transparency=EventTransparency.OPAQUE,
+    organizer="foo@bar.com",
+    url="https://bar.com",
+    description="""Meeting to provide technical review for "Phoenix" design.
+Happy Face Conference Room.
+Phoenix design team MUST attend this meeting.
+RSVP to team leader."""
 )
 
 # Use a WifiConfig instance to encapsulate the configuration of the connexion.
@@ -63,6 +81,7 @@ def index(request):
         epc_data=EpcData(
             name="Wikimedia Foerdergesellschaft", iban="DE33100205000001194700", amount=20, text="To Wikipedia, From Gérard Boéchat"
         ),
+        event=DEMO_EVENT,
         shift_js_encoded="ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？".encode("shift-jis"),
         kanji_encoded="義務教育諸学校教科用図書検定基準".encode("cp932"),
         options_example=DEMO_OPTIONS,
