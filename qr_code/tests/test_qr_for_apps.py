@@ -53,7 +53,8 @@ TEST_EVENT3 = VEvent(
     organizer="foo@bar.com",
     url="https://bar.com",
     description="""Meeting to provide technical review for "Phoenix" design.
-    Happy Face Conference Room. Phoenix design team MUST attend this meeting.
+    Happy Face Conference Room.
+    Phoenix design team MUST attend this meeting.
     RSVP to team leader.""",
     dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
 )
