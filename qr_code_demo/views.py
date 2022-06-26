@@ -1,7 +1,19 @@
 from datetime import date, datetime
 from django.shortcuts import render
 
-from qr_code.qrcode.utils import MeCard, VCard, WifiConfig, Coordinates, QRCodeOptions, Email, EpcData, VEvent, EventClass, EventStatus, EventTransparency
+from qr_code.qrcode.utils import (
+    MeCard,
+    VCard,
+    WifiConfig,
+    Coordinates,
+    QRCodeOptions,
+    Email,
+    EpcData,
+    VEvent,
+    EventClass,
+    EventStatus,
+    EventTransparency,
+)
 
 # Use a ContactDetail instance to encapsulate the detail of the contact.
 DEMO_MECARD_CONTACT = MeCard(
@@ -46,7 +58,7 @@ DEMO_EVENT = VEvent(
 
 Phoenix design team MUST attend this meeting.
 
-RSVP to team leader."""
+RSVP to team leader.""",
 )
 
 # Use a WifiConfig instance to encapsulate the configuration of the connexion.

@@ -15,7 +15,8 @@ from qr_code.qrcode.utils import (
     EpcData,
     VCard,
     Email,
-    MeCard, VEvent,
+    MeCard,
+    VEvent,
 )
 
 register = template.Library()

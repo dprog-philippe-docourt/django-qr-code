@@ -10,7 +10,18 @@ from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.utils import ContactDetail, VCard, MeCard, WifiConfig, Coordinates, EpcData, VEvent, EventClass, EventTransparency, EventStatus
+from qr_code.qrcode.utils import (
+    ContactDetail,
+    VCard,
+    MeCard,
+    WifiConfig,
+    Coordinates,
+    EpcData,
+    VEvent,
+    EventClass,
+    EventTransparency,
+    EventStatus,
+)
 from qr_code.tests import REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE
 from qr_code.tests.utils import (
     write_svg_content_to_file,
@@ -20,8 +31,8 @@ from qr_code.tests.utils import (
     write_png_content_to_file,
 )
 
-US_EASTERN_TZ = pytz.timezone('US/Eastern')
-EUROPE_ZURICH_TZ = pytz.timezone('Europe/Zurich')
+US_EASTERN_TZ = pytz.timezone("US/Eastern")
+EUROPE_ZURICH_TZ = pytz.timezone("Europe/Zurich")
 TEST_EVENT1 = VEvent(
     uid="django-qr-code-test-id-1",
     summary="Vacations",
@@ -31,7 +42,7 @@ TEST_EVENT1 = VEvent(
     categories=["holidays"],
     event_class=EventClass.PUBLIC,
     transparency=EventTransparency.TRANSPARENT,
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
 )
 TEST_EVENT2 = VEvent(
     uid="django-qr-code-test-id-2",
@@ -40,7 +51,7 @@ TEST_EVENT2 = VEvent(
     end=EUROPE_ZURICH_TZ.localize(datetime.datetime(2022, 6, 27, hour=9)),
     categories=["PERSO,FRIENDS"],
     event_class=EventClass.PRIVATE,
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
 )
 TEST_EVENT3 = VEvent(
     uid="django-qr-code-test-id-3",
@@ -56,7 +67,7 @@ TEST_EVENT3 = VEvent(
 Happy Face Conference Room.
 Phoenix design team MUST attend this meeting.
 RSVP to team leader.""",
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
 )
 TEST_EVENT4 = VEvent(
     uid="django-qr-code-test-id-4",
@@ -71,7 +82,7 @@ TEST_EVENT4 = VEvent(
 RSVP to team leader.
 
 Add some diacritics for fun: éàüî""",
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
 )
 TEST_CONTACT_DETAIL = dict(
     first_name="Jérémy Sébastien Ninõ",
@@ -126,7 +137,7 @@ TEST_VCARD_CONTACT2 = VCard(
     photo_uri="http://www.company.com/profile/12",
     cellphone=["+41769998877", "+41769998878"],
     homephone="+41321112233",
-    workphone="+41329992233"
+    workphone="+41329992233",
 )
 TEST_WIFI_CONFIG = dict(ssid="my-wifi", authentication=WifiConfig.AUTHENTICATION.WPA, password="wifi-password")
 TEST_EPC_QR_1 = dict(
