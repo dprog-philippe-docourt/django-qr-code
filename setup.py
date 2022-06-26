@@ -4,7 +4,7 @@ from setuptools import setup
 
 # Get version without importing
 with open('qr_code/__init__.py', 'rb') as f:
-    VERSION = str(re.search('__version__ = \'(.+?)\'', f.read().decode('utf-8')).group(1))
+    VERSION = str(re.search('__version__ = \"(.+?)\"', f.read().decode('utf-8')).group(1))
 
 with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -25,7 +25,7 @@ setup(
     description='An application that provides tools for displaying QR codes on your Django site.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=['segno>=1.5', 'django>=3.2', 'pytz'],
+    install_requires=['segno>=1.5', 'django>=3.2', 'pytz', 'pydantic'],
     python_requires='>=3.7',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
