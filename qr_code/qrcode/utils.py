@@ -357,31 +357,84 @@ class VEvent:
 
         Only a subset of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html is supported.
         """
-        utc_start = self.start.astimezone(pytz.utc)
-        utc_end = self.end.astimezone(pytz.utc)
+
+        # Inspired form icalendar: https://github.com/collective/icalendar/
+        def fold_icalendar_line(text, limit=75, fold_sep='\r\n '):
+            """Make a string folded as defined in RFC5545
+            Lines of text SHOULD NOT be longer than 75 octets, excluding the line
+            break.  Long content lines SHOULD be split into a multiple line
+            representations using a line "folding" technique.  That is, a long
+            line can be split between any two characters by inserting a CRLF
+            immediately followed by a single linear white-space character (i.e.,
+            SPACE or HTAB).
+            """
+            new_text = ''
+            for line in text.split('\n'):
+                # Use a fast and simple variant for the common case that line is all ASCII.
+                try:
+                    line.encode('ascii')
+                except (UnicodeEncodeError, UnicodeDecodeError):
+                    ret_chars = []
+                    byte_count = 0
+                    for char in line:
+                        char_byte_len = len(char.encode('utf-8'))
+                        byte_count += char_byte_len
+                        if byte_count >= limit:
+                            ret_chars.append(fold_sep)
+                            byte_count = char_byte_len
+                        ret_chars.append(char)
+                    new_text += ''.join(ret_chars)
+                else:
+                    new_text += fold_sep.join(
+                        line[i:i + limit - 1] for i in range(0, len(line), limit - 1)
+                    )
+            return new_text
+
+        # Source form icalendar: https://github.com/collective/icalendar/
+        def escape_char(text):
+            """Format value according to iCalendar TEXT escaping rules.
+            """
+            # NOTE: ORDER MATTERS!
+            return text.replace(r'\N', '\n') \
+                .replace('\\', '\\\\') \
+                .replace(';', r'\;') \
+                .replace(',', r'\,') \
+                .replace('\r\n', r'\n') \
+                .replace('\n', r'\n')
+
+        def is_naive_datetime(t) -> bool:
+            return t.tzinfo is None or t.tzinfo.utcoffset(t) is None
+
+        def get_datetime_str(t) -> str:
+            if is_naive_datetime(t):
+                return t.strftime("%Y%m%dT%H%M%S")
+            else:
+                t_utc = t.astimezone(pytz.utc)
+                return t_utc.strftime("%Y%m%dT%H%M%SZ")
+
         event_str = f"""BEGIN:VCALENDAR
 PRODID:Django QR Code
 VERSION:2.0
 BEGIN:VEVENT
-DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
+DTSTAMP;VALUE=DATE-TIME:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
 UID:{self.uid}
-DTSTART:{utc_start.strftime("%Y%m%dT%H%M%SZ")}
-DTEND:{utc_end.strftime("%Y%m%dT%H%M%SZ")}
-SUMMARY:{self.summary}"""
+DTSTART:{get_datetime_str(self.start)}
+DTEND:{get_datetime_str(self.end)}
+SUMMARY:{escape_char(self.summary)}"""
         if self.event_class:
             event_str += f"\nCLASS:{self.event_class.name}"
         if self.categories:
-            event_str += f"\nCATEGORIES:{','.join(self.categories)}"
+            event_str += f"\nCATEGORIES:{fold_icalendar_line(','.join(map(escape_char, self.categories)))}"
         if self.transparency:
             event_str += f"\nTRANSP:{self.transparency.name}"
         if self.description:
-            event_str += f'\nDESCRIPTION:{self.description}'
+            event_str += f'\nDESCRIPTION:{fold_icalendar_line(escape_char(self.description))}'
         if self.organizer:
             event_str += f'\nORGANIZER:MAILTO:{self.organizer}'
         if self.status:
             event_str += f"\nSTATUS:{self.status.name}"
         if self.location:
-            event_str += f"\nLOCATION:{self.location}"
+            event_str += f"\nLOCATION:{fold_icalendar_line(escape_char(self.location))}"
         if self.url:
             event_str += f"\nURL:{self.url}"
         event_str += "\nEND:VEVENT\nEND:VCALENDAR"

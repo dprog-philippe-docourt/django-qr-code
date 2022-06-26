@@ -48,24 +48,28 @@ TEST_EVENT3 = VEvent(
     start=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 6, hour=8, minute=30)),
     end=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 17, hour=12)),
     location="New-York",
-    categories=["holidays"],
+    categories=["holidays", "PERSONAL", "FAMILY_STUFF", "FUN AT HOME", "SOME_VERY_LONG_CATEGORY_NAME_THAT_REQUIRES_LINE_FOLDING"],
     status=EventStatus.TENTATIVE,
     organizer="foo@bar.com",
     url="https://bar.com",
     description="""Meeting to provide technical review for "Phoenix" design.
-    Happy Face Conference Room.
-    Phoenix design team MUST attend this meeting.
-    RSVP to team leader.""",
+Happy Face Conference Room.
+Phoenix design team MUST attend this meeting.
+RSVP to team leader.""",
     dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
 )
 TEST_EVENT4 = VEvent(
     uid="django-qr-code-test-id-4",
     summary="Vacations",
-    start=datetime.datetime(2022, 8, 6, hour=8, minute=30),
-    end=datetime.datetime(2022, 8, 17, hour=12),
-    location="New-York",
-    categories=["holidays"],
-    status=EventStatus.CANCELLED,
+    start=datetime.datetime(2022, 8, 6, hour=19, minute=30),
+    end=datetime.datetime(2022, 8, 6, hour=23),
+    location="Delémont, Salle St-Georges",
+    status=EventStatus.CONFIRMED,
+    description="""Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room. Phoenix design team MUST attend this meeting.
+
+RSVP to team leader.
+
+Add some diacritics for fun: éàüî""",
     dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone('UTC'))
 )
 TEST_CONTACT_DETAIL = dict(
