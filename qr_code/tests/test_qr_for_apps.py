@@ -60,10 +60,11 @@ RSVP to team leader.""",
 )
 TEST_EVENT4 = VEvent(
     uid="django-qr-code-test-id-4",
-    summary="Vacations",
+    summary="Concert",
     start=datetime.datetime(2022, 8, 6, hour=19, minute=30),
     end=datetime.datetime(2022, 8, 6, hour=23),
     location="Delémont, Salle St-Georges",
+    geo=(47.3661640157025, 7.346173125268345),
     status=EventStatus.CONFIRMED,
     description="""Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room. Phoenix design team MUST attend this meeting.
 

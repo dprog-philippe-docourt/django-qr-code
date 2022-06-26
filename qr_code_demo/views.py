@@ -34,16 +34,18 @@ DEMO_EVENT = VEvent(
     summary="Vacations",
     start=datetime(2022, 8, 6, hour=8, minute=30),
     end=datetime(2022, 8, 17, hour=12),
-    location="New-York",
+    location="New-York, Statue de la Liberté",
+    geo=(40.69216097988203, -74.04460073403436),
     categories=["PERSO", "holidays"],
     status=EventStatus.CONFIRMED,
     event_class=EventClass.PRIVATE,
     transparency=EventTransparency.OPAQUE,
     organizer="foo@bar.com",
     url="https://bar.com",
-    description="""Meeting to provide technical review for "Phoenix" design.
-Happy Face Conference Room.
+    description="""Fake description. Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room.
+
 Phoenix design team MUST attend this meeting.
+
 RSVP to team leader."""
 )
 

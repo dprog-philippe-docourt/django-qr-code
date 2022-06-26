@@ -361,21 +361,26 @@ def application_qr_code_demo(request):
     geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
 
     # Build event data (VEVENT properties)
+    # NB for start and end of event:
+    #   - Naive date and time is rendered as floating time.
+    #   - Aware date and time is rendered as UTC converted time.
     event = VEvent(
         uid="some-event-id",
         summary="Vacations",
         start=datetime.datetime(2022, 8, 6, hour=8, minute=30),
         end=datetime.datetime(2022, 8, 17, hour=12),
-        location="New-York",
+        location="New-York, Statue de la Liberté",
+        geo=(40.69216097988203, -74.04460073403436),
         categories=["PERSO", "holidays"],
         status=EventStatus.CONFIRMED,
         event_class=EventClass.PRIVATE,
         transparency=EventTransparency.OPAQUE,
         organizer="foo@bar.com",
         url="https://bar.com",
-        description="""Meeting to provide technical review for "Phoenix" design.
-Happy Face Conference Room.
+        description="""Fake description. Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room.
+
 Phoenix design team MUST attend this meeting.
+
 RSVP to team leader."""
     )
     

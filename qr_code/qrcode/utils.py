@@ -5,7 +5,7 @@ from collections import namedtuple
 from dataclasses import dataclass, asdict
 from datetime import date
 from enum import Enum
-from typing import Optional, Any, Union, Sequence, List
+from typing import Optional, Any, Union, Sequence, List, Tuple
 
 import pytz
 from django.utils.html import escape
@@ -332,6 +332,7 @@ class VEvent:
         * organizer: E-mail of organizer
         * status: Status of event
         * location: Location of event
+        * geo: This property specifies information related to the global position of event. The property value specifies latitude and longitude, in that order. Whole degrees of latitude shall be represented by a two-digit decimal number ranging from -90 through 90. The longitude represents the location east or west of the prime meridian as a positive or negative real number, respectively (a decimal number ranging from -180 through 180).
         * event_class: Either PUBLIC, PRIVATE or CONFIDENTIAL (see `utils.EventClass`).
         * categories: This property defines the categories for calendar event.
         * transparency: Tell whether the event can have its Time Transparency set to "TRANSPARENT" in order to prevent blocking of the event in searches for busy time.
@@ -346,6 +347,7 @@ class VEvent:
     organizer: Optional[str] = None
     status: Optional[EventStatus] = None
     location: Optional[str] = None
+    geo: Optional[Tuple[float, float]] = None
     event_class: Optional[EventClass] = None
     categories: Optional[List[str]] = None
     transparency: Optional[EventTransparency] = None
@@ -416,7 +418,7 @@ class VEvent:
 PRODID:Django QR Code
 VERSION:2.0
 BEGIN:VEVENT
-DTSTAMP;VALUE=DATE-TIME:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
+DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
 UID:{self.uid}
 DTSTART:{get_datetime_str(self.start)}
 DTEND:{get_datetime_str(self.end)}
@@ -424,17 +426,19 @@ SUMMARY:{escape_char(self.summary)}"""
         if self.event_class:
             event_str += f"\nCLASS:{self.event_class.name}"
         if self.categories:
-            event_str += f"\nCATEGORIES:{fold_icalendar_line(','.join(map(escape_char, self.categories)))}"
+            event_str += "\n" + fold_icalendar_line(f"CATEGORIES:{','.join(map(escape_char, self.categories))}")
         if self.transparency:
             event_str += f"\nTRANSP:{self.transparency.name}"
         if self.description:
-            event_str += f'\nDESCRIPTION:{fold_icalendar_line(escape_char(self.description))}'
+            event_str += "\n" + fold_icalendar_line(f'DESCRIPTION:{escape_char(self.description)}')
         if self.organizer:
             event_str += f'\nORGANIZER:MAILTO:{self.organizer}'
         if self.status:
             event_str += f"\nSTATUS:{self.status.name}"
         if self.location:
-            event_str += f"\nLOCATION:{fold_icalendar_line(escape_char(self.location))}"
+            event_str += "\n" + fold_icalendar_line(f"LOCATION:{escape_char(self.location)}")
+        if self.geo:
+            event_str += f"\nGEO:{self.geo[0]};{self.geo[1]}"
         if self.url:
             event_str += f"\nURL:{self.url}"
         event_str += "\nEND:VEVENT\nEND:VCALENDAR"
