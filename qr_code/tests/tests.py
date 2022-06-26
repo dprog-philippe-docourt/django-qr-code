@@ -2,6 +2,7 @@
 import os
 
 from django.test import SimpleTestCase
+from pydantic import ValidationError
 
 from qr_code.qrcode.constants import (
     DEFAULT_IMAGE_FORMAT,
@@ -29,7 +30,7 @@ class TestApps(SimpleTestCase):
 
 class TestQRCodeOptions(SimpleTestCase):
     def test_qr_code_options(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises((TypeError, ValidationError)):
             QRCodeOptions(foo="bar")
         options = QRCodeOptions()
         self.assertEqual(options.border, 4)

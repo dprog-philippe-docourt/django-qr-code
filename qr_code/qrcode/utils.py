@@ -2,11 +2,15 @@
 import datetime
 import decimal
 from collections import namedtuple
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 from datetime import date
-from typing import Optional, Any, Union, Sequence
+from enum import Enum
+from typing import Optional, Any, Union, Sequence, List, Tuple
 
+import pytz
 from django.utils.html import escape
+from pydantic import validate_arguments
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
 from segno import helpers
@@ -17,9 +21,10 @@ class QRCodeOptions:
     Represents the options used to create and draw a QR code.
     """
 
+    @validate_arguments
     def __init__(
         self,
-        size: Union[int, str] = DEFAULT_MODULE_SIZE,
+        size: Union[int, str, None] = DEFAULT_MODULE_SIZE,
         border: int = 4,
         version: Union[int, str, None] = None,
         image_format: str = "svg",
@@ -296,7 +301,155 @@ def _can_be_cast_to_int(value: Any) -> bool:
     return isinstance(value, int) or (isinstance(value, str) and value.isdigit())
 
 
-@dataclass
+class EventClass(Enum):
+    PUBLIC = 1
+    PRIVATE = 2
+    CONFIDENTIAL = 3
+
+
+class EventStatus(Enum):
+    TENTATIVE = 1
+    CONFIRMED = 2
+    CANCELLED = 3
+
+
+class EventTransparency(Enum):
+    OPAQUE = 1
+    TRANSPARENT = 2
+
+
+@pydantic_dataclass
+class VEvent:
+    """
+    Data for representing VEVENT for iCalendar (.ics) event.
+
+    Only a subset of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html is supported.
+
+    Fields meaning:
+        * uid: Event identifier
+        * summary: This property defines a short summary or subject for the calendar event.
+        * start: Start of event
+        * end: End of event
+        * dtstamp: The property indicates the date/time that the instance of the iCalendar object was created. Defaults to current time in UTC.
+        * description: This property provides a more complete description of the calendar component, than that provided by the "SUMMARY" property.
+        * organizer: E-mail of organizer
+        * status: Status of event
+        * location: Location of event
+        * geo: This property specifies information related to the global position of event. The property value specifies latitude and longitude, in that order. Whole degrees of latitude shall be represented by a two-digit decimal number ranging from -90 through 90. The longitude represents the location east or west of the prime meridian as a positive or negative real number, respectively (a decimal number ranging from -180 through 180).
+        * event_class: Either PUBLIC, PRIVATE or CONFIDENTIAL (see `utils.EventClass`).
+        * categories: This property defines the categories for calendar event.
+        * transparency: Tell whether the event can have its Time Transparency set to "TRANSPARENT" in order to prevent blocking of the event in searches for busy time.
+        * url: This property defines a Uniform Resource Locator (URL) associated with the iCalendar object.
+    """
+
+    uid: str
+    summary: str
+    start: datetime.datetime
+    end: datetime.datetime
+    dtstamp: Optional[datetime.datetime] = None
+    description: Optional[str] = None
+    organizer: Optional[str] = None
+    status: Optional[EventStatus] = None
+    location: Optional[str] = None
+    geo: Optional[Tuple[float, float]] = None
+    event_class: Optional[EventClass] = None
+    categories: Optional[List[str]] = None
+    transparency: Optional[EventTransparency] = None
+    url: Optional[str] = None
+
+    def make_qr_code_data(self) -> str:
+        """\
+        Creates a string encoding the event information.
+
+        Only a subset of https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html is supported.
+        """
+
+        # Inspired form icalendar: https://github.com/collective/icalendar/
+        def fold_icalendar_line(text, limit=75, fold_sep="\r\n "):
+            """Make a string folded as defined in RFC5545
+            Lines of text SHOULD NOT be longer than 75 octets, excluding the line
+            break.  Long content lines SHOULD be split into a multiple line
+            representations using a line "folding" technique.  That is, a long
+            line can be split between any two characters by inserting a CRLF
+            immediately followed by a single linear white-space character (i.e.,
+            SPACE or HTAB).
+            """
+            new_text = ""
+            for line in text.split("\n"):
+                # Use a fast and simple variant for the common case that line is all ASCII.
+                try:
+                    line.encode("ascii")
+                except (UnicodeEncodeError, UnicodeDecodeError):
+                    ret_chars = []
+                    byte_count = 0
+                    for char in line:
+                        char_byte_len = len(char.encode("utf-8"))
+                        byte_count += char_byte_len
+                        if byte_count >= limit:
+                            ret_chars.append(fold_sep)
+                            byte_count = char_byte_len
+                        ret_chars.append(char)
+                    new_text += "".join(ret_chars)
+                else:
+                    new_text += fold_sep.join(line[i : i + limit - 1] for i in range(0, len(line), limit - 1))
+            return new_text
+
+        # Source form icalendar: https://github.com/collective/icalendar/
+        def escape_char(text):
+            """Format value according to iCalendar TEXT escaping rules."""
+            # NOTE: ORDER MATTERS!
+            return (
+                text.replace(r"\N", "\n")
+                .replace("\\", "\\\\")
+                .replace(";", r"\;")
+                .replace(",", r"\,")
+                .replace("\r\n", r"\n")
+                .replace("\n", r"\n")
+            )
+
+        def is_naive_datetime(t) -> bool:
+            return t.tzinfo is None or t.tzinfo.utcoffset(t) is None
+
+        def get_datetime_str(t) -> str:
+            if is_naive_datetime(t):
+                return t.strftime("%Y%m%dT%H%M%S")
+            else:
+                t_utc = t.astimezone(pytz.utc)
+                return t_utc.strftime("%Y%m%dT%H%M%SZ")
+
+        event_str = f"""BEGIN:VCALENDAR
+PRODID:Django QR Code
+VERSION:2.0
+BEGIN:VEVENT
+DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
+UID:{self.uid}
+DTSTART:{get_datetime_str(self.start)}
+DTEND:{get_datetime_str(self.end)}
+SUMMARY:{escape_char(self.summary)}"""
+        if self.event_class:
+            event_str += f"\nCLASS:{self.event_class.name}"
+        if self.categories:
+            event_str += "\n" + fold_icalendar_line(f"CATEGORIES:{','.join(map(escape_char, self.categories))}")
+        if self.transparency:
+            event_str += f"\nTRANSP:{self.transparency.name}"
+        if self.description:
+            event_str += "\n" + fold_icalendar_line(f"DESCRIPTION:{escape_char(self.description)}")
+        if self.organizer:
+            event_str += f"\nORGANIZER:MAILTO:{self.organizer}"
+        if self.status:
+            event_str += f"\nSTATUS:{self.status.name}"
+        if self.location:
+            event_str += "\n" + fold_icalendar_line(f"LOCATION:{escape_char(self.location)}")
+        if self.geo:
+            event_str += f"\nGEO:{self.geo[0]};{self.geo[1]}"
+        if self.url:
+            event_str += f"\nURL:{self.url}"
+        event_str += "\nEND:VEVENT\nEND:VCALENDAR"
+        # print(event_str)
+        return event_str
+
+
+@pydantic_dataclass
 class EpcData:
     """
     Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
@@ -367,6 +520,7 @@ class ContactDetail:
         * org: organization or company name (non-standard,but often recognized, ORG field).
     """
 
+    @validate_arguments
     def __init__(
         self,
         first_name: Optional[str] = None,
@@ -446,7 +600,7 @@ class ContactDetail:
         return _escape_mecard_special_chars(getattr(self, field_name))
 
 
-@dataclass
+@pydantic_dataclass
 class MeCard:
     """Represents the detail of a contact for MeCARD encoding.
 
@@ -505,36 +659,45 @@ class MeCard:
         return contact_text
 
 
-@dataclass
+@pydantic_dataclass
 class VCard:
     """Represents the detail of a contact for vCard encoding.
 
+    Creates a QR code which encodes a `vCard <https://en.wikipedia.org/wiki/VCard>`_
+    version 3.0.
+
     Only a subset of available `vCard 3.0 properties <https://tools.ietf.org/html/rfc2426>`
+    is supported.
 
     Fields meaning:
-        * name: The name. If it contains a semicolon, the first part is treated as lastname and the second part is treated as forename.
-        * displayname: Common name. Defaults to `name` without the semicolon if ``None``.
-        * email: E-mail address. Multiple values are allowed.
-        * phone: Phone number. Multiple values are allowed.
-        * fax: Fax number. Multiple values are allowed.
-        * videophone: Phone number for video calls. Multiple values are allowed.
-        * memo: A notice for the contact.
-        * nickname: Nickname.
-        * birthday: Birthday. If a string is provided, it should encode the date as ``YYYY-MM-DD`` value.
-        * url: Homepage. Multiple values are allowed.
-        * pobox: P.O. box (address information).
-        * street: Street address.
-        * city: City (address information).
-        * region: Region (address information).
-        * zipcode: Zip code (address information).
-        * country: Country (address information).
-        * org: Company / organization name.
-        * lat: Latitude.
-        * lng: Longitude.
-        * source: URL where to obtain the vCard.
-        * rev: Revision of the vCard / last modification date.
-        * title: Job Title. Multiple values are allowed.
-        * photo_uri: Photo URI. Multiple values are allowed.
+    name: The name. If it contains a semicolon, , the first part
+            is treated as lastname and the second part is treated as forename.
+    displayname: Common name.
+    email: E-mail address. Multiple values are allowed.
+    phone: Phone number. Multiple values are allowed.
+    fax: Fax number. Multiple values are allowed.
+    videophone: Phone number for video calls. Multiple values are allowed.
+    memo: A notice for the contact.
+    nickname: Nickname.
+    birthday: Birthday. If a string is provided, it should encode the
+                     date as ``YYYY-MM-DD`` value.
+    url: Homepage. Multiple values are allowed.
+    pobox: P.O. box (address information).
+    street: Street address.
+    city: City (address information).
+    region: Region (address information).
+    zipcode: Zip code (address information).
+    country: Country (address information).
+    org: Company / organization name.
+    lat: Latitude.
+    lng: Longitude.
+    source: URL where to obtain the vCard.
+    rev: Revision of the vCard / last modification date.
+    title: Job Title. Multiple values are allowed.
+    photo_uri: Photo URI. Multiple values are allowed.
+    cellphone: Cell phone number. Multiple values are allowed.
+    homephone: Home phone number. Multiple values are allowed.
+    workphone: Work phone number. Multiple values are allowed.
     """
 
     name: str
@@ -560,6 +723,9 @@ class VCard:
     rev: Union[str, datetime.date, None] = None
     title: Union[str, Sequence[str], None] = None
     photo_uri: Union[str, Sequence[str], None] = None
+    cellphone: Union[str, Sequence[str], None] = None
+    homephone: Union[str, Sequence[str], None] = None
+    workphone: Union[str, Sequence[str], None] = None
 
     def __post_init__(self):
         if self.displayname is None:
@@ -579,7 +745,7 @@ class VCard:
         return helpers.make_vcard_data(**kw)
 
 
-@dataclass
+@pydantic_dataclass
 class WifiConfig:
     """\
     Represents a WIFI configuration.
@@ -621,7 +787,7 @@ class WifiConfig:
         return wifi_config
 
 
-@dataclass
+@pydantic_dataclass
 class Coordinates:
     """\
     Represents a set of coordinates with an optional altitude.
@@ -634,7 +800,7 @@ class Coordinates:
 
     latitude: float
     longitude: float
-    altitude: Optional[float] = None
+    altitude: Optional[Union[int, float]] = None
 
     def __str__(self) -> str:
         if self.altitude:
@@ -673,7 +839,7 @@ def make_google_play_text(package_id: str) -> str:
     return f"https://play.google.com/store/apps/details?id={escape(package_id)}"
 
 
-@dataclass
+@pydantic_dataclass
 class Email:
     """Represents the data of an e-mail.
 
@@ -701,6 +867,7 @@ class Email:
         return helpers.make_make_email_data(**asdict(self))
 
 
+@validate_arguments
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:
     if not string_to_escape:
         return string_to_escape

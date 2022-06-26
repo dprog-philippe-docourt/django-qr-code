@@ -22,15 +22,15 @@ import re
 import sys
 import django
 
-sys.path.insert(0, os.path.abspath('../'))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'demo_site.settings')
+sys.path.insert(0, os.path.abspath("../"))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "demo_site.settings")
 django.setup()
 
 # Symlink CHANGELOG.md from repo root to the pages dir.
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-filenames = ['CHANGELOG.md', 'README.md']
+filenames = ["CHANGELOG.md", "README.md"]
 for filename in filenames:
-    target = os.path.join(basedir, 'docs', 'pages', filename)
+    target = os.path.join(basedir, "docs", "pages", filename)
     if not os.path.islink(target):
         os.symlink(os.path.join(basedir, filename), target)
 
@@ -44,18 +44,20 @@ for filename in filenames:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages']
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -64,26 +66,27 @@ templates_path = ['_templates']
 
 # Allow markdown to be able to include the README.md, CHANGELOG.md, etc.
 from recommonmark.parser import CommonMarkParser
+
 source_parsers = {
-    '.md': CommonMarkParser,
+    ".md": CommonMarkParser,
 }
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Django QR Code'
-copyright = '2017-2021, Philippe Docourt'
-author = 'Philippe Docourt'
+project = "Django QR Code"
+copyright = "2017-2021, Philippe Docourt"
+author = "Philippe Docourt"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # Get version without importing
-with open('../qr_code/__init__.py', 'rb') as f:
-    VERSION = str(re.search('__version__ = \'(.+?)\'', f.read().decode('utf-8')).group(1))
+with open("../qr_code/__init__.py", "rb") as f:
+    VERSION = str(re.search('__version__ = "(.+?)"', f.read().decode("utf-8")).group(1))
 # The short X.Y version.
 version = VERSION
 # The full version, including alpha/beta/rc tags.
@@ -99,10 +102,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -113,7 +116,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -124,7 +127,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -132,12 +135,12 @@ html_static_path = ['_static']
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'donate.html',
+    "**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",  # needs 'show_related': True theme option to display
+        "searchbox.html",
+        "donate.html",
     ]
 }
 
@@ -145,7 +148,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'DjangoQRCodedoc'
+htmlhelp_basename = "DjangoQRCodedoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -154,15 +157,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -172,8 +172,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'DjangoQRCode.tex', 'Django QR Code Documentation',
-     'Philippe Docourt', 'manual'),
+    (master_doc, "DjangoQRCode.tex", "Django QR Code Documentation", "Philippe Docourt", "manual"),
 ]
 
 
@@ -181,10 +180,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'djangoqrcode', 'Django QR Code Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "djangoqrcode", "Django QR Code Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -193,9 +189,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'DjangoQRCode', 'Django QR Code Documentation',
-     author, 'DjangoQRCode', 'An application that provides tools for displaying QR codes on your Django site.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "DjangoQRCode",
+        "Django QR Code Documentation",
+        author,
+        "DjangoQRCode",
+        "An application that provides tools for displaying QR codes on your Django site.",
+        "Miscellaneous",
+    ),
 ]
 
 
@@ -217,9 +219,8 @@ epub_copyright = copyright
 # epub_uid = ''
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
-
+epub_exclude_files = ["search.html"]
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {"https://docs.python.org/": None}

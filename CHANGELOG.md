@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.1.0 (2022-06-26)
+* Add support for more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
+* Add support for simple iCalendar event (VEVENT). (#38)
+* Add support for Django 4.0.
+* BREAKING CHANGES:
+  * Introduce type validation via pydantic. Existing code might need some type-related fixes.
+
 ## 3.0.0 (2021-11-27)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.
 * Add support for vCard v3 QR code.
@@ -40,7 +47,7 @@
 * Update the install_requires after the move from qrcode to Segno.
 
 ## 2.0.0 (2020-11-22)
-* Remove dependency on Pillow / qrcode
+* Remove dependency to Pillow / qrcode
 * Switch to [Segno](https://pypi.org/project/segno/) for generating QR Codes
 * Add support for QR Codes with multiple colors
 * Add support for Micro QR Codes

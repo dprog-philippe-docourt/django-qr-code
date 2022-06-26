@@ -1,14 +1,27 @@
 """Tests for qr_code application."""
 import base64
+import datetime
 
 from dataclasses import asdict
 from datetime import date
 
+import pytz
 from django.template import Template, Context
 from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
-from qr_code.qrcode.utils import ContactDetail, VCard, MeCard, WifiConfig, Coordinates, EpcData
+from qr_code.qrcode.utils import (
+    ContactDetail,
+    VCard,
+    MeCard,
+    WifiConfig,
+    Coordinates,
+    EpcData,
+    VEvent,
+    EventClass,
+    EventTransparency,
+    EventStatus,
+)
 from qr_code.tests import REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE
 from qr_code.tests.utils import (
     write_svg_content_to_file,
@@ -18,7 +31,59 @@ from qr_code.tests.utils import (
     write_png_content_to_file,
 )
 
+US_EASTERN_TZ = pytz.timezone("US/Eastern")
+EUROPE_ZURICH_TZ = pytz.timezone("Europe/Zurich")
+TEST_EVENT1 = VEvent(
+    uid="django-qr-code-test-id-1",
+    summary="Vacations",
+    start=US_EASTERN_TZ.localize(datetime.datetime(2022, 7, 6, hour=8, minute=30)),
+    end=US_EASTERN_TZ.localize(datetime.datetime(2022, 7, 17, hour=12)),
+    location="New-York",
+    categories=["holidays"],
+    event_class=EventClass.PUBLIC,
+    transparency=EventTransparency.TRANSPARENT,
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
+)
+TEST_EVENT2 = VEvent(
+    uid="django-qr-code-test-id-2",
+    summary="Café avec Marcel!",
+    start=EUROPE_ZURICH_TZ.localize(datetime.datetime(2022, 6, 27, hour=8, minute=15)),
+    end=EUROPE_ZURICH_TZ.localize(datetime.datetime(2022, 6, 27, hour=9)),
+    categories=["PERSO,FRIENDS"],
+    event_class=EventClass.PRIVATE,
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
+)
+TEST_EVENT3 = VEvent(
+    uid="django-qr-code-test-id-3",
+    summary="Vacations",
+    start=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 6, hour=8, minute=30)),
+    end=US_EASTERN_TZ.localize(datetime.datetime(2022, 8, 17, hour=12)),
+    location="New-York",
+    categories=["holidays", "PERSONAL", "FAMILY_STUFF", "FUN AT HOME", "SOME_VERY_LONG_CATEGORY_NAME_THAT_REQUIRES_LINE_FOLDING"],
+    status=EventStatus.TENTATIVE,
+    organizer="foo@bar.com",
+    url="https://bar.com",
+    description="""Meeting to provide technical review for "Phoenix" design.
+Happy Face Conference Room.
+Phoenix design team MUST attend this meeting.
+RSVP to team leader.""",
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
+)
+TEST_EVENT4 = VEvent(
+    uid="django-qr-code-test-id-4",
+    summary="Concert",
+    start=datetime.datetime(2022, 8, 6, hour=19, minute=30),
+    end=datetime.datetime(2022, 8, 6, hour=23),
+    location="Delémont, Salle St-Georges",
+    geo=(47.3661640157025, 7.346173125268345),
+    status=EventStatus.CONFIRMED,
+    description="""Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room. Phoenix design team MUST attend this meeting.
 
+RSVP to team leader.
+
+Add some diacritics for fun: éàüî""",
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=pytz.timezone("UTC")),
+)
 TEST_CONTACT_DETAIL = dict(
     first_name="Jérémy Sébastien Ninõ",
     last_name="Érard",
@@ -55,6 +120,24 @@ TEST_VCARD_CONTACT = VCard(
     country="Switzerland",
     memo="Development Manager",
     org="Company Ltd",
+)
+TEST_VCARD_CONTACT2 = VCard(
+    name="Ninõ;Jérémy Sébastien",
+    phone="+41769998877",
+    email="j.doe@company.com",
+    url="http://www.company.com",
+    birthday=date(year=1985, month=10, day=2),
+    street="Cras des Fourches 987",
+    city="Delémont",
+    zipcode=2800,
+    region="Jura",
+    country="Switzerland",
+    memo="Development Manager",
+    org="Company Ltd",
+    photo_uri="http://www.company.com/profile/12",
+    cellphone=["+41769998877", "+41769998878"],
+    homephone="+41321112233",
+    workphone="+41329992233",
 )
 TEST_WIFI_CONFIG = dict(ssid="my-wifi", authentication=WifiConfig.AUTHENTICATION.WPA, password="wifi-password")
 TEST_EPC_QR_1 = dict(
@@ -210,8 +293,13 @@ class TestQRForApplications(SimpleTestCase):
             ("contact", "contact_detail=contact_detail", {"contact_detail": contact_detail2}, None),
             ("mecard", "mecard=mecard", {"mecard": TEST_MECARD_CONTACT}, None),
             ("mecard", "mecard", {"mecard": TEST_MECARD_CONTACT}, None),
-            ("vcard", "vcard=vcard", {"vcard": TEST_VCARD_CONTACT}, None),
-            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT}, None),
+            ("vcard", "vcard=vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
+            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT}, 1),
+            ("vcard", "vcard", {"vcard": TEST_VCARD_CONTACT2}, 2),
+            ("event", "event", {"event": TEST_EVENT1}, 1),
+            ("event", "event", {"event": TEST_EVENT2}, 2),
+            ("event", "event", {"event": TEST_EVENT3}, 3),
+            ("event", "event", {"event": TEST_EVENT4}, 4),
             ("youtube", '"J9go2nj6b3M"', None, None),
             ("youtube", "video_id", {"video_id": "J9go2nj6b3M"}, None),
             ("google_play", '"ch.admin.meteoswiss"', None, None),

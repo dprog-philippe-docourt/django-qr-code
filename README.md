@@ -301,14 +301,16 @@ The following tags targeting apps are available:
 * `qr_for_vcard` and `qr_url_for_vcard`
 * `qr_for_wifi` and `qr_url_for_wifi`
 * `qr_for_epc` and `qr_url_for_epc`
+* `qr_for_event` and `qr_url_for_event`
 * `qr_for_contact` and `qr_url_for_contact` (legacy, do not use in new projects)
 
 You could write a view like this:
 
 ```python
+import datetime
 from datetime import date
 from django.shortcuts import render
-from qr_code.qrcode.utils import MeCard, VCard, EpcData, WifiConfig, Coordinates, QRCodeOptions
+from qr_code.qrcode.utils import MeCard, VCard, EpcData, VEvent, EventClass, EventTransparency, EventStatus, WifiConfig, Coordinates, QRCodeOptions
 
 
 def application_qr_code_demo(request):
@@ -358,12 +360,37 @@ def application_qr_code_demo(request):
     google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
     geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
 
+    # Build event data (VEVENT properties)
+    # NB for start and end of event:
+    #   - Naive date and time is rendered as floating time.
+    #   - Aware date and time is rendered as UTC converted time.
+    event = VEvent(
+        uid="some-event-id",
+        summary="Vacations",
+        start=datetime.datetime(2022, 8, 6, hour=8, minute=30),
+        end=datetime.datetime(2022, 8, 17, hour=12),
+        location="New-York, Statue de la Liberté",
+        geo=(40.69216097988203, -74.04460073403436),
+        categories=["PERSO", "holidays"],
+        status=EventStatus.CONFIRMED,
+        event_class=EventClass.PRIVATE,
+        transparency=EventTransparency.OPAQUE,
+        organizer="foo@bar.com",
+        url="https://bar.com",
+        description="""Fake description. Meeting to provide technical review for "Phoenix" design. Happy Face Conference Room.
+
+Phoenix design team MUST attend this meeting.
+
+RSVP to team leader."""
+    )
+    
     # Build context for rendering QR codes.
     context = dict(
         mecard_contact=mecard_contact,
         vcard_contact=vcard_contact,
         wifi_config=wifi_config,
         epc_data=epc_data,
+        event=event,
         video_id='J9go2nj6b3M',
         google_maps_coordinates=google_maps_coordinates,
         geolocation_coordinates=geolocation_coordinates,
@@ -401,6 +428,11 @@ Then, in your template, you can render the appropriate QR codes for the given co
 <img src="{% qr_url_for_epc epc_data=epc_data %}">
 <p>or:</p>
 <img src="{% qr_url_for_epc epc_data size='H' %}">
+
+<h3>Event QR Code'</h3>
+<img src="{% qr_url_for_event event=event %}">
+<p>or:</p>
+{% qr_for_event event=event %}
 
 <h3>Watch YouTube video '{{ video_id }}'</h3>
 {% qr_for_youtube video_id image_format='png' size='T' %}

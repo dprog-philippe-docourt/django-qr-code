@@ -11,8 +11,9 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
+from pydantic import validate_arguments
 
-from qr_code.qrcode import constants
+from qr_code.qrcode import constants, PYDANTIC_CONFIG
 from qr_code.qrcode.utils import QRCodeOptions
 
 
@@ -106,6 +107,7 @@ def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
+@validate_arguments(config=PYDANTIC_CONFIG)
 def make_qr_code_url(
     data: Any,
     qr_code_options: Optional[QRCodeOptions] = None,
