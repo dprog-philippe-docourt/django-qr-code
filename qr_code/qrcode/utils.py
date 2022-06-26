@@ -2,13 +2,15 @@
 import datetime
 import decimal
 from collections import namedtuple
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 from datetime import date
 from enum import Enum
 from typing import Optional, Any, Union, Sequence, List, Tuple
 
 import pytz
 from django.utils.html import escape
+from pydantic import validate_arguments
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
 from segno import helpers
@@ -18,10 +20,10 @@ class QRCodeOptions:
     """
     Represents the options used to create and draw a QR code.
     """
-
+    @validate_arguments
     def __init__(
         self,
-        size: Union[int, str] = DEFAULT_MODULE_SIZE,
+        size: Union[int, str, None] = DEFAULT_MODULE_SIZE,
         border: int = 4,
         version: Union[int, str, None] = None,
         image_format: str = "svg",
@@ -315,7 +317,7 @@ class EventTransparency(Enum):
     TRANSPARENT = 2
 
 
-@dataclass
+@pydantic_dataclass
 class VEvent:
     """
     Data for representing VEVENT for iCalendar (.ics) event.
@@ -342,7 +344,7 @@ class VEvent:
     summary: str
     start: datetime.datetime
     end: datetime.datetime
-    dtstamp: Optional[str] = None
+    dtstamp: Optional[datetime.datetime] = None
     description: Optional[str] = None
     organizer: Optional[str] = None
     status: Optional[EventStatus] = None
@@ -446,7 +448,7 @@ SUMMARY:{escape_char(self.summary)}"""
         return event_str
 
 
-@dataclass
+@pydantic_dataclass
 class EpcData:
     """
     Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
@@ -517,6 +519,7 @@ class ContactDetail:
         * org: organization or company name (non-standard,but often recognized, ORG field).
     """
 
+    @validate_arguments
     def __init__(
         self,
         first_name: Optional[str] = None,
@@ -596,7 +599,7 @@ class ContactDetail:
         return _escape_mecard_special_chars(getattr(self, field_name))
 
 
-@dataclass
+@pydantic_dataclass
 class MeCard:
     """Represents the detail of a contact for MeCARD encoding.
 
@@ -655,7 +658,7 @@ class MeCard:
         return contact_text
 
 
-@dataclass
+@pydantic_dataclass
 class VCard:
     """Represents the detail of a contact for vCard encoding.
 
@@ -741,7 +744,7 @@ class VCard:
         return helpers.make_vcard_data(**kw)
 
 
-@dataclass
+@pydantic_dataclass
 class WifiConfig:
     """\
     Represents a WIFI configuration.
@@ -783,7 +786,7 @@ class WifiConfig:
         return wifi_config
 
 
-@dataclass
+@pydantic_dataclass
 class Coordinates:
     """\
     Represents a set of coordinates with an optional altitude.
@@ -796,7 +799,7 @@ class Coordinates:
 
     latitude: float
     longitude: float
-    altitude: Optional[float] = None
+    altitude: Optional[Union[int, float]] = None
 
     def __str__(self) -> str:
         if self.altitude:
@@ -835,7 +838,7 @@ def make_google_play_text(package_id: str) -> str:
     return f"https://play.google.com/store/apps/details?id={escape(package_id)}"
 
 
-@dataclass
+@pydantic_dataclass
 class Email:
     """Represents the data of an e-mail.
 
@@ -863,6 +866,7 @@ class Email:
         return helpers.make_make_email_data(**asdict(self))
 
 
+@validate_arguments
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:
     if not string_to_escape:
         return string_to_escape

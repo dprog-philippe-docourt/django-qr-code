@@ -1,3 +1,4 @@
 django>=3.2.13
 segno>=1.5.2
 pytz>=2022.1
+pydantic>=1.9.1
