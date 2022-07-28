@@ -75,7 +75,7 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
             alt = str(data)
         else:
             alt = data
-        return mark_safe('<img src="{0}" alt="{1}">'.format(qr.png_data_uri(**kw), escape(alt)))
+        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt)}">')
     return mark_safe(qr.svg_inline(**kw))
 
 

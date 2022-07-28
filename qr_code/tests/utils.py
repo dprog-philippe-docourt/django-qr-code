@@ -25,7 +25,7 @@ def minimal_svg(s):
 
 
 def get_svg_content_from_file_name(base_file_name):
-    with open(os.path.join(get_resources_path(), base_file_name + SVG_REF_SUFFIX), "r", encoding="utf-8") as file:
+    with open(os.path.join(get_resources_path(), base_file_name + SVG_REF_SUFFIX), encoding="utf-8") as file:
         return file.read()
 
 

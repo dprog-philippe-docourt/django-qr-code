@@ -804,11 +804,11 @@ class Coordinates:
 
     def __str__(self) -> str:
         if self.altitude:
-            return "latitude: %s, longitude: %s, altitude: %s" % (self.latitude, self.longitude, self.altitude)
-        return "latitude: %s, longitude: %s" % (self.latitude, self.longitude)
+            return f"latitude: {self.latitude}, longitude: {self.longitude}, altitude: {self.altitude}"
+        return f"latitude: {self.latitude}, longitude: {self.longitude}"
 
     def float_to_str(self, f):
-        return "{0:.8f}".format(f).rstrip("0")
+        return f"{f:.8f}".rstrip("0")
 
     def make_geolocation_text(self) -> str:
         geo = f"geo:{self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"
