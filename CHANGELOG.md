@@ -1,11 +1,17 @@
 # Change Log
 
+## 3.1.1 (2022-07-28)
+* Fix regression in demo site due to improper runtime type validation on `QRCodeOptions`.
+* Minor improvements to documentation.
+* Modernize code syntax for Python >= 3.7.
+
 ## 3.1.0 (2022-06-26)
 * Add support for more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
 * Add support for simple iCalendar event (VEVENT). (#38)
 * Add support for Django 4.0.
 * BREAKING CHANGES:
-  * Introduce type validation via pydantic. Existing code might need some type-related fixes.
+  * Introduce type validation at runtime with pydantic. Existing code might need some type-related fixes.
+  * Drop support for Django 2.2.
 
 ## 3.0.0 (2021-11-27)
 * Add support for European Payments Council Quick Response Code (EPC QR Code) version 002.

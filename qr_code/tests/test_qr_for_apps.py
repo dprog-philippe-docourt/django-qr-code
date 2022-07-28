@@ -250,9 +250,9 @@ class TestQRForApplications(SimpleTestCase):
         tag_content = tag_pattern
         for key, value in tag_args.items():
             if isinstance(value, str):
-                tag_content += ' %s="%s"' % (key, value)
+                tag_content += f' {key}="{value}"'
             else:
-                tag_content += " %s=%s" % (key, value)
+                tag_content += f" {key}={value}"
         return dict(source="{% " + tag_content + " %}", ref_file_name=ref_file_name, template_context=template_context)
 
     @staticmethod
@@ -310,7 +310,7 @@ class TestQRForApplications(SimpleTestCase):
             if number is not None:
                 ref_file_name = f"{ref_file_name}_{number}"
             test_data = TestQRForApplications._make_test_data(
-                tag_pattern="%s%s %s" % (tag_prefix, tag_base_name, tag_data),
+                tag_pattern=f"{tag_prefix}{tag_base_name} {tag_data}",
                 ref_file_name=ref_file_name,
                 tag_args=tag_args,
                 template_context=template_context,

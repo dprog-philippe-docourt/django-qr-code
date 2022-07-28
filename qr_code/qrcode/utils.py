@@ -33,23 +33,23 @@ class QRCodeOptions:
         boost_error: bool = True,
         micro: bool = False,
         eci: bool = False,
-        dark_color: Union[tuple, str] = "#000",
-        light_color: Union[tuple, str] = "#fff",
-        finder_dark_color: bool = False,
-        finder_light_color: bool = False,
-        data_dark_color: bool = False,
-        data_light_color: bool = False,
-        version_dark_color: bool = False,
-        version_light_color: bool = False,
-        format_dark_color: bool = False,
-        format_light_color: bool = False,
-        alignment_dark_color: bool = False,
-        alignment_light_color: bool = False,
-        timing_dark_color: bool = False,
-        timing_light_color: bool = False,
-        separator_color: bool = False,
-        dark_module_color: bool = False,
-        quiet_zone_color: bool = False,
+        dark_color: Union[tuple, str, bool, None] = "#000",
+        light_color: Union[tuple, str, bool, None] = "#fff",
+        finder_dark_color: Union[tuple, str, bool, None] = False,
+        finder_light_color: Union[tuple, str, bool, None] = False,
+        data_dark_color: Union[tuple, str, bool, None] = False,
+        data_light_color: Union[tuple, str, bool, None] = False,
+        version_dark_color: Union[tuple, str, bool, None] = False,
+        version_light_color: Union[tuple, str, bool, None] = False,
+        format_dark_color: Union[tuple, str, bool, None] = False,
+        format_light_color: Union[tuple, str, bool, None] = False,
+        alignment_dark_color: Union[tuple, str, bool, None] = False,
+        alignment_light_color: Union[tuple, str, bool, None] = False,
+        timing_dark_color: Union[tuple, str, bool, None] = False,
+        timing_light_color: Union[tuple, str, bool, None] = False,
+        separator_color: Union[tuple, str, bool, None] = False,
+        dark_module_color: Union[tuple, str, bool, None] = False,
+        quiet_zone_color: Union[tuple, str, bool, None] = False,
     ) -> None:
         """
         :param size: The size of the QR code as an integer or a string. Default is *'m'*.
@@ -90,7 +90,7 @@ class QRCodeOptions:
         :param dark_color: Color of the dark modules (default: black). The
             color can be provided as ``(R, G, B)`` tuple, as hexadecimal
             format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
-            name (i.e. ``red``).
+            name (i.e. ``red``). If alpha transparency is supported (i.e. PNG and SVG), hexadecimal values like #RRGGBBAA are accepted.
         :param light_color: Color of the light modules (default: white).
             See `color` for valid values. If light is set to ``None`` the
             light modules will be transparent.
@@ -804,11 +804,11 @@ class Coordinates:
 
     def __str__(self) -> str:
         if self.altitude:
-            return "latitude: %s, longitude: %s, altitude: %s" % (self.latitude, self.longitude, self.altitude)
-        return "latitude: %s, longitude: %s" % (self.latitude, self.longitude)
+            return f"latitude: {self.latitude}, longitude: {self.longitude}, altitude: {self.altitude}"
+        return f"latitude: {self.latitude}, longitude: {self.longitude}"
 
     def float_to_str(self, f):
-        return "{0:.8f}".format(f).rstrip("0")
+        return f"{f:.8f}".rstrip("0")
 
     def make_geolocation_text(self) -> str:
         geo = f"geo:{self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"

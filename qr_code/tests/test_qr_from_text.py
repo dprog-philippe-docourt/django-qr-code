@@ -60,7 +60,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             cache_enabled = url_options[0]
             url_signature_enabled = url_options[1]
             user = url_options[2]
-            print("\t - cache_enabled=%s, url_signature_enabled=%s, user=%s" % (cache_enabled, url_signature_enabled, user))
+            print(f"\t - cache_enabled={cache_enabled}, url_signature_enabled={url_signature_enabled}, user={user}")
             url_options_kwargs = dict()
             url0 = make_qr_code_url(
                 TEST_TEXT,
@@ -125,7 +125,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             self.assertEqual(urls[0], urls[2])
             self.assertEqual(urls[0], urls[3])
             response = self.client.get(url)
-            print("\t - cache_enabled=%s, url_signature_enabled=%s" % (cache_enabled, url_signature_enabled))
+            print(f"\t - cache_enabled={cache_enabled}, url_signature_enabled={url_signature_enabled}")
             expected_status_code = 200
             if url_signature_enabled is False and not allows_external_request_from_user(None):
                 expected_status_code = 403
@@ -246,7 +246,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode("utf-8")
-            ref_file_name = "%s_%s" % (base_file_name, correction_level.lower())
+            ref_file_name = f"{base_file_name}_{correction_level.lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
@@ -276,7 +276,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = "%s_%s" % (base_file_name, correction_level.lower())
+            ref_file_name = f"{base_file_name}_{correction_level.lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -303,7 +303,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode("utf-8")
-            ref_file_name = "%s_%s" % (base_file_name, str(eci).lower())
+            ref_file_name = f"{base_file_name}_{str(eci).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
@@ -327,7 +327,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = "%s_%s" % (base_file_name, str(eci).lower())
+            ref_file_name = f"{base_file_name}_{str(eci).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -358,7 +358,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode("utf-8")
-            ref_file_name = "%s_%s" % (base_file_name, str(micro).lower())
+            ref_file_name = f"{base_file_name}_{str(micro).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
@@ -388,7 +388,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = "%s_%s" % (base_file_name, str(micro).lower())
+            ref_file_name = f"{base_file_name}_{str(micro).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -417,7 +417,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content.decode("utf-8")
-            ref_file_name = "%s_%s" % (base_file_name, str(boost_error).lower())
+            ref_file_name = f"{base_file_name}_{str(boost_error).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_svg_content_from_file_name(ref_file_name)
@@ -443,7 +443,7 @@ class TestQRUrlFromTextResult(SimpleTestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             source_image_data = response.content
-            ref_file_name = "%s_%s" % (base_file_name, str(boost_error).lower())
+            ref_file_name = f"{base_file_name}_{str(boost_error).lower()}"
             if REFRESH_REFERENCE_IMAGES:
                 write_png_content_to_file(ref_file_name, source_image_data)
             ref_image_data = get_png_content_from_file_name(ref_file_name)
@@ -557,7 +557,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr3 = qr_from_text(TEST_TEXT, size=size, image_format="svg")
             qr4 = qr_from_text(TEST_TEXT, options=QRCodeOptions(size=size, image_format="svg"))
             qr5 = qr_from_text(TEST_TEXT, size=size, image_format="invalid-format-name")
-            result_file_name = "%s_%s" % (base_ref_file_name, size_name)
+            result_file_name = f"{base_ref_file_name}_{size_name}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(result_file_name, qr1)
             result = get_svg_content_from_file_name(result_file_name)
@@ -581,7 +581,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             qr4 = qr_from_text(TEST_TEXT, version=version, image_format="SVG")
             qr5 = qr_from_text(TEST_TEXT, options=QRCodeOptions(version=version, image_format="SVG"))
             qr6 = qr_from_text(TEST_TEXT, version=version, image_format="invalid-format-name")
-            result_file_name = "%s_%s" % (base_file_name, version_name)
+            result_file_name = f"{base_file_name}_{version_name}"
             if REFRESH_REFERENCE_IMAGES:
                 write_svg_content_to_file(result_file_name, qr1)
             result = get_svg_content_from_file_name(result_file_name)
@@ -596,7 +596,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         file_base_name = "qrfromtext_error_correction"
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
-            ref_file_name = "%s_%s" % (file_base_name, correction_level)
+            ref_file_name = f"{file_base_name}_{correction_level}"
             tests_data.append(
                 dict(
                     source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" error_correction="{correction_level}" %}}',
@@ -619,7 +619,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         file_base_name = "qrfromtext_eci"
         tests_data = []
         for eci in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, eci)
+            ref_file_name = f"{file_base_name}_{eci}"
             tests_data.append(
                 dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" eci={eci} %}}', ref_file_name=ref_file_name.lower())
             )
@@ -640,7 +640,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         file_base_name = "qrfromtext_micro"
         tests_data = []
         for micro in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, micro)
+            ref_file_name = f"{file_base_name}_{micro}"
             tests_data.append(
                 dict(
                     source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="svg" encoding="iso-8859-1" micro={micro} %}}',
@@ -664,7 +664,7 @@ class TestQRFromTextSvgResult(SimpleTestCase):
         file_base_name = "qrfromtext_boost_error"
         tests_data = []
         for boost_error in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, boost_error)
+            ref_file_name = f"{file_base_name}_{boost_error}"
             tests_data.append(
                 dict(source=f'{{% qr_from_text data image_format="svg" boost_error={boost_error} %}}', ref_file_name=ref_file_name.lower())
             )
@@ -737,7 +737,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             size = sizes[i]
             print("Testing PNG with size %s" % size)
             size_name = size_names[i]
-            result_file_name = "%s_%s" % (base_ref_file_name, size_name)
+            result_file_name = f"{base_ref_file_name}_{size_name}"
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(size=size, image_format="png"))
             qr2 = qr_from_text(TEST_TEXT, size=size, image_format="png")
             qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(size=size, image_format="png"))
@@ -762,7 +762,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             qr2 = qr_from_text(TEST_TEXT, version=version, image_format="png")
             qr3 = qr_from_text(TEST_TEXT, version=version, image_format="PNG")
             qr4 = qr_from_text(TEST_TEXT, options=QRCodeOptions(version=version, image_format="PNG"))
-            result_file_name = "%s_%s" % (base_file_name, version_name)
+            result_file_name = f"{base_file_name}_{version_name}"
             if REFRESH_REFERENCE_IMAGES:
                 match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
                 source_image_data = match.group("data")
@@ -777,7 +777,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
         file_base_name = "qrfromtext_error_correction"
         tests_data = []
         for correction_level in ERROR_CORRECTION_DICT.keys():
-            ref_file_name = "%s_%s" % (file_base_name, correction_level)
+            ref_file_name = f"{file_base_name}_{correction_level}"
             tests_data.append(
                 dict(
                     source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" error_correction="{correction_level}" %}}',
@@ -802,7 +802,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
         file_base_name = "qrfromtext_eci"
         tests_data = []
         for eci in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, eci)
+            ref_file_name = f"{file_base_name}_{eci}"
             tests_data.append(
                 dict(source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" eci={eci} %}}', ref_file_name=ref_file_name.lower())
             )
@@ -825,7 +825,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
         file_base_name = "qrfromtext_micro"
         tests_data = []
         for micro in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, micro)
+            ref_file_name = f"{file_base_name}_{micro}"
             tests_data.append(
                 dict(
                     source=f'{{% qr_from_text "{COMPLEX_TEST_TEXT}" image_format="png" encoding=None micro={micro}%}}',
@@ -857,7 +857,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
         file_base_name = "qrfromtext_boost_error"
         tests_data = []
         for boost_error in [False, True]:
-            ref_file_name = "%s_%s" % (file_base_name, boost_error)
+            ref_file_name = f"{file_base_name}_{boost_error}"
             tests_data.append(
                 dict(source=f'{{% qr_from_text data image_format="png" boost_error={boost_error} %}}', ref_file_name=ref_file_name.lower())
             )

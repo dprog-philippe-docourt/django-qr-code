@@ -100,7 +100,7 @@ def get_qr_url_protection_token(qr_code_options, random_token):
 
 
 def qr_code_etag(request) -> str:
-    return '"%s:%s:version_%s"' % (request.path, request.GET.urlencode(), constants.QR_CODE_GENERATION_VERSION_DATE.isoformat())
+    return f'"{request.path}:{request.GET.urlencode()}:version_{constants.QR_CODE_GENERATION_VERSION_DATE.isoformat()}"'
 
 
 def qr_code_last_modified(_request) -> datetime:
@@ -173,5 +173,5 @@ def make_qr_code_url(
         # users cannot generate the signed token!).
         token = get_qr_url_protection_signed_token(qr_code_options)
         params["token"] = token
-    url = "%s?%s" % (path, urllib.parse.urlencode(params))
+    url = f"{path}?{urllib.parse.urlencode(params)}"
     return mark_safe(url)
