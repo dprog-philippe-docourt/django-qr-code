@@ -145,7 +145,7 @@ urlpatterns = [
 ]
 ```
 
-The QR code images are served via a URL named **`qr_code:serve_qr_code_image`**. You can customize the path under which the images are served (i.e. the path bound to the URL named `qr_code:serve_qr_code_image`) with the optionnal setting **`SERVE_QR_CODE_IMAGE_PATH`** which defaults to `images/serve-qr-code-image/`. Note that the trailing slash is mandatory and that defining this setting to an empty string leads to using the default value. The example below will serve any QR code image from `<base URL or your application>/qr-code-image/`:
+The QR code images are served via a URL named **`qr_code:serve_qr_code_image`**. You can customize the path under which the images are served (i.e. the path bound to the URL named `qr_code:serve_qr_code_image`) with the optional setting **`SERVE_QR_CODE_IMAGE_PATH`** which defaults to `images/serve-qr-code-image/`. Note that the trailing slash is mandatory and that defining this setting to an empty string leads to using the default value. The example below will serve any QR code image from `<base URL or your application>/qr-code-image/`:
 
 ```python
 # In urls.py
@@ -159,6 +159,10 @@ urlpatterns = [
 # In your settings
 SERVE_QR_CODE_IMAGE_PATH = 'qr-code-image/'
 ```
+
+### Generating Image Object Representing a QR Code
+
+If you do not want to use Django tags for rendering QR code in a template, you can simply use the API in your code. For instance, `qr_code.qrcode.maker.make_qr_code_image` will return bytes representing an image according to the image_format passed in the `qr_code_options` parameter.
 
 ### Special encoding modes with qr_from_data and qr_url_from_data
 The tags **`qr_from_data`** and  **`qr_url_from_data`** produce results similar to those of `qr_from_text` and `qr_url_from_text`, but they avoid converting everything to text (UTF-8 encoded by default, or any supported charset depending on `encoding` option).

@@ -1,7 +1,8 @@
 # Change Log
 
 ## 3.1.1 (2022-07-28)
-* Fix regression in demo site due to runtime type validation on `QRCodeOptions`.
+* Fix regression in demo site due to improper runtime type validation on `QRCodeOptions`.
+* Minor improvements to documentation.
 
 ## 3.1.0 (2022-06-26)
 * Add support for more properties for vCard: cellphone (TEL;TYPE=CELL), homephone (TEL;TYPE=HOME), workphone (TEL;TYPE=WORK)
