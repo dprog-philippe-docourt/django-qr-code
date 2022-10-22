@@ -237,11 +237,6 @@ class QRCodeOptions:
         :rtype: dict
         """
         colors = {k: v for k, v in self._colors.items() if v is not False}
-        # Remove common default "dark" and "light" values
-        if colors.get("dark_color") in ("#000", "#000000", "black"):
-            del colors["dark_color"]
-        if colors.get("light_color") in ("#fff", "#FFF", "#ffffff", "#FFFFFF", "white"):
-            del colors["light_color"]
         return colors
 
     def _size_as_int(self):
