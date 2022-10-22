@@ -760,11 +760,10 @@ class WifiConfig:
     AUTHENTICATION = namedtuple("AUTHENTICATION", "nopass WEP WPA")._make(range(3))  # type: ignore
     AUTHENTICATION_CHOICES = ((AUTHENTICATION.nopass, "nopass"), (AUTHENTICATION.WEP, "WEP"), (AUTHENTICATION.WPA, "WPA"))
 
-    def __init__(self, ssid: str = "", authentication: int = AUTHENTICATION.nopass, password: str = "", hidden: bool = False) -> None:
-        self.ssid = ssid
-        self.authentication = authentication
-        self.password = password
-        self.hidden = hidden
+    ssid: str = ""
+    authentication: int = AUTHENTICATION.nopass
+    password: str = ""
+    hidden: bool = False
 
     def make_qr_code_data(self) -> str:
         """
