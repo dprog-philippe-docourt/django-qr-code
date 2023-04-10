@@ -794,8 +794,8 @@ class Coordinates:
 
     Fields meaning:
         * latitude: The latitude.
-        * latitude: The longitude.
-        * latitude: The optional altitude.
+        * longitude: The longitude.
+        * altitude: The optional altitude.
     """
 
     latitude: float
