@@ -670,7 +670,7 @@ class VCard:
     is supported.
 
     Fields meaning:
-    name: The name. If it contains a semicolon, , the first part
+    name: The name. If it contains a semicolon, the first part
             is treated as lastname and the second part is treated as forename.
     displayname: Common name.
     email: E-mail address. Multiple values are allowed.
