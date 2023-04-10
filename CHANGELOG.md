@@ -4,6 +4,7 @@
 * Fix bug in `WifiConfig` data class (#43).
 * Fix typo in documentation (#45)
 * Add support for Django 4.1 and Django 4.2.
+* Add support for Python 3.11.
 
 ## 3.1.1 (2022-07-28)
 * Fix regression in demo site due to improper runtime type validation on `QRCodeOptions`.

@@ -1,6 +1,6 @@
-twine>=4.0.1
-coverage>=6.4.1
-mypy>=0.961
-django-stubs>=1.12.0
-recommonmark>=0.7.1
-setuptools>=62.6.0
+twine==4.0.2
+coverage==7.2.3
+mypy==1.2.0
+django-stubs==1.16.0
+recommonmark==0.7.1
+setuptools==67.6.1
