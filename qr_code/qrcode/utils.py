@@ -7,7 +7,7 @@ from datetime import date
 from enum import Enum
 from typing import Optional, Any, Union, Sequence, List, Tuple
 
-import pytz
+import zoneinfo
 from django.utils.html import escape
 from pydantic import validate_call
 from pydantic.dataclasses import dataclass as pydantic_dataclass
@@ -413,14 +413,14 @@ class VEvent:
             if is_naive_datetime(t):
                 return t.strftime("%Y%m%dT%H%M%S")
             else:
-                t_utc = t.astimezone(pytz.utc)
+                t_utc = t.astimezone(zoneinfo.ZoneInfo('UTC'))
                 return t_utc.strftime("%Y%m%dT%H%M%SZ")
 
         event_str = f"""BEGIN:VCALENDAR
 PRODID:Django QR Code
 VERSION:2.0
 BEGIN:VEVENT
-DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")}
+DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(zoneinfo.ZoneInfo('UTC')).strftime("%Y%m%dT%H%M%SZ")}
 UID:{self.uid}
 DTSTART:{get_datetime_str(self.start)}
 DTEND:{get_datetime_str(self.end)}
