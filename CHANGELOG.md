@@ -1,6 +1,6 @@
 # Change Log
 
-# 4.0.0 (2024-01-03)
+# 4.0.1 (2024-01-04)
 * Upgrade dependencies, and drop support for Pydantic <2.5, Django<4.2, Python 3.8
 * Remove dependency to pytz.
 * Add support for Python 3.12.
