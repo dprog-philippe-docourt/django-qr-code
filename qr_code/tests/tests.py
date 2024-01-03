@@ -47,10 +47,10 @@ class TestQRCodeOptions(SimpleTestCase):
 
     def test_kw_save(self):
         options = QRCodeOptions(border=0, image_format="png", size=13)
-        self.assertDictEqual(options.kw_save(), {'border': 0, 'dark': '#000', 'kind': 'png', 'light': '#fff', 'scale': 13})
+        self.assertDictEqual(options.kw_save(), {'border': 0, 'dark': 'black', 'kind': 'png', 'light': 'white', 'scale': 13})
         options = QRCodeOptions(border=0, image_format="svg", size=13)
         self.assertDictEqual(options.kw_save(),
-                             {'border': 0, 'dark': '#000', 'kind': 'svg', 'light': '#fff', 'scale': Decimal("1.3"), 'unit': 'mm'})
+                             {'border': 0, 'dark': 'black', 'kind': 'svg', 'light': 'white', 'scale': Decimal("1.3"), 'unit': 'mm'})
 
 
 class TestWriteResourceData(SimpleTestCase):
