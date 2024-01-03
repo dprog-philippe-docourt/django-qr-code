@@ -45,6 +45,9 @@ class TestQRUrlFromTextResult(SimpleTestCase):
 
     default_ref_base_file_name = "qrfromtext_default"
 
+    def setUp(self):
+        self.maxDiff = None
+
     @staticmethod
     def _get_reference_result_for_default_svg():
         return get_svg_content_from_file_name(TestQRUrlFromTextResult.default_ref_base_file_name)
@@ -544,6 +547,9 @@ class TestQRFromTextSvgResult(SimpleTestCase):
     The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
     """
 
+    def setUp(self):
+        self.maxDiff = None
+
     def test_size(self):
         base_ref_file_name = "qrfromtext_size"
         sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10, 2.1]
@@ -806,6 +812,9 @@ class TestQRFromTextPngResult(SimpleTestCase):
 
     The tests cover direct call to tag function, rendering of tag, and direct call to qr_code API.
     """
+
+    def setUp(self):
+        self.maxDiff = None
 
     def test_size(self):
         base_ref_file_name = "qrfromtext_size"
