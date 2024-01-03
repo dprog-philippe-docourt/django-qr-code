@@ -4,6 +4,7 @@ import decimal
 from collections import namedtuple
 from dataclasses import asdict
 from datetime import date
+from decimal import Decimal
 from enum import Enum
 from typing import Optional, Any, Union, Sequence, List, Tuple
 
@@ -24,7 +25,7 @@ class QRCodeOptions:
     @validate_call
     def __init__(
         self,
-        size: Union[int, float, str, None] = DEFAULT_MODULE_SIZE,
+        size: Union[int, float, str, Decimal, None] = DEFAULT_MODULE_SIZE,
         border: int = 4,
         version: Union[int, str, None] = None,
         image_format: str = "svg",
@@ -52,8 +53,8 @@ class QRCodeOptions:
         quiet_zone_color: Union[tuple, str, bool, None] = False,
     ) -> None:
         """
-        :param size: The size of the QR code as an integer, float or a string. Default is *'m'*.
-        :type: str, int, or float
+        :param size: The size of the QR code as an integer, float, Decimal or a string. Default is *'m'*.
+        :type: str, int, float or Decimal
         :param int border: The size of the border (blank space around the code).
         :param version: The version of the QR code gives the size of the matrix.
             Default is *None* which mean automatic in order to avoid data overflow.
@@ -239,7 +240,7 @@ class QRCodeOptions:
         colors = {k: v for k, v in self._colors.items() if v is not False}
         return colors
 
-    def _size_as_number(self) -> Union[int, float, str]:
+    def _size_as_number(self) -> Union[int, float, str, Decimal]:
         """Returns the size as integer value.
 
         :rtype: int or float
@@ -249,9 +250,9 @@ class QRCodeOptions:
             actual_size = int(size)     # type: ignore
             if actual_size < 1:
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
-        elif isinstance(size, float):
+        elif isinstance(size, (float, Decimal)):
             actual_size = size  # type: ignore
-            if actual_size < 0.01:
+            if actual_size < Decimal("0.01"):
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
             actual_size = SIZE_DICT.get(size.lower(), DEFAULT_MODULE_SIZE)

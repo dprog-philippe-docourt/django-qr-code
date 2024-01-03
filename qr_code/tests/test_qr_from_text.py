@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import re
+from decimal import Decimal
 
 from itertools import product
 
@@ -552,8 +553,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
 
     def test_size(self):
         base_ref_file_name = "qrfromtext_size"
-        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10, 2.1]
-        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2 + ["2.1"]
+        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10, 2.1, Decimal("1.2")]
+        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2 + ["2.1"] + ["1.2"]
         for i in range(len(sizes)):
             size = sizes[i]
             print("Testing SVG with size %s" % size)
