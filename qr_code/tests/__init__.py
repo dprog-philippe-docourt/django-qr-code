@@ -15,4 +15,4 @@ SVG_REF_SUFFIX = ".ref.svg"
 PNG_REF_SUFFIX = ".ref.png"
 
 # Set this flag to True for writing the new version of each reference image in tests/resources while running the tests.
-REFRESH_REFERENCE_IMAGES = True
+REFRESH_REFERENCE_IMAGES = False
