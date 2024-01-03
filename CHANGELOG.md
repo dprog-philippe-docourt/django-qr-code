@@ -6,6 +6,7 @@
 * Add support for Django 5.0.
 * Introduce support for floating point size QR code modules.
 * Introduce embedded Base64 SVG image.
+* Behavior change: white background is no longer interpreted as transparent for SVG output (#41). If you want to avoid path fill of SVG to reduce the size of the SVG image, you have to explicitly set `light_color` to `None` in `QRCodeOptions`.
 
 ## 3.1.2 (2023-04-10)
 * Fix bug in `WifiConfig` data class (#43).

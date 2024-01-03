@@ -731,8 +731,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             self.assertEqual(minimal_svg(qr1), minimal_svg(ref_image_data))
 
         base_ref_file_name = "qrfromtext_color"
-        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue"]
-        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue"]
+        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue", None]
+        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue", "transparent"]
         for i in range(len(colors)):
             color = colors[i]
             color_name = color_names[i]
@@ -1015,8 +1015,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
             self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
 
         base_ref_file_name = "qrfromtext_color"
-        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue"]
-        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue"]
+        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue", None]
+        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue", "transparent"]
         for i in range(len(colors)):
             color = colors[i]
             color_name = color_names[i]

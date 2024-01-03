@@ -91,7 +91,7 @@ class QRCodeOptions:
             color can be provided as ``(R, G, B)`` tuple, as hexadecimal
             format (``#RGB``, ``#RRGGBB`` ``RRGGBBAA``), or web color
             name (i.e. ``red``). If alpha transparency is supported (i.e. PNG and SVG), hexadecimal values like #RRGGBBAA are accepted.
-        :param light_color: Color of the light modules (default: white).
+        :param light_color: Color of the light modules (default: transparent).
             See `color` for valid values. If light is set to ``None`` the
             light modules will be transparent.
         :param finder_dark_color: Color of the dark finder modules (default: same as ``dark_color``)
@@ -234,14 +234,9 @@ class QRCodeOptions:
 
         Only non-default values are returned.
 
-        :rtype: dict
+        :rtype: d
         """
         colors = {k: v for k, v in self._colors.items() if v is not False}
-        # Remove common default "dark" and "light" values
-        if colors.get("dark_color") in ("#000", "#000000", "black"):
-            del colors["dark_color"]
-        if colors.get("light_color") in ("#fff", "#FFF", "#ffffff", "#FFFFFF", "white"):
-            del colors["light_color"]
         return colors
 
     def _size_as_number(self) -> Union[int, float]:
