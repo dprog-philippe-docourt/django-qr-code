@@ -1,1 +1,3 @@
-PYDANTIC_CONFIG = dict(arbitrary_types_allowed=True)
+from pydantic import ConfigDict
+
+PYDANTIC_CONFIG = ConfigDict(arbitrary_types_allowed=True)

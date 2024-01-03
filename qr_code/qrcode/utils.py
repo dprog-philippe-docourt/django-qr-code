@@ -239,18 +239,18 @@ class QRCodeOptions:
         colors = {k: v for k, v in self._colors.items() if v is not False}
         return colors
 
-    def _size_as_number(self) -> Union[int, float]:
+    def _size_as_number(self) -> Union[int, float, str]:
         """Returns the size as integer value.
 
         :rtype: int or float
         """
         size = self._size
         if _can_be_cast_to_int(size):
-            actual_size = int(size)
+            actual_size = int(size)     # type: ignore
             if actual_size < 1:
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, float):
-            actual_size = size
+            actual_size = size  # type: ignore
             if actual_size < 0.01:
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
