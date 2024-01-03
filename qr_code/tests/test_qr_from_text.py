@@ -721,6 +721,84 @@ class TestQRFromTextSvgResult(SimpleTestCase):
             ref_image_data = get_svg_content_from_file_name(test_data["ref_file_name"])
             self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
+    def test_colors(self):
+        def run_tests():
+            if REFRESH_REFERENCE_IMAGES:
+                write_svg_content_to_file(result_file_name, qr1)
+            self.assertEqual(minimal_svg(qr1), minimal_svg(qr2))
+            self.assertEqual(minimal_svg(qr1), minimal_svg(qr3))
+            ref_image_data = get_svg_content_from_file_name(result_file_name)
+            self.assertEqual(minimal_svg(qr1), minimal_svg(ref_image_data))
+
+        base_ref_file_name = "qrfromtext_color"
+        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue"]
+        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue"]
+        for i in range(len(colors)):
+            color = colors[i]
+            color_name = color_names[i]
+            print("Testing SVG with dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(dark_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, dark_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(dark_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(light_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, light_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(light_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with data_dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_data_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(data_dark_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, data_dark_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(data_dark_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with data light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_data_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(data_light_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, data_light_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(data_light_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with finder dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_finder_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(finder_dark_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, finder_dark_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(finder_dark_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with finder light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_finder_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(finder_light_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, finder_light_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(finder_light_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with dark module color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_dark_module_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(dark_module_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, dark_module_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(dark_module_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with alignment dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_alignment_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(alignment_dark_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, alignment_dark_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(alignment_dark_color=color, image_format="svg"))
+            run_tests()
+
+            print("Testing SVG with alignment light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_alignment_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(alignment_light_color=color, image_format="svg"))
+            qr2 = qr_from_text(TEST_TEXT, alignment_light_color=color, image_format="svg")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(alignment_light_color=color, image_format="svg"))
+            run_tests()
+
 
 class TestQRFromTextPngResult(SimpleTestCase):
     """
@@ -924,3 +1002,83 @@ class TestQRFromTextPngResult(SimpleTestCase):
                 write_png_content_to_file(test_data["ref_file_name"], source_image_data)
             ref_image_data = get_png_content_from_file_name(test_data["ref_file_name"])
             self.assertEqual(source_image_data, ref_image_data)
+
+    def test_colors(self):
+        def run_tests():
+            if REFRESH_REFERENCE_IMAGES:
+                match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
+                source_image_data = match.group("data")
+                write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
+            self.assertEqual(qr1, qr2)
+            self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+
+        base_ref_file_name = "qrfromtext_color"
+        colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue"]
+        color_names = ["black"] * 3 + ["white"] * 3 + ["red", "blue"]
+        for i in range(len(colors)):
+            color = colors[i]
+            color_name = color_names[i]
+            print("Testing PNG with dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(dark_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, dark_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(dark_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(light_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, light_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(light_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with data_dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_data_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(data_dark_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, data_dark_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(data_dark_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with data light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_data_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(data_light_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, data_light_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(data_light_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with finder dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_finder_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(finder_dark_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, finder_dark_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(finder_dark_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with finder light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_finder_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(finder_light_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, finder_light_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(finder_light_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with dark module color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_dark_module_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(dark_module_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, dark_module_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(dark_module_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with alignment dark color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_alignment_dark_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(alignment_dark_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, alignment_dark_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(alignment_dark_color=color, image_format="png"))
+            run_tests()
+
+            print("Testing PNG with alignment light color %s" % color_name)
+            result_file_name = f"{base_ref_file_name}_alignment_light_{color_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(alignment_light_color=color, image_format="png"))
+            qr2 = qr_from_text(TEST_TEXT, alignment_light_color=color, image_format="png")
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(alignment_light_color=color, image_format="png"))
+            run_tests()

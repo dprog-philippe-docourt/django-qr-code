@@ -670,7 +670,7 @@ class VCard:
     is supported.
 
     Fields meaning:
-    name: The name. If it contains a semicolon, , the first part
+    name: The name. If it contains a semicolon, the first part
             is treated as lastname and the second part is treated as forename.
     displayname: Common name.
     email: E-mail address. Multiple values are allowed.
@@ -748,7 +748,7 @@ class VCard:
 @pydantic_dataclass
 class WifiConfig:
     """\
-    Represents a WIFI configuration.
+    Represents a WI-FI configuration.
 
     Fields meaning:
         * ssid: the name of the SSID
@@ -769,7 +769,7 @@ class WifiConfig:
         """
         Make a text for configuring a Wi-Fi connexion. The syntax is inspired by the MeCARD format used for contacts.
 
-        :return: the WIFI configuration text that can be translated to a QR code.
+        :return: the WI-FI configuration text that can be translated to a QR code.
         :rtype: str
         """
 
