@@ -22,8 +22,8 @@ def make_qr(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True):
     :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in byte mode.
     :rtype: segno.QRCode
     """
-    # WARNING: For compatibility reasons, we still allow to pass __proxy__ class (lazy string). Moreover, it would be OK to pass anything that has __str__
-    # attribute (e. g. class instance that handles phone numbers).
+    # WARNING: For compatibility reasons, we still allow to pass __proxy__ class (lazy string). Moreover, it would be
+    # OK to pass anything that has __str__ attribute (e.g. class instance that handles phone numbers).
     if force_text:
         return segno.make(str(data), **qr_code_options.kw_make(), mode="byte")
     return segno.make(data, **qr_code_options.kw_make())

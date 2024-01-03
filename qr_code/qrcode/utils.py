@@ -24,7 +24,7 @@ class QRCodeOptions:
     @validate_call
     def __init__(
         self,
-        size: Union[int, str, None] = DEFAULT_MODULE_SIZE,
+        size: Union[int, float, str, None] = DEFAULT_MODULE_SIZE,
         border: int = 4,
         version: Union[int, str, None] = None,
         image_format: str = "svg",
@@ -52,8 +52,8 @@ class QRCodeOptions:
         quiet_zone_color: Union[tuple, str, bool, None] = False,
     ) -> None:
         """
-        :param size: The size of the QR code as an integer or a string. Default is *'m'*.
-        :type: str or int
+        :param size: The size of the QR code as an integer, float or a string. Default is *'m'*.
+        :type: str, int, or float
         :param int border: The size of the border (blank space around the code).
         :param version: The version of the QR code gives the size of the matrix.
             Default is *None* which mean automatic in order to avoid data overflow.
@@ -219,7 +219,7 @@ class QRCodeOptions:
         :rtype: dict
         """
         image_format = self._image_format
-        kw = dict(border=self.border, kind=image_format, scale=self._size_as_int())
+        kw = dict(border=self.border, kind=image_format, scale=self._size_as_number())
         # Change the color mapping into the keywords Segno expects
         # (remove the "_color" suffix from the module names)
         kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
@@ -244,15 +244,19 @@ class QRCodeOptions:
             del colors["light_color"]
         return colors
 
-    def _size_as_int(self):
+    def _size_as_number(self) -> Union[int, float]:
         """Returns the size as integer value.
 
-        :rtype: int
+        :rtype: int or float
         """
         size = self._size
         if _can_be_cast_to_int(size):
             actual_size = int(size)
             if actual_size < 1:
+                actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
+        elif isinstance(size, float):
+            actual_size = size
+            if actual_size < 0.01:
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
             actual_size = SIZE_DICT.get(size.lower(), DEFAULT_MODULE_SIZE)

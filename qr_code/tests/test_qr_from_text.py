@@ -546,8 +546,8 @@ class TestQRFromTextSvgResult(SimpleTestCase):
 
     def test_size(self):
         base_ref_file_name = "qrfromtext_size"
-        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10]
-        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2
+        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10, 2.1]
+        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2 + ["2.1"]
         for i in range(len(sizes)):
             size = sizes[i]
             print("Testing SVG with size %s" % size)
@@ -809,8 +809,8 @@ class TestQRFromTextPngResult(SimpleTestCase):
 
     def test_size(self):
         base_ref_file_name = "qrfromtext_size"
-        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10]
-        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2
+        sizes = ["t", "T", "s", "S", None, -1, 0, "m", "M", "l", "L", "h", "H", "6", 6, "8", 8, "10", 10, 2.1]
+        size_names = ["tiny"] * 2 + ["small"] * 2 + ["medium"] * 5 + ["large"] * 2 + ["huge"] * 2 + ["6"] * 2 + ["8"] * 2 + ["10"] * 2 + ["2.1"]
         for i in range(len(sizes)):
             size = sizes[i]
             print("Testing PNG with size %s" % size)

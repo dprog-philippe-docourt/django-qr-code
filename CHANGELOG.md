@@ -4,6 +4,7 @@
 * Upgrade dependencies, and drop support for Pydantic <2.5, Django<4.2
 * Add support for Python 3.12
 * Add support for Django 5.0.
+* Introduce support for floating point size QR code modules.
 
 ## 3.1.2 (2023-04-10)
 * Fix bug in `WifiConfig` data class (#43).
