@@ -23,7 +23,7 @@ register = template.Library()
 
 
 def _make_app_qr_code_from_obj_or_kwargs(
-    obj_or_kwargs, expected_cls, embedded: bool, qr_code_args: dict, extra_qr_code_args: Optional[dict] = None, force_text: bool = True
+    obj_or_kwargs, expected_cls, embedded: bool, qr_code_args: dict, extra_qr_code_args: Optional[dict] = None, force_text: bool = True, use_data_uri_for_svg: bool = False
 ) -> str:
     if isinstance(obj_or_kwargs, expected_cls):
         obj = obj_or_kwargs
@@ -34,7 +34,7 @@ def _make_app_qr_code_from_obj_or_kwargs(
     if extra_qr_code_args:
         final_args.update(extra_qr_code_args)
     if embedded:
-        return make_qr_code_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text)
+        return make_qr_code_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg)
     else:
         return make_qr_code_url_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text)
 

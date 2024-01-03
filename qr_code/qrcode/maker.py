@@ -1,4 +1,5 @@
 """Tools for generating QR codes. This module depends on the Segno library."""
+import base64
 import io
 from typing import Mapping, Any
 
@@ -46,19 +47,23 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
 
 
 @validate_call(config=PYDANTIC_CONFIG)
-def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True) -> str:
+def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True, use_data_uri_for_svg: bool = False) -> str:
     """
     Generates a <svg> or <img> tag representing the QR code for the given `data`.
     This tag can be embedded into an HTML document.
+
+    When `image_format` is SVG and `use_data_uri_for_svg` it True, a base64 encoded image data URI is produced instead
+    of inline SVG path.
     """
     qr = make_qr(data, qr_code_options, force_text=force_text)
     kw = qr_code_options.kw_save()
     # Pop the image format from the keywords since qr.png_data_uri / qr.svg_inline
     # set it automatically
     kw.pop("kind")
-    if qr_code_options.image_format == "png":
+    alt_text = None
+    if use_data_uri_for_svg or qr_code_options.image_format == "png":
         if isinstance(data, bytes):
-            alt = ""
+            alt_text = ""
             encodings = ["utf-8", "iso-8859-1", "shift-jis"]
             if qr_code_options.encoding:
                 ei = encodings.index(qr_code_options.encoding)
@@ -67,21 +72,31 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
                     encodings[0] = qr_code_options.encoding
             for e in encodings:
                 try:
-                    alt = data.decode(e)
+                    alt_text = data.decode(e)
                     break
                 except UnicodeDecodeError:
                     pass
         elif not isinstance(data, str):
-            alt = str(data)
+            alt_text = str(data)
         else:
-            alt = data
-        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt)}">')
-    return mark_safe(qr.svg_inline(**kw))
+            alt_text = data
+
+    if qr_code_options.image_format == "png":
+        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt_text)}">')
+
+    if use_data_uri_for_svg:
+        out = io.BytesIO()
+        qr.save(out, **qr_code_options.kw_save())
+        svg_b64_data = base64.b64encode(out.getvalue()).decode("utf-8")
+        html = f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}">'
+        return mark_safe(html)
+    else:
+        return mark_safe(qr.svg_inline(**kw))
 
 
-def make_qr_code_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:
+def make_qr_code_with_args(data: Any, qr_code_args: dict, force_text: bool = True, use_data_uri_for_svg: bool = False) -> str:
     options = _options_from_args(qr_code_args)
-    return make_embedded_qr_code(data, options, force_text=force_text)
+    return make_embedded_qr_code(data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg)
 
 
 def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:
