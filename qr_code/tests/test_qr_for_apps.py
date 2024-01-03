@@ -328,7 +328,6 @@ class TestQRForApplications(SimpleTestCase):
             context.update(template_context)
         return template.render(context).strip()
 
-    @skip("Don't want to test")
     def test_demo_samples_embedded_in_svg_format(self):
         tests_data = self._make_tests_data(embedded=True)
         for test_data in tests_data:
@@ -339,7 +338,6 @@ class TestQRForApplications(SimpleTestCase):
             ref_image_data = get_svg_content_from_file_name(test_data["ref_file_name"])
             self.assertEqual(source_image_data, ref_image_data)
 
-    @skip("Don't want to test")
     def test_demo_samples_embedded_in_png_format(self):
         tests_data = self._make_tests_data(embedded=True, image_format="png")
         for test_data in tests_data:
@@ -353,7 +351,6 @@ class TestQRForApplications(SimpleTestCase):
             ref_image_data = get_png_content_from_file_name(test_data["ref_file_name"])
             self.assertEqual(source_image_data, ref_image_data)
 
-    @skip("Don't want to test")
     def test_demo_sample_urls_in_svg_format(self):
         tests_data = self._make_tests_data(embedded=False)
         for test_data in tests_data:
@@ -363,7 +360,6 @@ class TestQRForApplications(SimpleTestCase):
             ref_image_data = get_svg_content_from_file_name(test_data["ref_file_name"])
             self.assertEqual(minimal_svg(source_image_data), minimal_svg(ref_image_data))
 
-    @skip("Don't want to test")
     def test_demo_sample_urls_in_png_format(self):
         tests_data = self._make_tests_data(embedded=False, image_format="png")
         for test_data in tests_data:
