@@ -1,5 +1,10 @@
 # Change Log
 
+# 4.0.0 (2024-01-03)
+* Upgrade dependencies, and drop support for Pydantic <2.5, Django<4.2
+* Add support for Python 3.12
+* Add support for Django 5.0.
+
 ## 3.1.2 (2023-04-10)
 * Fix bug in `WifiConfig` data class (#43).
 * Fix typo in documentation (#45)

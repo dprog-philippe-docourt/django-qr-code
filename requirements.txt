@@ -1,4 +1,4 @@
-django>=3.2.18
-segno>=1.5.2
+django>=4.2.9
+segno>=1.6.0
 pytz>=2023.3
-pydantic>=1.10.7
+pydantic>=2.5.3

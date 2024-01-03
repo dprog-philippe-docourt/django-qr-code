@@ -5,7 +5,7 @@ from typing import Mapping, Any
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import segno
-from pydantic import validate_arguments
+from pydantic import validate_call
 
 from qr_code.qrcode import PYDANTIC_CONFIG
 from qr_code.qrcode.constants import DEFAULT_CACHE_ENABLED, DEFAULT_URL_SIGNATURE_ENABLED
@@ -13,7 +13,7 @@ from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
 
 
-@validate_arguments(config=PYDANTIC_CONFIG)
+@validate_call(config=PYDANTIC_CONFIG)
 def make_qr(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True):
     """Creates a QR code that encodes the given `data` with the given `qr_code_options`.
 
@@ -29,7 +29,7 @@ def make_qr(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True):
     return segno.make(data, **qr_code_options.kw_make())
 
 
-@validate_arguments(config=PYDANTIC_CONFIG)
+@validate_call(config=PYDANTIC_CONFIG)
 def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True) -> bytes:
     """
     Creates a bytes object representing a QR code image for the provided `data`.
@@ -45,7 +45,7 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
     return out.getvalue()
 
 
-@validate_arguments(config=PYDANTIC_CONFIG)
+@validate_call(config=PYDANTIC_CONFIG)
 def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True) -> str:
     """
     Generates a <svg> or <img> tag representing the QR code for the given `data`.

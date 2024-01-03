@@ -9,7 +9,7 @@ from typing import Optional, Any, Union, Sequence, List, Tuple
 
 import pytz
 from django.utils.html import escape
-from pydantic import validate_arguments
+from pydantic import validate_call
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
 
@@ -21,7 +21,7 @@ class QRCodeOptions:
     Represents the options used to create and draw a QR code.
     """
 
-    @validate_arguments
+    @validate_call
     def __init__(
         self,
         size: Union[int, str, None] = DEFAULT_MODULE_SIZE,
@@ -520,7 +520,7 @@ class ContactDetail:
         * org: organization or company name (non-standard,but often recognized, ORG field).
     """
 
-    @validate_arguments
+    @validate_call
     def __init__(
         self,
         first_name: Optional[str] = None,
@@ -866,7 +866,7 @@ class Email:
         return helpers.make_make_email_data(**asdict(self))
 
 
-@validate_arguments
+@validate_call
 def _escape_mecard_special_chars(string_to_escape: Optional[str]) -> Optional[str]:
     if not string_to_escape:
         return string_to_escape
