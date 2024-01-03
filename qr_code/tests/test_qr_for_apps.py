@@ -7,8 +7,7 @@ from datetime import date
 
 import zoneinfo
 from django.template import Template, Context
-from django.test import SimpleTestCase, override_settings
-from unittest import skip
+from django.test import SimpleTestCase
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode.utils import (
@@ -37,28 +36,28 @@ EUROPE_ZURICH_TZ = zoneinfo.ZoneInfo("Europe/Zurich")
 TEST_EVENT1 = VEvent(
     uid="django-qr-code-test-id-1",
     summary="Vacations",
-    start=datetime.datetime(2022, 7, 6, hour=8, minute=30).astimezone(US_EASTERN_TZ),
-    end=datetime.datetime(2022, 7, 17, hour=12).astimezone(US_EASTERN_TZ),
+    start=datetime.datetime(2022, 7, 6, hour=8, minute=30, tzinfo=US_EASTERN_TZ),
+    end=datetime.datetime(2022, 7, 17, hour=12, tzinfo=US_EASTERN_TZ),
     location="New-York",
     categories=["holidays"],
     event_class=EventClass.PUBLIC,
     transparency=EventTransparency.TRANSPARENT,
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=zoneinfo.ZoneInfo("UTC")),
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=datetime.timezone.utc),
 )
 TEST_EVENT2 = VEvent(
     uid="django-qr-code-test-id-2",
     summary="Café avec Marcel!",
-    start=datetime.datetime(2022, 6, 27, hour=8, minute=15).astimezone(EUROPE_ZURICH_TZ),
-    end=datetime.datetime(2022, 6, 27, hour=9).astimezone(EUROPE_ZURICH_TZ),
+    start=datetime.datetime(2022, 6, 27, hour=8, minute=15, tzinfo=EUROPE_ZURICH_TZ),
+    end=datetime.datetime(2022, 6, 27, hour=9, tzinfo=EUROPE_ZURICH_TZ),
     categories=["PERSO,FRIENDS"],
     event_class=EventClass.PRIVATE,
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=zoneinfo.ZoneInfo("UTC")),
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=datetime.timezone.utc),
 )
 TEST_EVENT3 = VEvent(
     uid="django-qr-code-test-id-3",
     summary="Vacations",
-    start=datetime.datetime(2022, 8, 6, hour=8, minute=30).astimezone(US_EASTERN_TZ),
-    end=datetime.datetime(2022, 8, 17, hour=12).astimezone(US_EASTERN_TZ),
+    start=datetime.datetime(2022, 8, 6, hour=8, minute=30, tzinfo=US_EASTERN_TZ),
+    end=datetime.datetime(2022, 8, 17, hour=12, tzinfo=US_EASTERN_TZ),
     location="New-York",
     categories=["holidays", "PERSONAL", "FAMILY_STUFF", "FUN AT HOME", "SOME_VERY_LONG_CATEGORY_NAME_THAT_REQUIRES_LINE_FOLDING"],
     status=EventStatus.TENTATIVE,
@@ -68,7 +67,7 @@ TEST_EVENT3 = VEvent(
 Happy Face Conference Room.
 Phoenix design team MUST attend this meeting.
 RSVP to team leader.""",
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=zoneinfo.ZoneInfo("UTC")),
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=datetime.timezone.utc),
 )
 TEST_EVENT4 = VEvent(
     uid="django-qr-code-test-id-4",
@@ -83,7 +82,7 @@ TEST_EVENT4 = VEvent(
 RSVP to team leader.
 
 Add some diacritics for fun: éàüî""",
-    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=zoneinfo.ZoneInfo("UTC")),
+    dtstamp=datetime.datetime(2022, 6, 25, hour=17, minute=30, tzinfo=datetime.timezone.utc),
 )
 TEST_CONTACT_DETAIL = dict(
     first_name="Jérémy Sébastien Ninõ",
