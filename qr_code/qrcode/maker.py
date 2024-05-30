@@ -47,7 +47,7 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
 
 
 @validate_call(config=PYDANTIC_CONFIG)
-def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None) -> str:
+def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None) -> str:
     """
     Generates a <svg> or <img> tag representing the QR code for the given `data`.
     This tag can be embedded into an HTML document.
@@ -58,6 +58,9 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
     The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned
     image tag. When set to `None`, the alternative text is set to the string representation of data. The alternative
     text is automatically escaped. You may use an empty string to explicitly set an empty alternative text.
+
+    The `class_names` argument indicates the value of the `class` attribute of the returned
+    image tag. When set to `None` or empty, the class attribute is not set.
     """
 
     qr = make_qr(data, qr_code_options, force_text=force_text)
@@ -85,23 +88,28 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
         else:
             alt_text = data
 
+    if class_names:
+        class_attr = f' class="{class_names}"'
+    else:
+        class_attr = ""
+
     if qr_code_options.image_format == "png":
-        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt_text)}">')
+        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt_text)}"{class_attr}>')
 
     if use_data_uri_for_svg:
         out = io.BytesIO()
         qr.save(out, **qr_code_options.kw_save())
         svg_path = out.getvalue()
         svg_b64_data = base64.b64encode(svg_path).decode("utf-8")
-        html = f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}">'
+        html = f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}"{class_attr}>'
         return mark_safe(html)
     else:
         return mark_safe(qr.svg_inline(**kw))
 
 
-def make_qr_code_with_args(data: Any, qr_code_args: dict, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None) -> str:
+def make_qr_code_with_args(data: Any, qr_code_args: dict, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None) -> str:
     options = _options_from_args(qr_code_args)
-    return make_embedded_qr_code(data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text)
+    return make_embedded_qr_code(data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names)
 
 
 def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:

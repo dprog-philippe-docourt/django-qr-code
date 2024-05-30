@@ -63,19 +63,26 @@ This will output an `<img>` tag with data URI: `<img src="data:image/png;base64,
 
 #### Customizing the HTML Output
 
-You can customize `alt` and `class` attributes can be customized through `alt_text` and `class` arguments of `qr_from_text`:
+You can customize `alt` and `class` attributes can be customized through `alt_text` and `class_names` arguments of `qr_from_text`:
 ```djangotemplate
-{% qr_from_text "Hello World!" alt_text="My Hello World image" class="ui centered image" %}
+{% qr_from_text "Hello World!" alt_text="My Hello World image" class_names="ui centered image" %}
 ```
 The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned 
     image tag. When set to `None`, the alternative text is set to the string representation of data. The alternative 
     text is automatically escaped. You may use an empty string to explicitly set an empty alternative text.
 
-By default, when SVG format is specified, the generated tag is an inline SVG path: `<svg>`. To change that, you can pass `use_data_uri_for_svg=True` to the `qr_from_text` tag:
+The `class_names` argument indicates the value of the `class` attribute of the returned
+    image tag. When set to `None` or empty, the class attribute is not set.
+
+By default, when SVG format is specified, the generated tag is an inline SVG path: `<svg>`. To change that, you can p
+ass `use_data_uri_for_svg=True` to the `qr_from_text` tag:
 ```djangotemplate
 {% qr_from_text "Hello World!" use_data_uri_for_svg=True %}
 ```
-This will output an `<img>` tag with data URI similar to what you get by default for PNG format: `<img src="data:image/svg+xml;base64,[...]">`
+This will output an `<img>` tag with a data URI similar to what you get by default for the PNG format: 
+`<img src="data:image/svg+xml;base64,[...]">`. This also allows you to define the `class` and `alt` HTML attributes 
+of the `<img>` tag as shown above. When `use_data_uri_for_svg` is not set or is set to `False`, the `alt_text` 
+and `class_names` arguments are ignored.
 
 ### QR Code Rendering Options
 

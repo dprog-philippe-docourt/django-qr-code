@@ -12,6 +12,7 @@ from qr_code.tests.utils import write_png_content_to_file, get_png_content_from_
 
 TEST_ALT_TEXTS = [None, "", "alternative text", "quotes test: ', \""]
 TEST_ALT_TEXT_NAMES = ["none", "empty", "alternative-text", "quotes"]
+TEST_CLASS_NAMES = [None, "", "error", "ui fluid segment"]
 
 
 class TestQREmbeddedImageResult(SimpleTestCase):
@@ -43,6 +44,25 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, get_base64_png_image_template(alt_text) % result)
 
+    def test_embedded_classes_png(self):
+        base_ref_file_name = "qrfromtext_embedded_class"
+        for i in range(len(TEST_CLASS_NAMES)):
+            class_names = TEST_CLASS_NAMES[i]
+            class_name = "none" if class_names is None else "empty" if class_names == "" else class_names.replace(" ", "_")
+            print("Testing PNG with classes: %s" % class_name)
+            result_file_name = f"{base_ref_file_name}_{class_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="png"), class_names=class_names)
+            qr2 = qr_from_text(TEST_TEXT, image_format="png", class_names=class_names)
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(image_format="png"), class_names=class_names)
+            if REFRESH_REFERENCE_IMAGES:
+                match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
+                source_image_data = match.group("data")
+                write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
+            self.assertEqual(qr1, qr2)
+            self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, get_base64_png_image_template(class_names=class_names) % result)
+
     def test_embedded_alt_text_svg(self):
         base_ref_file_name = "qrfromtext_embedded_alt_text"
         for i in range(len(TEST_ALT_TEXTS)):
@@ -61,6 +81,25 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, get_base64_svg_image_template(alt_text) % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
+
+    def test_embedded_classes_svg(self):
+        base_ref_file_name = "qrfromtext_embedded_class"
+        for i in range(len(TEST_CLASS_NAMES)):
+            class_names = TEST_CLASS_NAMES[i]
+            class_name = "none" if class_names is None else "empty" if class_names == "" else class_names.replace(" ", "_")
+            print("Testing SVG with classes: %s" % class_name)
+            result_file_name = f"{base_ref_file_name}_{class_name}"
+            qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="svg"), class_names=class_names, use_data_uri_for_svg=True)
+            qr2 = qr_from_text(TEST_TEXT, image_format="svg", class_names=class_names, use_data_uri_for_svg=True)
+            qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(image_format="svg"), class_names=class_names, use_data_uri_for_svg=True)
+            if REFRESH_REFERENCE_IMAGES:
+                match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
+                source_image_data = match.group("data")
+                write_svg_content_to_file(result_file_name, base64.b64decode(source_image_data).decode("utf-8"))
+            result = get_svg_content_from_file_name(result_file_name)
+            self.assertEqual(qr1, qr2)
+            self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, get_base64_svg_image_template(class_names=class_names) % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
 
     def test_embedded_data_uri_svg(self):
         base_ref_file_name = "qrfromtext_embedded_data_uri"
