@@ -1,7 +1,21 @@
 import re
 
-BASE64_PNG_IMAGE_TEMPLATE = '<img src="data:image/png;base64,%s" alt="Hello World!">'
-IMAGE_TAG_BASE64_DATA_RE = re.compile(r"data:image/png;base64,(?P<data>[\w/+=]+)")
+from django.utils.html import escape
+
+
+def get_base64_png_image_template(alt_text: None | str = None) -> str:
+    if alt_text is None:
+        alt_text = "Hello World!"
+    return f'<img src="data:image/png;base64,%s" alt="{escape(alt_text)}">'
+
+
+def get_base64_svg_image_template(alt_text: None | str = None) -> str:
+    if alt_text is None:
+        alt_text = "Hello World!"
+    return f'<img src="data:image/svg+xml;base64,%s" alt="{escape(alt_text)}">'
+
+
+IMAGE_TAG_BASE64_DATA_RE = re.compile(r"data:image/(png|svg\+xml);base64,(?P<data>[\w/+=]+)")
 TEST_TEXT = "Hello World!"
 COMPLEX_TEST_TEXT = "/%+¼@#=<>àé"
 

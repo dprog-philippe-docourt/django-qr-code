@@ -23,7 +23,7 @@ from qr_code.tests import (
     TEST_TEXT,
     OVERRIDE_CACHES_SETTING,
     COMPLEX_TEST_TEXT,
-    BASE64_PNG_IMAGE_TEMPLATE,
+    get_base64_png_image_template,
     IMAGE_TAG_BASE64_DATA_RE,
 )
 from qr_code.tests.utils import (
@@ -91,7 +91,7 @@ class TestQRUrlFromDataResult(SimpleTestCase):
             url3 = qr_url_from_data(TEST_TEXT_AS_UTF_8, image_format="svg", size=1, **url_options_kwargs)
             url4 = qr_url_from_data(TEST_TEXT_AS_UTF_8, image_format="SVG", size=1, **url_options_kwargs)
             url5 = qr_url_from_data(TEST_TEXT_AS_UTF_8, options=QRCodeOptions(image_format="SVG", size=1), **url_options_kwargs)
-            # Using an invalid image format should fallback to SVG.
+            # Using an invalid image format should fall back to SVG.
             url6 = qr_url_from_data(TEST_TEXT_AS_UTF_8, image_format="invalid-format-name", size=1, **url_options_kwargs)
             url = url1
             if url_signature_enabled is not False:
@@ -249,7 +249,7 @@ class TestQRUrlFromDataResult(SimpleTestCase):
                 options=QRCodeOptions(error_correction=correction_level, image_format="SVG"),
                 cache_enabled=False,
             )
-            # Using an invalid image format should fallback to SVG.
+            # Using an invalid image format should fall back to SVG.
             url6 = qr_url_from_data(
                 COMPLEX_TEST_TEXT_AS_UTF_8, error_correction=correction_level, image_format="invalid-format-name", cache_enabled=False
             )
@@ -798,7 +798,7 @@ class TestQRFromDataPngResult(SimpleTestCase):
             result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
-            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, get_base64_png_image_template() % result)
 
     def test_version(self):
         base_file_name = "qrfromdata_version"
@@ -821,7 +821,7 @@ class TestQRFromDataPngResult(SimpleTestCase):
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
-            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, get_base64_png_image_template() % result)
 
     def test_error_correction(self):
         file_base_name = "qrfromdata_error_correction"

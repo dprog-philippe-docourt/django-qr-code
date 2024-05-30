@@ -25,7 +25,7 @@ from qr_code.tests import (
     TEST_TEXT,
     OVERRIDE_CACHES_SETTING,
     COMPLEX_TEST_TEXT,
-    BASE64_PNG_IMAGE_TEMPLATE,
+    get_base64_png_image_template,
     IMAGE_TAG_BASE64_DATA_RE,
 )
 from qr_code.tests.utils import (
@@ -838,7 +838,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
-            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, get_base64_png_image_template() % result)
 
     def test_version(self):
         base_file_name = "qrfromtext_version"
@@ -861,7 +861,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, qr4)
-            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, get_base64_png_image_template() % result)
 
     def test_error_correction(self):
         file_base_name = "qrfromtext_error_correction"
@@ -1024,7 +1024,7 @@ class TestQRFromTextPngResult(SimpleTestCase):
             result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
-            self.assertEqual(qr1, BASE64_PNG_IMAGE_TEMPLATE % result)
+            self.assertEqual(qr1, get_base64_png_image_template() % result)
 
         base_ref_file_name = "qrfromtext_color"
         colors = ["#000", "#000000", "black", "#fff", "#FFFFFF", "white", "red", "blue", None]
