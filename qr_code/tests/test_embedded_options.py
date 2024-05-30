@@ -4,7 +4,7 @@ from django.test import SimpleTestCase
 
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.utils import QRCodeOptions
-from qr_code.templatetags.qr_code import qr_from_text
+from qr_code.templatetags.qr_code import qr_from_text, qr_for_email
 from qr_code.tests import TEST_TEXT, REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE, get_base64_png_image_template, \
     get_base64_svg_image_template
 from qr_code.tests.utils import write_png_content_to_file, get_png_content_from_file_name, write_svg_content_to_file, \
@@ -45,11 +45,11 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             self.assertEqual(qr1, get_base64_png_image_template(alt_text) % result)
 
     def test_embedded_classes_png(self):
-        base_ref_file_name = "qrfromtext_embedded_class"
         for i in range(len(TEST_CLASS_NAMES)):
             class_names = TEST_CLASS_NAMES[i]
             class_name = "none" if class_names is None else "empty" if class_names == "" else class_names.replace(" ", "_")
             print("Testing PNG with classes: %s" % class_name)
+            base_ref_file_name = "qrfromtext_embedded_class"
             result_file_name = f"{base_ref_file_name}_{class_name}"
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="png"), class_names=class_names)
             qr2 = qr_from_text(TEST_TEXT, image_format="png", class_names=class_names)
@@ -62,6 +62,21 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, get_base64_png_image_template(class_names=class_names) % result)
+
+            base_ref_file_name = "qrforemail_embedded_class"
+            test_mail = "test@domain.com"
+            result_file_name = f"{base_ref_file_name}_{class_name}"
+            qr1 = make_embedded_qr_code(f"mailto:{test_mail}", QRCodeOptions(image_format="png"), class_names=class_names)
+            qr2 = qr_for_email(test_mail, image_format="png", class_names=class_names)
+            qr3 = qr_for_email(test_mail, options=QRCodeOptions(image_format="png"), class_names=class_names)
+            if REFRESH_REFERENCE_IMAGES:
+                match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
+                source_image_data = match.group("data")
+                write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
+            self.assertEqual(qr1, qr2)
+            self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, get_base64_png_image_template(class_names=class_names, alt_text="mailto:test@domain.com") % result)
 
     def test_embedded_alt_text_svg(self):
         base_ref_file_name = "qrfromtext_embedded_alt_text"
@@ -100,6 +115,22 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
             self.assertEqual(qr1, get_base64_svg_image_template(class_names=class_names) % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
+
+            base_ref_file_name = "qrforemail_embedded_class"
+            test_mail = "test@domain.com"
+            result_file_name = f"{base_ref_file_name}_{class_name}"
+            qr1 = make_embedded_qr_code(f"mailto:{test_mail}", QRCodeOptions(image_format="png"),
+                                        class_names=class_names)
+            qr2 = qr_for_email(test_mail, image_format="png", class_names=class_names)
+            qr3 = qr_for_email(test_mail, options=QRCodeOptions(image_format="png"), class_names=class_names)
+            if REFRESH_REFERENCE_IMAGES:
+                match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
+                source_image_data = match.group("data")
+                write_png_content_to_file(result_file_name, base64.b64decode(source_image_data))
+            result = base64.b64encode(get_png_content_from_file_name(result_file_name)).decode("utf-8")
+            self.assertEqual(qr1, qr2)
+            self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1, get_base64_png_image_template(alt_text="mailto:test@domain.com", class_names=class_names) % result)
 
     def test_embedded_data_uri_svg(self):
         base_ref_file_name = "qrfromtext_embedded_data_uri"

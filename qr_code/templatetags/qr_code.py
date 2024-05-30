@@ -34,7 +34,7 @@ def _make_app_qr_code_from_obj_or_kwargs(
     if extra_qr_code_args:
         final_args.update(extra_qr_code_args)
     if embedded:
-        return make_qr_code_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg)
+        return make_qr_code_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names)
     else:
         return make_qr_code_url_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text)
 
