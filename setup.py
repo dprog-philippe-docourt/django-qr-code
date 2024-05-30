@@ -26,7 +26,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=["segno>=1.6", "django>=4.2", "pydantic>=2.5"],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
