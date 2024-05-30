@@ -56,7 +56,8 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
     of inline SVG path.
 
     The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned
-    image tag. The content is automatically escaped.
+    image tag. When set to `None`, the alternative text is set to the string representation of data. The alternative
+    text is automatically escaped. You may use an empty string to explicitly set an empty alternative text.
     """
 
     qr = make_qr(data, qr_code_options, force_text=force_text)

@@ -48,16 +48,34 @@ You need to load the tags provided by this app in your template with:
 The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code) contains a simple demo app. Please check out the [templates folder](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/qr_code_demo/templates/qr_code_demo) for an example of template, and the [setting](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/settings.py) and [urls](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/urls.py) files for an example of configuration and integration.
 
 ### Generating Inline QR Code in your HTML (qr_from_text)
-The tag **`qr_from_text`** generates an embedded `svg` or `img` tag within the HTML code produced by your template.
+The tag **`qr_from_text`** generates an embedded `<svg>` or `<img>` tag within the HTML code produced by your template.
 
-The following renders a tiny "hello world" QR code with a `svg` tag:
+The following renders a tiny "hello world" QR code in SVG format with an inline `<svg>` tag:
 ```djangotemplate
 {% qr_from_text "Hello World!" size="T" %}
 ```
-Here is a medium "hello world" QR code with an `img` tag:
+
+Here is a medium "hello world" QR code in PNG format:
 ```djangotemplate
 {% qr_from_text "Hello World!" size="m" image_format="png" error_correction="L" %}
 ```
+This will output an `<img>` tag with data URI: `<img src="data:image/png;base64,[...]">`
+
+#### Customizing the HTML Output
+
+You can customize `alt` and `class` attributes can be customized through `alt_text` and `class` arguments of `qr_from_text`:
+```djangotemplate
+{% qr_from_text "Hello World!" alt_text="My Hello World image" class="ui centered image" %}
+```
+The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned 
+    image tag. When set to `None`, the alternative text is set to the string representation of data. The alternative 
+    text is automatically escaped. You may use an empty string to explicitly set an empty alternative text.
+
+By default, when SVG format is specified, the generated tag is an inline SVG path: `<svg>`. To change that, you can pass `use_data_uri_for_svg=True` to the `qr_from_text` tag:
+```djangotemplate
+{% qr_from_text "Hello World!" use_data_uri_for_svg=True %}
+```
+This will output an `<img>` tag with data URI similar to what you get by default for PNG format: `<img src="data:image/svg+xml;base64,[...]">`
 
 ### QR Code Rendering Options
 
@@ -122,13 +140,13 @@ and an example of template for the view above:
 ### Generating URLs to QR Code Images (qr_url_from_text)
 The **`qr_url_from_text`** tag generates an url to an image representing the QR code. It comes with the same options as `qr_from_text` to customize the image format (SVG or PNG), the size, the border, and the matrix size. It also has an additional option **`cache_enabled`** to disable caching of served image.
 
-Here is a medium "hello world" QR code that uses an URL to serve the image in SVG format:
+Here is a medium "hello world" QR code that uses a URL to serve the image in SVG format:
 
 ```djangotemplate
 <img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
 ```
 
-Here is a "hello world" QR code in version 10 that uses an URL to serve the image in PNG format:
+Here is a "hello world" QR code in version 10 that uses a URL to serve the image in PNG format:
 
 ```djangotemplate
 <img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!">
@@ -463,7 +481,7 @@ Please check out the [demo application](#demo-application) to see more examples.
 ## Notes
 
 ### Image Formats
-The SVG is the default image format. It is a vector image format so it can be scaled up and down without quality loss. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
+The SVG is the default image format. It is a vector image format, so it can be scaled up and down without quality loss. However, it has two drawbacks. The size is not given in pixel, which can be problematic if the design of your website relies on a fixed width (in pixels). The format is less compact than PNG and results in a larger HTML content. Note that a base64 PNG is less compressible than a SVG tag, so it might not matter that much of you use HTML compression on your web server.
 
 SVG has [broad support](http://caniuse.com/#feat=svg) now, and it will work properly on any modern web browser.
 
@@ -471,8 +489,8 @@ SVG has [broad support](http://caniuse.com/#feat=svg) now, and it will work prop
 The tag `qr_url_from_text` has several advantages over `qr_from_text`, despite the fact that it requires a bit more of writing:
 * the generated HTML code does not contain heavy inline image data (lighter and cleaner content)
 * the generated images can be cached (served with a separate HTML request)
-* the HTML tag used to render the QR code is always an `<img>` tag, which may simplify CSS handling
-* the HTML tag embedding the image is not generated for you, which allows for customization of attributes (*height*, *width*, *alt*)
+* the HTML tag used to render the QR code is always an `<img>` tag, which may simplify CSS handling.
+* the HTML tag embedding the image is not generated for you, which allows for customization of attributes (*height*, *width*)
 * the page can be loaded asynchronously, which improves responsiveness
 * you can provide links to QR codes instead of displaying them, which is not possible with `qr_from_text`
 
@@ -486,7 +504,7 @@ Caching QR codes reduces CPU usage, but the usage of `qr_url_from_text` (which c
 Moreover, be aware that the largest QR codes, in version 40 with a border of 4 modules and rendered in SVG format, have a size of ~800 KB.
 Be sure that your cache options are reasonable and can be supported by your server(s), especially for in-memory caching.
 
-Note that even without caching the generated QR codes, the app will return a *HTTP 304 Not Modified* status code whenever the same QR code is requested again. The URL named **`qr_code:serve_qr_code_image`** adds the `ETag` and `Last-Modified` headers to the response if the headers aren't already set, enabling  *HTTP 304 Not Modified* response upon following requests.
+Note that even without caching the generated QR codes, the app will return an *HTTP 304 Not Modified* status code whenever the same QR code is requested again. The URL named **`qr_code:serve_qr_code_image`** adds the `ETag` and `Last-Modified` headers to the response if the headers aren't already set, enabling  *HTTP 304 Not Modified* response upon following requests.
 
 ## Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
