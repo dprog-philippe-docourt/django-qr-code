@@ -34,8 +34,9 @@ pip install django-qr-code
 ### From the Source Code
 In order to modify or test this app you may want to install it from the source code.
 
-Clone the [GitHub repository](https://github.com/dprog-philippe-docourt/django-qr-code) and then run:
+Clone the [GitHub repository](https://github.com/dprog-philippe-docourt/django-qr-code) and install dependencies:
 ```bash
+git clone https://github.com/dprog-philippe-docourt/django-qr-code
 pip install -r requirements.txt -r requirements-dev.txt
 python manage.py collectstatic --no-input
 ```
