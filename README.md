@@ -14,6 +14,15 @@ This app makes no usage of the Django models and therefore do not use any databa
 
 Only Python >= 3.9 is supported.
 
+## Features
+
+* Generate QR codes as embedded SVG or PNG images in HTML templates.
+* Customize QR codes with various parameters (size, error correction, border, etc.).
+* Generate URLs for QR code images.
+* Support for specific application QR codes (e.g., contact info, Wi-Fi config).
+* Cache QR code images for performance.
+* Secure QR code image serving with URL protection and user authentication.
+
 ## Installation
 
 ### Binary Package from PyPi
@@ -46,6 +55,21 @@ You need to load the tags provided by this app in your template with:
 ```
 
 The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code) contains a simple demo app. Please check out the [templates folder](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/qr_code_demo/templates/qr_code_demo) for an example of template, and the [setting](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/settings.py) and [urls](https://github.com/dprog-philippe-docourt/django-qr-code/tree/master/demo_site/urls.py) files for an example of configuration and integration.
+
+### Example: Inline QR Code
+
+Generate a simple QR code:
+
+```djangotemplate
+{% qr_from_text "Hello World!" size="T" %}
+```
+### Example: URL QR Code
+
+Generate a URL for a QR code image:
+
+```djangotemplate
+<img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
+```
 
 ### Generating Inline QR Code in your HTML (qr_from_text)
 The tag **`qr_from_text`** generates an embedded `<svg>` or `<img>` tag within the HTML code produced by your template.
@@ -85,6 +109,21 @@ of the `<img>` tag as shown above. When `use_data_uri_for_svg` is not set or is 
 and `class_names` arguments are ignored.
 
 ### QR Code Rendering Options
+
+#### Customization options overview
+
+* `size`: Size of each module (e.g., T, S, M, L, H or specific integer). Default is 'M'
+* `image_format`: Format of the image (e.g., 'svg', 'png'). Default is 'svg'.
+* `border`: Border size in modules. Default is 4.
+* `error_correction`: Error correction level ('L', 'M', 'Q', 'H'). Default is 'M'.
+* `use_data_uri_for_svg`: Generate a data URI for SVG images. Default is `False`.
+* `encoding`: Text encoding . Default is 'UTF-8'.
+* `micro`: enforce the creation of a Micro QR Code. Default is `False`.
+* `boost_error` indicates whether the QR code encoding engine (Segno) tries to increase the error correction level if it does not affect the version. Default is `False`.
+* `eci` indicates if binary data which does not use the default encoding (ISO/IEC 8859-1). Default is `False`.
+* `options`: Use an instance of QRCodeOptions to encapsulate multiple settings.
+
+#### Examples of Rendering Options
 
 The `size` parameter gives the size of each module of the QR code matrix. It can be either a positive integer or one of the following letters:
 
