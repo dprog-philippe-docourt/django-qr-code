@@ -10,8 +10,8 @@ build:
   tools:
     python: "3.12"
 
-# Build all formats
-formats: all
+formats:
+    - pdf
 
 python:
   install:
