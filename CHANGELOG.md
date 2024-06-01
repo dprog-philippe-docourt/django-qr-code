@@ -1,7 +1,7 @@
 # Change Log
 
 ## 4.1.0 (2024-06-01)
-* Upgrade dependencies and drop support for Pydantic <2.7.
+* Upgrade dependencies and drop support for Python < 3.10 and Pydantic <2.7.
 * Add the capability to generate embedded Base64 SVG images as data URIs through template tags (in addition to the API capability introduced in version 4.0.1).
 * Add support for alternative text customization (both template tags and API).
 * Add support for CSS classes injection (both template tags and API).
