@@ -2,7 +2,7 @@
 [![Latest PyPI version](https://badge.fury.io/py/django-qr-code.svg)](https://badge.fury.io/py/django-qr-code)
 [![Downloads](https://img.shields.io/pypi/dm/django-qr-code.svg)](https://pypi.python.org/pypi/django-qr-code)
 [![Documentation Status](https://readthedocs.org/projects/django-qr-code/badge/?version=latest)](https://django-qr-code.readthedocs.io/latest/pages/README.html)
-[![Build and Test](https://github.com/dprog-philippe-docourt/django-qr-code/actions/workflows/build.yml/badge.svg)](https://app.travis-ci.com/github/dprog-philippe-docourt/django-qr-code)
+[![Build and Test](https://github.com/dprog-philippe-docourt/django-qr-code/actions/workflows/main.yml/badge.svg)](https://app.travis-ci.com/github/dprog-philippe-docourt/django-qr-code)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c47e79bf51f6a2bb8264/maintainability)](https://codeclimate.com/github/dprog-philippe-docourt/django-qr-code/maintainability)
 
 This is an application that provides tools for displaying QR codes on your [Django](https://www.djangoproject.com/) site.
