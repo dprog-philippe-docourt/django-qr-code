@@ -73,9 +73,6 @@ def _make_google_maps_qr_code(
         return make_qr_code_url_with_args(
             coordinates.make_google_maps_text(),
             qr_code_args=kwargs,
-            use_data_uri_for_svg=use_data_uri_for_svg,
-            alt_text=alt_text,
-            class_names=class_names,
         )
 
 
@@ -98,9 +95,6 @@ def _make_geolocation_qr_code(
         return make_qr_code_url_with_args(
             coordinates.make_geolocation_text(),
             qr_code_args=kwargs,
-            use_data_uri_for_svg=use_data_uri_for_svg,
-            alt_text=alt_text,
-            class_names=class_names,
         )
 
 
@@ -301,30 +295,27 @@ def qr_for_event(event, use_data_uri_for_svg: bool = False, alt_text: None | str
 
 @register.simple_tag()
 def qr_url_from_text(
-    text: str, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    text: str, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
-        data=text, qr_code_args=kwargs, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names
+        data=text, qr_code_args=kwargs,
     )
 
 
 @register.simple_tag()
 def qr_url_from_data(
-    data: Any, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    data: Any, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
         data=data,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
         force_text=False,
     )
 
 
 @register.simple_tag()
 def qr_url_for_email(
-    email: Union[str, Email], use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    email: Union[str, Email], **kwargs
 ) -> str:
     if isinstance(email, str):
         # Handle simple case where e-mail is simple the electronic address.
@@ -334,35 +325,26 @@ def qr_url_for_email(
         Email,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_tel(
-    phone_number: Any, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    phone_number: Any, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
         make_tel_text(phone_number),
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_sms(
-    phone_number: Any, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    phone_number: Any, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
         make_sms_text(phone_number),
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
@@ -380,93 +362,75 @@ def qr_url_for_google_maps(**kwargs) -> str:
 
 @register.simple_tag()
 def qr_url_for_youtube(
-    video_id: str, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    video_id: str, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
         make_youtube_text(video_id),
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_google_play(
-    package_id: str, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    package_id: str, **kwargs
 ) -> str:
     return make_qr_code_url_with_args(
         make_google_play_text(package_id),
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_contact(
-    contact_detail, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    contact_detail, **kwargs
 ) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         contact_detail,
         ContactDetail,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_vcard(
-    vcard, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    vcard, **kwargs
 ) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         vcard,
         VCard,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_mecard(
-    mecard, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    mecard, **kwargs
 ) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         mecard,
         MeCard,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_wifi(
-    wifi_config, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    wifi_config, **kwargs
 ) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         wifi_config,
         WifiConfig,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
 
 
 @register.simple_tag()
 def qr_url_for_epc(
-    epc_data, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    epc_data, **kwargs
 ) -> str:
     extra = dict(
         error_correction="M",
@@ -479,9 +443,6 @@ def qr_url_for_epc(
         EpcData,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
         extra_qr_code_args=extra,
         force_text=False,
     )
@@ -489,14 +450,11 @@ def qr_url_for_epc(
 
 @register.simple_tag()
 def qr_url_for_event(
-    event, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    event, **kwargs
 ) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         event,
         VEvent,
         embedded=False,
         qr_code_args=kwargs,
-        use_data_uri_for_svg=use_data_uri_for_svg,
-        alt_text=alt_text,
-        class_names=class_names,
     )
