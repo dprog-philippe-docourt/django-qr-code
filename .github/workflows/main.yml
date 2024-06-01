@@ -1,4 +1,4 @@
-name: Django QR Code CI
+name: Django QR Code Build and Test
 
 on:
   push:
