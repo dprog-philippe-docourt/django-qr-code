@@ -31,7 +31,7 @@ from qr_code.tests.utils import (
     write_png_content_to_file,
 )
 
-US_EASTERN_TZ = zoneinfo.ZoneInfo('America/New_York')
+US_EASTERN_TZ = zoneinfo.ZoneInfo("America/New_York")
 EUROPE_ZURICH_TZ = zoneinfo.ZoneInfo("Europe/Zurich")
 TEST_EVENT1 = VEvent(
     uid="django-qr-code-test-id-1",

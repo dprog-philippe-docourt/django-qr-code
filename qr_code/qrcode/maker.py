@@ -47,7 +47,14 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
 
 
 @validate_call(config=PYDANTIC_CONFIG)
-def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None) -> str:
+def make_embedded_qr_code(
+    data: Any,
+    qr_code_options: QRCodeOptions,
+    force_text: bool = True,
+    use_data_uri_for_svg: bool = False,
+    alt_text: None | str = None,
+    class_names: None | str = None,
+) -> str:
     """
     Generates a <svg> or <img> tag representing the QR code for the given `data`.
     This tag can be embedded into an HTML document.
@@ -107,9 +114,18 @@ def make_embedded_qr_code(data: Any, qr_code_options: QRCodeOptions, force_text:
         return mark_safe(qr.svg_inline(**kw))
 
 
-def make_qr_code_with_args(data: Any, qr_code_args: dict, force_text: bool = True, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None) -> str:
+def make_qr_code_with_args(
+    data: Any,
+    qr_code_args: dict,
+    force_text: bool = True,
+    use_data_uri_for_svg: bool = False,
+    alt_text: None | str = None,
+    class_names: None | str = None,
+) -> str:
     options = _options_from_args(qr_code_args)
-    return make_embedded_qr_code(data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names)
+    return make_embedded_qr_code(
+        data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names
+    )
 
 
 def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:

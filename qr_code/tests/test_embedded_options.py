@@ -5,10 +5,19 @@ from django.test import SimpleTestCase
 from qr_code.qrcode.maker import make_embedded_qr_code
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.templatetags.qr_code import qr_from_text, qr_for_email
-from qr_code.tests import TEST_TEXT, REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE, get_base64_png_image_template, \
-    get_base64_svg_image_template
-from qr_code.tests.utils import write_png_content_to_file, get_png_content_from_file_name, write_svg_content_to_file, \
-    get_svg_content_from_file_name
+from qr_code.tests import (
+    TEST_TEXT,
+    REFRESH_REFERENCE_IMAGES,
+    IMAGE_TAG_BASE64_DATA_RE,
+    get_base64_png_image_template,
+    get_base64_svg_image_template,
+)
+from qr_code.tests.utils import (
+    write_png_content_to_file,
+    get_png_content_from_file_name,
+    write_svg_content_to_file,
+    get_svg_content_from_file_name,
+)
 
 TEST_ALT_TEXTS = [None, "", "alternative text", "quotes test: ', \""]
 TEST_ALT_TEXT_NAMES = ["none", "empty", "alternative-text", "quotes"]
@@ -114,13 +123,14 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             result = get_svg_content_from_file_name(result_file_name)
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
-            self.assertEqual(qr1, get_base64_svg_image_template(class_names=class_names) % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
+            self.assertEqual(
+                qr1, get_base64_svg_image_template(class_names=class_names) % base64.b64encode(result.encode("utf-8")).decode("utf-8")
+            )
 
             base_ref_file_name = "qrforemail_embedded_class"
             test_mail = "test@domain.com"
             result_file_name = f"{base_ref_file_name}_{class_name}"
-            qr1 = make_embedded_qr_code(f"mailto:{test_mail}", QRCodeOptions(image_format="png"),
-                                        class_names=class_names)
+            qr1 = make_embedded_qr_code(f"mailto:{test_mail}", QRCodeOptions(image_format="png"), class_names=class_names)
             qr2 = qr_for_email(test_mail, image_format="png", class_names=class_names)
             qr3 = qr_for_email(test_mail, options=QRCodeOptions(image_format="png"), class_names=class_names)
             if REFRESH_REFERENCE_IMAGES:
