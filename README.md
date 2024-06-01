@@ -51,7 +51,7 @@ INSTALLED_APPS = (
 ```
 
 You need to load the tags provided by this app in your template with:
-```djangotemplate
+```htmldjango
 {% load qr_code %}
 ```
 
@@ -61,14 +61,14 @@ The source code on [GitHub](https://github.com/dprog-philippe-docourt/django-qr-
 
 Generate a simple QR code:
 
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" size="T" %}
 ```
 ### Example: URL QR Code
 
 Generate a URL for a QR code image:
 
-```djangotemplate
+```htmldjango
 <img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
 ```
 

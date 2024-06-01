@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Django QR Code's documentation!
+Welcome to Django QR Code's Documentation!
 ==========================================
 
 .. toctree::
@@ -12,8 +12,8 @@ Welcome to Django QR Code's documentation!
 
    pages/README.md
    pages/template-tags.md
-   pages/module-colors
-   pages/api
+   pages/module-colors.rst
+   pages/api.rst
    pages/CHANGELOG.md
 
 

@@ -54,7 +54,27 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
+    "myst_parser",
 ]
+
+# https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
+myst_heading_anchors = 4
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -64,13 +84,10 @@ templates_path = ["_templates"]
 #
 # source_suffix = ['.rst', '.md']
 
-# Allow markdown to be able to include the README.md, CHANGELOG.md, etc.
-from recommonmark.parser import CommonMarkParser
-
-source_parsers = {
-    ".md": CommonMarkParser,
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
 }
-source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -97,7 +114,7 @@ release = VERSION
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -148,7 +165,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "DjangoQRCodedoc"
+htmlhelp_basename = "DjangoQRCodeDoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------

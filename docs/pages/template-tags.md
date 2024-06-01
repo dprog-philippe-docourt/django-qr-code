@@ -4,12 +4,12 @@
 The tag **`qr_from_text`** generates an embedded `<svg>` or `<img>` tag within the HTML code produced by your template.
 
 The following renders a tiny "hello world" QR code in SVG format with an inline `<svg>` tag:
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" size="T" %}
 ```
 
 Here is a medium "hello world" QR code in PNG format:
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" size="m" image_format="png" error_correction="L" %}
 ```
 This will output an `<img>` tag with data URI: `<img src="data:image/png;base64,[...]">`
@@ -17,7 +17,7 @@ This will output an `<img>` tag with data URI: `<img src="data:image/png;base64,
 ### Customizing the HTML output for inline QR codes
 
 You can customize `alt` and `class` attributes can be customized through `alt_text` and `class_names` arguments of `qr_from_text`:
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" alt_text="My Hello World image" class_names="ui centered image" %}
 ```
 The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned 
@@ -29,7 +29,7 @@ The `class_names` argument indicates the value of the `class` attribute of the r
 
 By default, when SVG format is specified, the generated tag is an inline SVG path: `<svg>`. To change that, you can p
 ass `use_data_uri_for_svg=True` to the `qr_from_text` tag:
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" use_data_uri_for_svg=True %}
 ```
 This will output an `<img>` tag with a data URI similar to what you get by default for the PNG format: 
@@ -43,13 +43,13 @@ The **`qr_url_from_text`** tag generates an url to an image representing the QR 
 
 Here is a medium "hello world" QR code that uses a URL to serve the image in SVG format:
 
-```djangotemplate
+```htmldjango
 <img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
 ```
 
 Here is a "hello world" QR code in version 10 that uses a URL to serve the image in PNG format:
 
-```djangotemplate
+```htmldjango
 <img src="{% qr_url_from_text "Hello World!" size=8 version=10 image_format='png' %}" alt="Hello World!">
 ```
 
@@ -108,7 +108,7 @@ If you want to activate the cache for QR codes, but skip the caching for some sp
 
 Here is a "hello world" QR code in version 20 with an error correction level Q (25% of redundant data) that uses a URL to serve the image in SVG format, and disable caching for served image:
 
-```djangotemplate
+```htmldjango
 <img src="{% qr_url_from_text "Hello World!" size=8 version=20 error_correction="Q" cache_enabled=False %}" alt="Hello World!">
 ```
 
@@ -139,7 +139,7 @@ The `token` query argument is not mandatory and, when a request reaches the `qr_
 
 It is possible to explicitly remove the  signature token that protects a specific URL with the parameter **`url_signature_enabled=False`**. Here is a "hello world" QR code that uses a URL to serve the image in SVG format without the `token` query argument :
 
-```djangotemplate
+```htmldjango
 <img src="{% qr_url_from_text "Hello World!" url_signature_enabled=False %}" alt="Hello World!">
 ```
 
@@ -195,12 +195,12 @@ NOTE: When using `qr_from_text` or `qr_url_from_text`, the byte mode with UTF-8 
 
 ### Examples
 The following renders a tiny numeric QR code containing the value `2021` with a `svg` tag:
-```djangotemplate
+```htmldjango
 {% qr_from_data 2021 size="T" %}
 ```
 
 Here is a micro QR code with an `img` tag containing the value `2021`:
-```djangotemplate
+```htmldjango
 {% qr_from_data 2021 micro=True image_format="png" %}
 ```
 
@@ -327,7 +327,7 @@ RSVP to team leader."""
 ```
 
 Then, in your template, you can render the appropriate QR codes for the given context:
-```djangotemplate
+```htmldjango
 <h3>Add contact '{{ mecard_contact.name }}' to phone book</h3>
 {% qr_for_mecard mecard=mecard_contact size='S' %}
 <p>or:</p>
@@ -379,7 +379,7 @@ Then, in your template, you can render the appropriate QR codes for the given co
 {% qr_for_google_maps latitude=google_maps_coordinates.latitude longitude=google_maps_coordinates.longitude options=options_example %}
 ```
 
-Please check out the [demo application](#demo-application) to see more examples.
+Please check out the [demo application](README.md#demo-application) to see more examples.
 
 ## QR code rendering options
 
@@ -410,7 +410,7 @@ For PNG image format the size unit is in pixels, while the unit is 1 mm for SVG 
 
 Here is a "hello world" QR code using the version 12:
 
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" size=8 version=12 %}
 ```
 
@@ -418,7 +418,7 @@ The `version` parameter is an integer from 1 to 40 that controls the size of the
 
 Here is a "hello world" QR code using a border of 6 modules:
 
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" size=10 border=6 %}
 ```
 
@@ -459,7 +459,7 @@ def my_view(request):
 
 and an example of template for the view above:
 
-```djangotemplate
+```htmldjango
 {% qr_from_text "Hello World!" options=my_options %}
 ```
 

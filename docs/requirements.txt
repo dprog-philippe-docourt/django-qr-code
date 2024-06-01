@@ -1,6 +1,5 @@
-recommonmark==0.7.1
 sphinx==7.3.7
 sphinx-autobuild==2024.4.16
-sphinx_rtd_theme==2.0.0
 docutils==0.21.2
+myst-parser[code_style,linkify,testing,rtd]==3.0.1
 -r ../requirements.txt
