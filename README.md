@@ -72,17 +72,11 @@ Generate a URL for a QR code image:
 <img src="{% qr_url_from_text "Hello World!" %}" alt="Hello World!">
 ```
 
-## Advanced Usage of Tags
+### Advanced Usage of Tags
 
 Refer to the [official documentation for tags](https://django-qr-code.readthedocs.io/latest/pages/template-tags.html) for more detailed information and advanced usage examples.
 
-### Generating Image Object Representing a QR Code
-
-If you do not want to use Django tags for rendering QR code in a template, you can simply use the API in your code. For instance, `qr_code.qrcode.maker.make_qr_code_image` will return bytes representing an image according to the image_format passed in the `qr_code_options` parameter.
-
-Refer to the [official API documentation](https://django-qr-code.readthedocs.io/latest/pages/api.html) for more detailed information.
-
-## Demo Application
+### Demo Application
 If you want to try this app, you may want to use the demo application shipped alongside the source code.
 
 Get the source code from [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code), follow the [installation instructions](#from-the-source-code) above, and run the `runserver` command of Django:
@@ -97,6 +91,12 @@ cd scripts
 ./run-demo-app.sh
 ```
 The demo application should be running at <http://127.0.0.1:8910/qr-code-demo/>.
+
+## Generating Image Object Representing a QR Code
+
+If you do not want to use Django tags for rendering QR code in a template, you can simply use the API in your code. For instance, `qr_code.qrcode.maker.make_qr_code_image` will return bytes representing an image according to the image_format passed in the `qr_code_options` parameter.
+
+Refer to the [official API documentation](https://django-qr-code.readthedocs.io/latest/pages/api.html) for more detailed information.
 
 ## Testing
 Get the source code from [GitHub](https://github.com/dprog-philippe-docourt/django-qr-code), follow the [installation instructions](#from-the-source-code) above, and run the `test` command of Django:
