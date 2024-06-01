@@ -2,7 +2,7 @@ import base64
 import urllib.parse
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Optional, Union, Any
+from typing import Optional, Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
@@ -32,7 +32,7 @@ def _get_url_protection_settings() -> Optional[Mapping]:
     return None
 
 
-def _options_allow_external_request(url_protection_options: Mapping, user: Union[User, AnonymousUser, None]) -> bool:
+def _options_allow_external_request(url_protection_options: Mapping, user: User | AnonymousUser | None) -> bool:
     # Evaluate the callable if required.
     if callable(url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
         allows_external_request = url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user or AnonymousUser())
@@ -43,11 +43,11 @@ def _options_allow_external_request(url_protection_options: Mapping, user: Union
     return allows_external_request
 
 
-def requires_url_protection_token(user: Union[User, AnonymousUser, None] = None) -> bool:
+def requires_url_protection_token(user: User | AnonymousUser | None = None) -> bool:
     return not _options_allow_external_request(get_url_protection_options(), user)
 
 
-def allows_external_request_from_user(user: Union[User, AnonymousUser, None] = None) -> bool:
+def allows_external_request_from_user(user: User | AnonymousUser | None = None) -> bool:
     return _options_allow_external_request(get_url_protection_options(), user)
 
 

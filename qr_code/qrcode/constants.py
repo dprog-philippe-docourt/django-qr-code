@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
 
 QR_CODE_GENERATION_VERSION_DATE: datetime = datetime(year=2020, month=9, day=8, hour=12)
 SIZE_DICT: dict = {"t": 6, "s": 12, "m": 18, "l": 30, "h": 48}
 ERROR_CORRECTION_DICT: dict = {"L": "l", "M": "m", "Q": "q", "H": "h"}
-DEFAULT_MODULE_SIZE: Union[str, int] = "m"
+DEFAULT_MODULE_SIZE: str | int = "m"
 DEFAULT_BORDER_SIZE: int = 4
 DEFAULT_VERSION: Optional[int] = None
 DEFAULT_IMAGE_FORMAT: str = "svg"

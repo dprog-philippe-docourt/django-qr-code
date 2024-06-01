@@ -1,5 +1,5 @@
 """Tags for Django template system that help generating QR codes."""
-from typing import Optional, Any, Union
+from typing import Optional, Any
 
 from django import template
 
@@ -123,7 +123,7 @@ def qr_from_data(
 
 @register.simple_tag()
 def qr_for_email(
-    email: Union[str, Email], use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+    email: str | Email, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
 ) -> str:
     if isinstance(email, str):
         # Handle simple case where e-mail is simple the electronic address.
@@ -315,7 +315,7 @@ def qr_url_from_data(
 
 @register.simple_tag()
 def qr_url_for_email(
-    email: Union[str, Email], **kwargs
+    email: str | Email, **kwargs
 ) -> str:
     if isinstance(email, str):
         # Handle simple case where e-mail is simple the electronic address.
