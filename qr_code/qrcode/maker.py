@@ -158,7 +158,7 @@ def get_or_make_cached_embedded_qr_code(
         class_names: None | str = None,
         cache_timeout: None | int | object = DEFAULT_TIMEOUT):
     """
-    Same as `make_embedded_qr_code`but caches the result the first time is it called for a given set of args and returned the cached result. It raises an exception when the `QR_CODE_CACHE_ALIAS` setting is not set.
+    Same as `make_embedded_qr_code` but caches the result the first time is it called for a given set of args and returned the cached result. It raises an exception when the `QR_CODE_CACHE_ALIAS` setting is not set.
 
     :param data: See `make_embedded_qr_code`.
     :param qr_code_options: See `make_embedded_qr_code`.
