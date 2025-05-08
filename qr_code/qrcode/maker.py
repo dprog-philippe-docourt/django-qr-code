@@ -172,7 +172,11 @@ def get_or_make_cached_embedded_qr_code(
     cache_name = getattr(settings, "QR_CODE_CACHE_ALIAS", None)
     if not cache_name:
         raise RuntimeError(f"QR_CODE_CACHE_ALIAS must be set in settings.")
+
     url = make_qr_code_url(data=data, qr_code_options=qr_code_options, force_text=force_text, cache_enabled=True, url_signature_enabled=False)
+    # To simplify the logic, use the QR URL without a signature as the base for the cache key, and append the
+    # data_uri_for_svg value separately, since it is not encoded in the URL. Ensure that the resulting key remains
+    # reasonably sized and contains only characters compatible with all relevant cache backends by using MD5 hash.
     key = hashlib.md5(f"qr.{url}&data_uri_for_svg={use_data_uri_for_svg}".encode()).hexdigest()
     cache = caches[cache_name]
     qr_code = cache.get(key)
@@ -180,7 +184,6 @@ def get_or_make_cached_embedded_qr_code(
         qr_code = make_embedded_qr_code(data=data, qr_code_options=qr_code_options, force_text=force_text,
                                         use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text,
                                         class_names=class_names)
-
         cache.set(key, qr_code, timeout=cache_timeout)
     return qr_code
 
