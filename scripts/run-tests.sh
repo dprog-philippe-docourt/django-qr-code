@@ -30,7 +30,7 @@ django_versions=("4.2.21 5.2.1")
 
 for python_version in ${python_versions[@]}
 do
-    DOCKER_COMPOSE_COMMAND="docker-compose -f docker-compose.yml"
+    DOCKER_COMPOSE_COMMAND="docker compose -f docker-compose.yml"
     if [ -n "$GITHUB_ACTION" ]; then
         DOCKER_COMPOSE_EXEC_COMMAND="${DOCKER_COMPOSE_COMMAND} exec -T django-qr-code"
     else
