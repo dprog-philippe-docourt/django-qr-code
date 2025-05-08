@@ -1,5 +1,5 @@
-twine==5.1.0
-coverage==7.5.3
+twine==6.1.0
+coverage==7.8.0
 mypy==1.10.0
 django-stubs==4.2.7
 recommonmark==0.7.1

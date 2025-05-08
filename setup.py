@@ -35,7 +35,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 3 :: Only",
         "Framework :: Django :: 4.2",
-        "Framework :: Django :: 5.0",
+        "Framework :: Django :: 5.2",
         "Natural Language :: English",
     ],
     keywords="qr code django",

@@ -25,8 +25,8 @@ echo "--- Computer: $(hostname) ($(uname -a), CPU: $(nproc --all)"
 echo "--- CPU: $(nproc --all)"
 echo "--- RAM: $(free -h)"
 
-python_versions=("3.10 3.11 3.12")
-django_versions=("4.2.13 5.0.6")
+python_versions=("3.10 3.11 3.12 3.13")
+django_versions=("4.2.21 5.2.1")
 
 for python_version in ${python_versions[@]}
 do
