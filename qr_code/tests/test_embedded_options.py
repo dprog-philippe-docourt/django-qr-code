@@ -2,7 +2,7 @@ import base64
 
 from django.test import SimpleTestCase
 
-from qr_code.qrcode.maker import make_embedded_qr_code
+from qr_code.qrcode.maker import make_embedded_qr_code, get_or_make_cached_embedded_qr_code
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.templatetags.qr_code import qr_from_text, qr_for_email
 from qr_code.tests import (
@@ -151,6 +151,10 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             qr1 = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="svg"), use_data_uri_for_svg=use_data_uri_for_svg)
             qr2 = qr_from_text(TEST_TEXT, image_format="svg", use_data_uri_for_svg=use_data_uri_for_svg)
             qr3 = qr_from_text(TEST_TEXT, options=QRCodeOptions(image_format="svg"), use_data_uri_for_svg=use_data_uri_for_svg)
+            qr1_cached = get_or_make_cached_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="svg"),
+                                        use_data_uri_for_svg=use_data_uri_for_svg)
+            qr2_cached = get_or_make_cached_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format="svg"),
+                                        use_data_uri_for_svg=use_data_uri_for_svg)
             if REFRESH_REFERENCE_IMAGES:
                 if use_data_uri_for_svg:
                     match = IMAGE_TAG_BASE64_DATA_RE.search(qr1)
@@ -161,6 +165,8 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             result = get_svg_content_from_file_name(result_file_name)
             self.assertEqual(qr1, qr2)
             self.assertEqual(qr1, qr3)
+            self.assertEqual(qr1_cached, qr1)
+            self.assertEqual(qr1_cached, qr2_cached)
             if use_data_uri_for_svg:
                 self.assertEqual(qr1, get_base64_svg_image_template() % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
             else:

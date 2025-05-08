@@ -1,8 +1,12 @@
 """Tools for generating QR codes. This module depends on the Segno library."""
 import base64
+import hashlib
 import io
 from typing import Mapping, Any
 
+from django.conf import settings
+from django.core.cache import caches
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import segno
@@ -56,19 +60,50 @@ def make_embedded_qr_code(
     class_names: None | str = None,
 ) -> str:
     """
-    Generates a <svg> or <img> tag representing the QR code for the given `data`.
-    This tag can be embedded into an HTML document.
+    Generate an HTML `<svg>` or `<img>` element that renders *data* as a QR code.
 
-    When `image_format` is SVG and `use_data_uri_for_svg` it True, a base64 encoded image data URI is produced instead
-    of inline SVG path.
+    If `image_format == "svg"` **and** `use_data_uri_for_svg` is `True`, the function returns an
+    `<img>` tag whose `src` is a base-64-encoded SVG data-URI.
+    Otherwise, it returns inline `<svg>` markup.
 
-    The `alt_text` argument indicates the value of the alternative text embedded in the `alt` attribute of the returned
-    image tag. When set to `None`, the alternative text is set to the string representation of data. The alternative
-    text is automatically escaped. You may use an empty string to explicitly set an empty alternative text.
+    ### Accessibility
 
-    The `class_names` argument indicates the value of the `class` attribute of the returned
-    image tag. When set to `None` or empty, the class attribute is not set.
-    """
+    * `alt_text` populates the `alt` attribute.
+      * `None` (default) → uses `str(data)`
+      * `""` → explicit empty `alt`
+      The value is automatically HTML-escaped.
+
+    ### Styling
+
+    * `class_names` populates the `class` attribute.
+      If `None` or an empty string, the attribute is omitted.
+
+    Parameters
+    ----------
+    data : Any
+        Payload to encode in the QR code.
+    qr_code_options : QRCodeOptions
+        Rendering and encoding options.
+    force_text : bool
+        If `True`, convert *data* to `str` before encoding; otherwise raw bytes,
+        integers, etc. are accepted.
+    use_data_uri_for_svg : bool
+        When generating SVG, return a data-URI `<img>` instead of inline SVG.
+    alt_text : str | None
+        Alternative text for screen readers.
+    class_names : str | None
+        Space-separated CSS classes for the generated element.
+
+    Returns
+    -------
+    str
+        Markup for an HTML `<svg>` or `<img>` element containing the QR code.
+
+    Notes
+    -----
+    * The returned fragment is ready to insert into any HTML document.
+    * All text is HTML-escaped to prevent injection.
+"""
 
     qr = make_qr(data, qr_code_options, force_text=force_text)
     kw = qr_code_options.kw_save()
@@ -112,6 +147,42 @@ def make_embedded_qr_code(
         return mark_safe(html)
     else:
         return mark_safe(qr.svg_inline(**kw))
+
+
+def get_or_make_cached_embedded_qr_code(
+        data,
+        qr_code_options,
+        force_text: bool = True,
+        use_data_uri_for_svg: bool = False,
+        alt_text: None | str = None,
+        class_names: None | str = None,
+        cache_timeout: None | int | object = DEFAULT_TIMEOUT):
+    """
+    Same as `make_embedded_qr_code`but caches the result the first time is it called for a given set of args and returned the cached result. It raises an exception when the `QR_CODE_CACHE_ALIAS` setting is not set.
+
+    :param data: See `make_embedded_qr_code`.
+    :param qr_code_options: See `make_embedded_qr_code`.
+    :param force_text: See `make_embedded_qr_code`.
+    :param use_data_uri_for_svg: See `make_embedded_qr_code`.
+    :param alt_text: See `make_embedded_qr_code`.
+    :param class_names: See `make_embedded_qr_code`.
+    :param cache_timeout: Cache timeout in seconds. Passing in `None` for timeout will cache the value forever. A timeout of 0 won’t cache the value.
+    :return: See `make_embedded_qr_code`.
+    """
+    cache_name = getattr(settings, "QR_CODE_CACHE_ALIAS", None)
+    if not cache_name:
+        raise RuntimeError(f"QR_CODE_CACHE_ALIAS must be set in settings.")
+    url = make_qr_code_url(data=data, qr_code_options=qr_code_options, force_text=force_text, cache_enabled=True, url_signature_enabled=False)
+    key = hashlib.md5(f"qr.{url}&data_uri_for_svg={use_data_uri_for_svg}".encode()).hexdigest()
+    cache = caches[cache_name]
+    qr_code = cache.get(key)
+    if qr_code is None:
+        qr_code = make_embedded_qr_code(data=data, qr_code_options=qr_code_options, force_text=force_text,
+                                        use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text,
+                                        class_names=class_names)
+
+        cache.set(key, qr_code, timeout=cache_timeout)
+    return qr_code
 
 
 def make_qr_code_with_args(

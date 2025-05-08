@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.2.0 (2025-05-09)
+* Add support for Django 5.2.
+* Add support for Python 3.13.
+* Add support for caching embedded QR code <img> or <svg> tags with `get_or_make_cached_embedded_qr_code`.
+
 ## 4.1.0 (2024-06-01)
 * Upgrade dependencies and drop support for Python < 3.10 and Pydantic <2.7.
 * Add the capability to generate embedded Base64 SVG images as data URIs through template tags (in addition to the API capability introduced in version 4.0.1).
