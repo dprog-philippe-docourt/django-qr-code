@@ -23,7 +23,7 @@ from qr_code.qrcode.serve import (
 
 def cache_qr_code():
     """
-    Decorator that caches the requested page if a settings named 'QR_CODE_CACHE_ALIAS' exists and is not empty or None.
+    Decorator that caches the requested page if a setting named 'QR_CODE_CACHE_ALIAS' exist and are not empty or None.
     """
 
     def decorator(view_func):
@@ -31,13 +31,10 @@ def cache_qr_code():
         def _wrapped_view(request, *view_args, **view_kwargs):
             cache_enabled = int(request.GET.get("cache_enabled", 1)) == 1
             if cache_enabled and hasattr(settings, "QR_CODE_CACHE_ALIAS") and settings.QR_CODE_CACHE_ALIAS:
-                # We found a cache alias for storing the generate qr code and cache is enabled, use it to cache the
+                # We found a cache alias for storing the generate qr code, and cache is enabled, use it to cache the
                 # page.
                 timeout = settings.CACHES[settings.QR_CODE_CACHE_ALIAS]["TIMEOUT"]
-                key_prefix = "token={}.user_pk={}".format(
-                    request.GET.get("url_signature_enabled") or constants.DEFAULT_URL_SIGNATURE_ENABLED,
-                    request.user.pk,
-                )
+                key_prefix = f"token={request.GET.get('url_signature_enabled') or constants.DEFAULT_URL_SIGNATURE_ENABLED}.user_pk={request.user.pk}"
                 response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS, key_prefix=key_prefix)(view_func)(
                     request, *view_args, **view_kwargs
                 )

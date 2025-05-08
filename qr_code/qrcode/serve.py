@@ -115,7 +115,7 @@ def make_qr_code_url(
     cache_enabled: Optional[bool] = None,
     url_signature_enabled: Optional[bool] = None,
 ) -> str:
-    """Build an URL to a view that handle serving QR code image from the given parameters.
+    """Build a URL to a view that handle serving QR code image from the given parameters.
 
     Any invalid argument related to the size or the format of the image is silently
     converted into the default value for that argument.
@@ -124,7 +124,7 @@ def make_qr_code_url(
     :param QRCodeOptions qr_code_options: The rendering options for the QR code.
     :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in
         byte mode.
-    :param bool cache_enabled: Allows to skip caching the QR code (when set to *False*) when caching has
+    :param bool cache_enabled: Allows skipping caching the QR code (when set to *False*) when caching has
         been enabled.
     :param bool url_signature_enabled: Tells whether the random token for protecting the URL against
         external requests is added to the returned URL. It defaults to *True*.
@@ -169,7 +169,7 @@ def make_qr_code_url(
     path = reverse("qr_code:serve_qr_code_image")
     if url_signature_enabled:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace
-        # existing plain data query arguments in order to allow usage of the URL as an API (without token since external
+        # existing plain data query arguments to allow usage of the URL as an API (without a token since external
         # users cannot generate the signed token!).
         token = get_qr_url_protection_signed_token(qr_code_options)
         params["token"] = token
