@@ -4,9 +4,9 @@ import textwrap
 
 from django.test import SimpleTestCase
 
-from qr_code.qrcode.maker import make_embedded_qr_code
+from qr_code.qrcode.maker import make_embedded_qr_code, make_qr_code_image
 from qr_code.qrcode.serve import make_qr_code_url
-from qr_code.qrcode.utils import QRCodeOptions
+from qr_code.qrcode.utils import QRCodeOptions, VCard
 
 
 class TestIssues(SimpleTestCase):
@@ -48,3 +48,22 @@ class TestIssues(SimpleTestCase):
         # for the server-side cache and the HTTP caching (ETag) to be effective.
         options = QRCodeOptions(image_format="png", size=1)
         self.assertEqual(make_qr_code_url("Stable token", options), make_qr_code_url("Stable token", options))
+
+    def test_unknown_size_letter_falls_back_to_default_size(self):
+        self.assertEqual(make_embedded_qr_code("Unknown size", QRCodeOptions(size="xyz")), make_embedded_qr_code("Unknown size", QRCodeOptions()))
+        self.assertEqual(
+            make_qr_code_image("Unknown size", QRCodeOptions(size="xyz", image_format="png")),
+            make_qr_code_image("Unknown size", QRCodeOptions(image_format="png")),
+        )
+
+    def test_vcard_without_zipcode(self):
+        self.assertNotIn("ADR:", VCard(name="John Doe").make_qr_code_data())
+        self.assertIn("ADR:;;;;;0;", VCard(name="John Doe", zipcode=0).make_qr_code_data())
+        self.assertIn("ADR:;;;;;1234;", VCard(name="John Doe", zipcode=1234).make_qr_code_data())
+
+    def test_alt_text_for_bytes_with_any_encoding(self):
+        for encoding in ("UTF-8", "Latin-1", "cp1252", "unknown-encoding"):
+            with self.subTest(encoding=encoding):
+                data = "été".encode("utf-8" if encoding == "UTF-8" else "latin-1")
+                options = QRCodeOptions(image_format="png", encoding=encoding)
+                self.assertIn('alt="été"', make_embedded_qr_code(data, options, force_text=False))

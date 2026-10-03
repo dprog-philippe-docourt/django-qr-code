@@ -114,17 +114,15 @@ def make_embedded_qr_code(
     if alt_text is None and (use_data_uri_for_svg or qr_code_options.image_format == "png"):
         if isinstance(data, bytes):
             alt_text = ""
+            # Try the encoding of the QR code first (any codec name or spelling supported by Python), then the defaults.
             encodings = ["utf-8", "iso-8859-1", "shift-jis"]
             if qr_code_options.encoding:
-                ei = encodings.index(qr_code_options.encoding)
-                if ei > 0:
-                    encodings[ei] = encodings[0]
-                    encodings[0] = qr_code_options.encoding
+                encodings.insert(0, qr_code_options.encoding)
             for e in encodings:
                 try:
                     alt_text = data.decode(e)
                     break
-                except UnicodeDecodeError:
+                except (UnicodeDecodeError, LookupError):
                     pass
         elif not isinstance(data, str):
             alt_text = str(data)

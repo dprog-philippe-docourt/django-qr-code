@@ -238,7 +238,7 @@ class QRCodeOptions:
         colors = {k: v for k, v in self._colors.items() if v is not False}
         return colors
 
-    def _size_as_number(self) -> Union[int, float, str, Decimal]:
+    def _size_as_number(self) -> Union[int, float, Decimal]:
         """Returns the size as integer value.
 
         :rtype: int or float
@@ -253,7 +253,7 @@ class QRCodeOptions:
             if actual_size < Decimal("0.01"):
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
-            actual_size = SIZE_DICT.get(size.lower(), DEFAULT_MODULE_SIZE)
+            actual_size = SIZE_DICT.get(size.lower(), SIZE_DICT[DEFAULT_MODULE_SIZE])
         else:
             actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         return actual_size
@@ -737,7 +737,8 @@ class VCard:
         :rtype: str
         """
         kw = asdict(self)
-        kw["zipcode"] = str(self.zipcode)
+        if self.zipcode is not None and self.zipcode != "":
+            kw["zipcode"] = str(self.zipcode)
         return helpers.make_vcard_data(**kw)
 
 
