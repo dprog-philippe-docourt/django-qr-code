@@ -13,7 +13,6 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import segno
-from PIL import Image, ImageDraw
 from pydantic import validate_call
 
 from qr_code.qrcode import PYDANTIC_CONFIG
@@ -116,6 +115,9 @@ def _swiss_cross_shapes(origin: float, symbol_size: float, whole_pixels: bool) -
 
 
 def _add_swiss_cross_to_png(png: bytes, qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
+    # Imported here so that only the processes drawing a Swiss cross on a PNG pay for the import of Pillow.
+    from PIL import Image, ImageDraw
+
     image: Image.Image = Image.open(io.BytesIO(png))
     if image.mode not in ("1", "L"):
         # For instance, a palette image with custom colors may not contain black and white.
