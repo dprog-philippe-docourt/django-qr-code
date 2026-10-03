@@ -2,7 +2,7 @@
 import datetime
 from collections import namedtuple
 from dataclasses import asdict
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import Optional, Any, Union, Sequence, List, Tuple
 
@@ -240,6 +240,7 @@ class QRCodeOptions:
         :rtype: int or float
         """
         size = self._size
+        actual_size: Union[int, float, Decimal]
         if _can_be_cast_to_int(size):
             actual_size = int(size)  # type: ignore
             if actual_size < 1:
@@ -249,7 +250,7 @@ class QRCodeOptions:
             if actual_size < Decimal("0.01"):
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
-            actual_size = SIZE_DICT.get(size.lower(), SIZE_DICT[DEFAULT_MODULE_SIZE])
+            actual_size = SIZE_DICT.get(size.lower()) or _decimal_from_str(size) or SIZE_DICT[DEFAULT_MODULE_SIZE]
         else:
             actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         return actual_size
@@ -289,6 +290,15 @@ class QRCodeOptions:
     @property
     def eci(self):
         return self._eci
+
+
+def _decimal_from_str(value: str) -> Optional[Decimal]:
+    """Returns the size given as a decimal number string (e.g., "2.5"), or None if it is not a valid size."""
+    try:
+        size = Decimal(value)
+    except InvalidOperation:
+        return None
+    return size if size.is_finite() and size >= Decimal("0.01") else None
 
 
 def _can_be_cast_to_int(value: Any) -> bool:

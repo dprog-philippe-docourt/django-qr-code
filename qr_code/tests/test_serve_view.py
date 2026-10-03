@@ -1,4 +1,6 @@
 """Tests for the view serving QR code images."""
+from decimal import Decimal
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.cache import caches
 from django.core.exceptions import PermissionDenied
@@ -47,6 +49,18 @@ class TestServeQRCodeImage(SimpleTestCase):
                 QRCodeOptions(size=3, version=5, error_correction="Q", eci=True, encoding="iso-8859-1", boost_error=False),
                 QRCodeOptions(dark_color="#ff000080", light_color="yellow", finder_dark_color="blue", quiet_zone_color="green"),
                 QRCodeOptions(image_format="png", micro=True, data_dark_color="red", separator_color="white"),
+            )
+        )
+
+    def test_served_image_matches_options_with_transparent_or_tuple_colors_and_decimal_size(self):
+        self.assert_served_image_matches_options(
+            (
+                QRCodeOptions(light_color=None),
+                QRCodeOptions(image_format="png", dark_color=None, finder_dark_color="red", quiet_zone_color=None),
+                QRCodeOptions(dark_color=(255, 0, 0), light_color=(0, 0, 255, 0.5), data_dark_color=(0, 128, 0, 200)),
+                QRCodeOptions(size=Decimal("2.5")),
+                QRCodeOptions(size=2.5, image_format="png"),
+                QRCodeOptions(size="1.5", light_color=None),
             )
         )
 

@@ -2,6 +2,9 @@ import subprocess
 import sys
 import textwrap
 
+from decimal import Decimal
+
+from django.template import Context, Template
 from django.test import SimpleTestCase
 
 from qr_code.qrcode.maker import make_embedded_qr_code, make_qr_code_image
@@ -67,3 +70,14 @@ class TestIssues(SimpleTestCase):
                 data = "été".encode("utf-8" if encoding == "UTF-8" else "latin-1")
                 options = QRCodeOptions(image_format="png", encoding=encoding)
                 self.assertIn('alt="été"', make_embedded_qr_code(data, options, force_text=False))
+
+    def test_decimal_size_given_as_string(self):
+        self.assertEqual(QRCodeOptions(size="2.5")._size_as_number(), Decimal("2.5"))
+        self.assertEqual(
+            Template('{% load qr_code %}{% qr_from_text "Decimal size" size="2.5" %}').render(Context()),
+            make_embedded_qr_code("Decimal size", QRCodeOptions(size=Decimal("2.5"))),
+        )
+        # Invalid sizes fall back to the default size.
+        for size in ("0.001", "-2.5", "NaN", "Infinity", "2.5.1"):
+            with self.subTest(size=size):
+                self.assertEqual(QRCodeOptions(size=size)._size_as_number(), 18)

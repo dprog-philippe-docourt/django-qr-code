@@ -11,6 +11,8 @@
 * Fix import of the app requiring `SECRET_KEY` to be set (e.g., when running `collectstatic`): the random part of the URL protection token is now generated on first use instead of at import time (#53).
 * Fix `get_or_make_cached_embedded_qr_code` returning stale markup when called with the same data and options but a different `alt_text` or `class_names`: both are now part of the cache key.
 * Fix `class_names` not being HTML-escaped in the `class` attribute of embedded `<img>` QR codes.
+* Fix QR code images served by URL (`qr_url_*` tags, `make_qr_code_url`) for options that did not survive their encoding into the URL: a transparent color (e.g., `light_color=None`) or a color given as an `(R, G, B)` / `(R, G, B, A)` tuple made the request fail, and a decimal size (e.g., `size=2.5`) was replaced by the default size.
+* Fix a decimal size given as a string (e.g., `size="2.5"` in a template tag) being replaced by the default size.
 * Fix crash when rendering a QR code with an unknown size letter (e.g., `size="xyz"`): it now falls back to the default size, as documented.
 * Fix `VCard` without `zipcode` encoding a bogus `ADR:;;;;;None;` address line.
 * Fix serving QR code images when the cache referenced by `QR_CODE_CACHE_ALIAS` does not define `TIMEOUT`: the default timeout of the cache backend is now used instead of failing with an HTTP 500 error.

@@ -1,6 +1,7 @@
 import base64
 import functools
 import inspect
+import re
 import urllib.parse
 from collections.abc import Mapping
 from datetime import datetime
@@ -20,6 +21,8 @@ from qr_code.qrcode.utils import QRCodeOptions
 
 # Names of the QR code options, which can be passed as query arguments of the URL serving QR code images.
 _QR_CODE_OPTION_NAMES = frozenset(inspect.signature(QRCodeOptions.__init__).parameters) - {"self"}
+# Color given as a (R, G, B) or (R, G, B, A) tuple, as written in the URL serving QR code images.
+_COLOR_TUPLE_RE = re.compile(r"\(\s*(\d+(?:\.\d+)?(?:\s*,\s*\d+(?:\.\d+)?){2,3})\s*\)")
 
 
 def _get_default_url_protection_options() -> dict:
@@ -125,6 +128,18 @@ def get_boolean_url_param(params: Mapping[str, str], name: str, default: bool) -
         raise ValueError(f"Invalid value for boolean query argument '{name}'.") from e
 
 
+def _color_from_url_param(value: str) -> str | tuple | None:
+    """
+    Returns the color written in the URL serving QR code images, where colors are written as strings: "None" stands for
+    a transparent color (None), and "(255, 0, 0)" for a tuple.
+    """
+    if value == "None":
+        return None
+    if match := _COLOR_TUPLE_RE.fullmatch(value):
+        return tuple(float(component) if "." in component else int(component) for component in match.group(1).split(","))
+    return value
+
+
 def _qr_code_options_to_url_params(qr_code_options: QRCodeOptions) -> dict[str, Any]:
     """
     Returns the query arguments encoding the given options in the URL serving QR code images (see
@@ -165,6 +180,9 @@ def qr_code_options_from_url_params(params: Mapping[str, str]) -> QRCodeOptions:
     :raises ValueError: if a query argument has an invalid value.
     """
     options: dict[str, Any] = {name: value for name, value in params.items() if name in _QR_CODE_OPTION_NAMES}
+    for name, value in options.items():
+        if name.endswith("_color"):
+            options[name] = _color_from_url_param(value)
     for name in ("micro", "eci", "boost_error"):
         options[name] = get_boolean_url_param(params, name, default=False)
     return QRCodeOptions(**options)
