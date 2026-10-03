@@ -22,6 +22,7 @@ from qr_code.qrcode.utils import (
     EventClass,
     EventTransparency,
     EventStatus,
+    SwissQrBill,
 )
 from qr_code.tests import REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE
 from qr_code.tests.utils import (
@@ -145,6 +146,20 @@ TEST_EPC_QR_1 = dict(
     name="Wikimedia Foerdergesellschaft", iban="DE33100205000001194700", amount=20, text="To Wikipedia, From Gérard Boéchat"
 )
 TEST_EPC_QR_2 = dict(name="Wikimedia Foerdergesellschaft", iban="DE33100205000001194700", amount=50.0, reference="12983020")
+TEST_SWISS_QR_BILL_1 = dict(
+    account="CH44 3199 9123 0008 8901 2",
+    creditor=dict(name="Robert Schneider AG", street="Rue du Lac", building_number="1268", postal_code="2501", town="Biel"),
+    amount="1949.75",
+    debtor=dict(name="Pia-Maria Rutschmann-Schnyder", street="Grosse Marktgasse", building_number="28", postal_code="9400", town="Rorschach"),
+    reference="21 00000 00003 13947 14300 09017",
+    unstructured_message="Commande du 15 juin 2020",
+)
+TEST_SWISS_QR_BILL_2 = dict(
+    account="CH58 0079 1123 0008 8901 2",
+    creditor=dict(name="Salvation Army Foundation Switzerland", postal_code="3000", town="Bern"),
+    currency="EUR",
+    reference="RF18 5390 0754 7034",
+)
 
 
 class TestContactDetail(SimpleTestCase):
@@ -283,6 +298,9 @@ class TestQRForApplications(SimpleTestCase):
         epc_data1 = dict(**TEST_EPC_QR_1)
         epc_data2 = EpcData(**epc_data1)
         epc_data3 = dict(**TEST_EPC_QR_2)
+        swiss_qr_bill1 = dict(**TEST_SWISS_QR_BILL_1)
+        swiss_qr_bill2 = SwissQrBill(**swiss_qr_bill1)
+        swiss_qr_bill3 = dict(**TEST_SWISS_QR_BILL_2)
         google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
         geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         tag_prefix = "qr_for_" if embedded else "qr_url_for_"
@@ -307,6 +325,10 @@ class TestQRForApplications(SimpleTestCase):
             ("epc", "epc_data", {"epc_data": epc_data2}, 1),
             ("epc", "epc_data=epc_data", {"epc_data": epc_data2}, 1),
             ("epc", "epc_data", {"epc_data": epc_data3}, 2),
+            ("swiss_qr_bill", "swiss_qr_bill", {"swiss_qr_bill": swiss_qr_bill1}, 1),
+            ("swiss_qr_bill", "swiss_qr_bill", {"swiss_qr_bill": swiss_qr_bill2}, 1),
+            ("swiss_qr_bill", "swiss_qr_bill=swiss_qr_bill", {"swiss_qr_bill": swiss_qr_bill2}, 1),
+            ("swiss_qr_bill", "swiss_qr_bill", {"swiss_qr_bill": swiss_qr_bill3}, 2),
             ("contact", "contact_detail", {"contact_detail": contact_detail1}, None),
             ("contact", "contact_detail", {"contact_detail": contact_detail2}, None),
             ("contact", "contact_detail=contact_detail", {"contact_detail": contact_detail2}, None),

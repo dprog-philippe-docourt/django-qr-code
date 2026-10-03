@@ -18,6 +18,8 @@ from qr_code.qrcode.utils import (
     Email,
     MeCard,
     VEvent,
+    SwissQrBill,
+    SWISS_QR_BILL_QR_CODE_ARGS,
 )
 
 register = template.Library()
@@ -289,6 +291,22 @@ def qr_for_epc(epc_data, use_data_uri_for_svg: bool = False, alt_text: None | st
 
 
 @register.simple_tag()
+def qr_for_swiss_qr_bill(
+    swiss_qr_bill, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(
+        swiss_qr_bill,
+        SwissQrBill,
+        embedded=True,
+        qr_code_args=kwargs,
+        use_data_uri_for_svg=use_data_uri_for_svg,
+        alt_text=alt_text,
+        class_names=class_names,
+        extra_qr_code_args=SWISS_QR_BILL_QR_CODE_ARGS,
+    )
+
+
+@register.simple_tag()
 def qr_for_event(event, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs) -> str:
     return _make_app_qr_code_from_obj_or_kwargs(
         event,
@@ -444,6 +462,19 @@ def qr_url_for_epc(
         qr_code_args=kwargs,
         extra_qr_code_args=_EPC_QR_CODE_ARGS,
         force_text=False,
+    )
+
+
+@register.simple_tag()
+def qr_url_for_swiss_qr_bill(
+    swiss_qr_bill, **kwargs
+) -> str:
+    return _make_app_qr_code_from_obj_or_kwargs(
+        swiss_qr_bill,
+        SwissQrBill,
+        embedded=False,
+        qr_code_args=kwargs,
+        extra_qr_code_args=SWISS_QR_BILL_QR_CODE_ARGS,
     )
 
 

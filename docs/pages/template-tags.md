@@ -226,6 +226,7 @@ The following tags targeting apps are available:
 * `qr_for_vcard` and `qr_url_for_vcard`
 * `qr_for_wifi` and `qr_url_for_wifi`
 * `qr_for_epc` and `qr_url_for_epc`
+* `qr_for_swiss_qr_bill` and `qr_url_for_swiss_qr_bill`
 * `qr_for_event` and `qr_url_for_event`
 * `qr_for_contact` and `qr_url_for_contact` (legacy, do not use in new projects)
 
@@ -237,7 +238,7 @@ You could write a view like this:
 import datetime
 from datetime import date
 from django.shortcuts import render
-from qr_code.qrcode.utils import MeCard, VCard, EpcData, VEvent, EventClass, EventTransparency, EventStatus, WifiConfig, Coordinates, QRCodeOptions
+from qr_code.qrcode.utils import MeCard, VCard, EpcData, SwissQrBill, SwissQrBillAddress, VEvent, EventClass, EventTransparency, EventStatus, WifiConfig, Coordinates, QRCodeOptions
 
 
 def application_qr_code_demo(request):
@@ -283,6 +284,16 @@ def application_qr_code_demo(request):
         text='To Wikipedia'
     )
 
+    # Use a SwissQrBill instance to encapsulate the data of the Swiss QR code of a Swiss QR-bill.
+    swiss_qr_bill = SwissQrBill(
+        account='CH44 3199 9123 0008 8901 2',
+        creditor=SwissQrBillAddress(name='Robert Schneider AG', street='Rue du Lac', building_number='1268', postal_code='2501', town='Biel'),
+        amount='1949.75',
+        debtor=SwissQrBillAddress(name='Pia-Maria Rutschmann-Schnyder', street='Grosse Marktgasse', building_number='28', postal_code='9400', town='Rorschach'),
+        reference='21 00000 00003 13947 14300 09017',
+        unstructured_message='Order of 15 June 2020'
+    )
+
     # Build coordinates instances.
     google_maps_coordinates = Coordinates(latitude=586000.32, longitude=250954.19)
     geolocation_coordinates = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
@@ -317,6 +328,7 @@ RSVP to team leader."""
         vcard_contact=vcard_contact,
         wifi_config=wifi_config,
         epc_data=epc_data,
+        swiss_qr_bill=swiss_qr_bill,
         event=event,
         video_id='J9go2nj6b3M',
         google_maps_coordinates=google_maps_coordinates,
@@ -356,6 +368,11 @@ Then, in your template, you can render the appropriate QR codes for the given co
 <p>or:</p>
 <img src="{% qr_url_for_epc epc_data size='H' %}">
 
+<h3>Swiss QR-bill</h3>
+{% qr_for_swiss_qr_bill swiss_qr_bill %}
+<p>or:</p>
+<img src="{% qr_url_for_swiss_qr_bill swiss_qr_bill=swiss_qr_bill image_format='png' %}">
+
 <h3>Event QR Code'</h3>
 <img src="{% qr_url_for_event event=event %}">
 <p>or:</p>
@@ -382,6 +399,29 @@ Then, in your template, you can render the appropriate QR codes for the given co
 ```
 
 Please check out the [demo application](README.md#demo-application) to see more examples.
+
+### Swiss QR-bill
+
+`SwissQrBill` encodes the Swiss QR code of a [Swiss QR-bill](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/qr-bill.html) (version 2.3 of the Swiss Implementation Guidelines), with structured addresses (`SwissQrBillAddress`) for the creditor and the optional debtor. The amount is optional, in which case the debtor enters it.
+
+The data is validated according to the specification, and a `ValueError` is raised when it is not valid (e.g., invalid IBAN, wrong check digits of the reference, text too long). Texts are never truncated: it is up to you to shorten them when needed. The allowed character set is not checked.
+
+The type of reference is inferred from the IBAN and the reference:
+* A QR-IBAN requires a QR reference (QRR) of 27 digits, which you can make from up to 26 digits with `make_qr_reference`.
+* A regular IBAN accepts an ISO 11649 creditor reference (SCOR, e.g., `RF18539007547034`), which you can make with `make_creditor_reference`, or no reference at all.
+
+`is_qr_iban` tells whether an IBAN is a QR-IBAN.
+
+The template tags always generate the QR code with the error correction level "M", as required by the specification, regardless of the given options. When you use the Python API directly, pass the required options yourself:
+
+```python
+from qr_code.qrcode.maker import make_embedded_qr_code
+from qr_code.qrcode.utils import QRCodeOptions, SWISS_QR_BILL_QR_CODE_ARGS
+
+qr_code_html = make_embedded_qr_code(swiss_qr_bill.make_qr_code_data(), QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS, image_format='png'))
+```
+
+**Note**: The Swiss cross that the specification requires in the middle of the QR code is not drawn.
 
 ## QR code rendering options
 

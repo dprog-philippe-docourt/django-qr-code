@@ -1,5 +1,6 @@
 """Utility classes and functions for configuring and setting up the content and the look of a QR code."""
 import datetime
+import re
 from collections import namedtuple
 from dataclasses import asdict
 from decimal import Decimal, InvalidOperation
@@ -497,6 +498,267 @@ class EpcData:
         :rtype: str
         """
         return helpers._make_epc_qr_data(**asdict(self), encoding=1)  # type: ignore
+
+
+# QR code options required by the Swiss QR-bill specification.
+SWISS_QR_BILL_QR_CODE_ARGS: dict = dict(error_correction="M", boost_error=False, micro=False, encoding="utf-8")
+# Maximum size of the data of a Swiss QR code, which must fit in a QR code of version 25 with error correction level "M".
+_SWISS_QR_BILL_MAX_DATA_SIZE = 997
+# IBAN of Switzerland or Liechtenstein: country code, check digits, institution identification (IID) and account number.
+_SWISS_IBAN_RE = re.compile(r"(CH|LI)[0-9]{7}[0-9A-Z]{12}")
+# A QR-IBAN is identified by an institution identification (QR-IID) in this range.
+_QR_IID_RANGE = range(30000, 32000)
+_QR_REFERENCE_RE = re.compile(r"[0-9]{1,27}")
+_CREDITOR_REFERENCE_RE = re.compile(r"RF[0-9]{2}[0-9A-Z]{1,21}")
+_QR_REFERENCE_CHECK_DIGIT_TABLE = (0, 9, 4, 6, 8, 2, 7, 1, 3, 5)
+
+
+def _normalize_identifier(value: Any) -> str:
+    """Removes the spaces of an identifier (e.g., IBAN or payment reference), which are often used for readability, and upper cases it."""
+    return str(value).replace(" ", "").upper()
+
+
+def _mod97(value: str) -> int:
+    """Returns the ISO 7064 MOD 97-10 remainder of an alphanumeric value, after converting its letters into numbers (A = 10, ..., Z = 35)."""
+    return int("".join(str(int(c, 36)) for c in value)) % 97
+
+
+def _qr_reference_check_digit(digits: str) -> str:
+    """Returns the check digit of a QR reference, computed with the recursive modulo 10 algorithm."""
+    carry = 0
+    for digit in digits:
+        carry = _QR_REFERENCE_CHECK_DIGIT_TABLE[(carry + int(digit)) % 10]
+    return str((10 - carry) % 10)
+
+
+def _check_text(field_name: str, value: Optional[str], max_length: int, required: bool = False) -> None:
+    """Checks that a text field of a Swiss QR-bill has a valid length and no line break, since line breaks separate the fields."""
+    if not value:
+        if required:
+            raise ValueError(f"The {field_name} is required.")
+        return
+    if len(value) > max_length:
+        raise ValueError(f"The {field_name} cannot have more than {max_length} characters, got {len(value)}.")
+    if "\n" in value or "\r" in value:
+        raise ValueError(f"The {field_name} cannot contain line breaks.")
+
+
+def is_qr_iban(iban: str) -> bool:
+    """
+    Tells whether the given Swiss or Liechtenstein IBAN is a QR-IBAN, which requires a QR reference (see :py:func:`make_qr_reference`).
+
+    The IBAN itself is not validated, but spaces are ignored.
+
+    :rtype: bool
+    """
+    iban = _normalize_identifier(iban)
+    return iban[4:9].isdigit() and int(iban[4:9]) in _QR_IID_RANGE
+
+
+def make_qr_reference(base: Union[int, str]) -> str:
+    """
+    Makes a QR reference (QRR) for a Swiss QR-bill from up to 26 digits, by padding them with leading zeros and appending the check digit
+    computed with the recursive modulo 10 algorithm.
+
+    A QR reference can only be used with a QR-IBAN.
+
+    :param base: The digits of the reference (spaces are ignored).
+    :return: The 27 digits of the QR reference.
+    :rtype: str
+    """
+    digits = _normalize_identifier(base)
+    if not re.fullmatch(r"[0-9]{1,26}", digits):
+        raise ValueError(f'The base of a QR reference must be made of 1 to 26 digits, got "{base}".')
+    digits = digits.rjust(26, "0")
+    return digits + _qr_reference_check_digit(digits)
+
+
+def make_creditor_reference(base: str) -> str:
+    """
+    Makes an ISO 11649 creditor reference (SCOR), e.g., "RF18539007547034", from up to 21 letters or digits.
+
+    Unlike a QR reference, a creditor reference can be used with a regular IBAN in a Swiss QR-bill.
+
+    :param base: The letters and digits of the reference (spaces are ignored).
+    :return: The creditor reference, starting with "RF" and its two check digits.
+    :rtype: str
+    """
+    normalized_base = _normalize_identifier(base)
+    if not re.fullmatch(r"[0-9A-Z]{1,21}", normalized_base):
+        raise ValueError(f'The base of a creditor reference must be made of 1 to 21 letters or digits, got "{base}".')
+    check_digits = 98 - _mod97(normalized_base + "RF00")
+    return f"RF{check_digits:02d}{normalized_base}"
+
+
+@pydantic_dataclass
+class SwissQrBillAddress:
+    """
+    Structured address of the creditor or of the debtor of a Swiss QR-bill (see :py:class:`SwissQrBill`).
+
+    The fields are validated according to the Swiss QR-bill specification: a ``ValueError`` is raised when a field is too long, which
+    lets you decide how to shorten it. Leading and trailing spaces are removed.
+
+    Fields meaning:
+        * name: Name of the person or company, up to 70 characters.
+        * street: Street name, up to 70 characters. Optional.
+        * building_number: Building number, up to 16 characters. Optional.
+        * postal_code: Postal code, up to 16 characters.
+        * town: Town, up to 35 characters.
+        * country: Two-letter country code (ISO 3166-1 alpha-2). Defaults to "CH".
+    """
+
+    name: str
+    postal_code: Union[int, str]
+    town: str
+    street: Optional[str] = None
+    building_number: Union[int, str, None] = None
+    country: str = "CH"
+
+    def __post_init__(self):
+        self.name = self.name.strip()
+        self.postal_code = str(self.postal_code).strip()
+        self.town = self.town.strip()
+        self.street = self.street.strip() if self.street else None
+        self.building_number = str(self.building_number).strip() if self.building_number not in (None, "") else None
+        self.country = self.country.strip().upper()
+        _check_text("name", self.name, 70, required=True)
+        _check_text("street", self.street, 70)
+        _check_text("building number", self.building_number, 16)
+        _check_text("postal code", self.postal_code, 16, required=True)
+        _check_text("town", self.town, 35, required=True)
+        if not re.fullmatch(r"[A-Z]{2}", self.country):
+            raise ValueError(f'The country must be a two-letter country code (ISO 3166-1 alpha-2), got "{self.country}".')
+
+    def _make_qr_code_data_fields(self) -> list[str]:
+        return ["S", self.name, self.street or "", str(self.building_number or ""), str(self.postal_code), self.town, self.country]
+
+
+@pydantic_dataclass
+class SwissQrBill:
+    """
+    Data for representing the Swiss QR code of a Swiss QR-bill (version 2.3 of the Swiss Implementation Guidelines for the QR-bill).
+
+    The fields are validated according to the specification, and a ``ValueError`` is raised when they are not valid (e.g., invalid IBAN,
+    wrong reference check digits, text too long, etc.). The allowed character set is not checked. The QR code must be generated with the
+    error correction level "M" (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what the ``qr_for_swiss_qr_bill`` and
+    ``qr_url_for_swiss_qr_bill`` template tags do.
+
+    The type of reference is inferred from the reference and the IBAN:
+
+        * QRR: a QR reference (27 digits, see :py:func:`make_qr_reference`), which is required with a QR-IBAN and only allowed with a QR-IBAN.
+        * SCOR: an ISO 11649 creditor reference starting with "RF" (see :py:func:`make_creditor_reference`).
+        * NON: no reference.
+
+    .. note::
+
+        The Swiss cross that must be displayed in the middle of a Swiss QR code is not drawn.
+
+    Fields meaning:
+        * account: IBAN or QR-IBAN of the creditor, from Switzerland or Liechtenstein. Spaces are ignored.
+        * creditor: Address of the creditor.
+        * amount: Amount of the payment, between 0.00 and 999999999.99 with at most two decimal places. Leave it empty to let the
+          debtor enter the amount.
+        * currency: Currency of the payment, either "CHF" (default) or "EUR".
+        * debtor: Address of the debtor. Optional.
+        * reference: QR reference or creditor reference. Optional, spaces are ignored.
+        * unstructured_message: Additional information for the debtor, up to 140 characters (together with the billing information).
+          Optional.
+        * billing_information: Coded billing information for automated processing, starting with "//". Optional.
+        * alternative_schemes: Parameters of up to two alternative payment schemes, up to 100 characters each. Optional.
+    """
+
+    account: str
+    creditor: SwissQrBillAddress
+    amount: Optional[Decimal] = None
+    currency: str = "CHF"
+    debtor: Optional[SwissQrBillAddress] = None
+    reference: Optional[str] = None
+    unstructured_message: Optional[str] = None
+    billing_information: Optional[str] = None
+    alternative_schemes: Tuple[str, ...] = ()
+
+    def __post_init__(self):
+        self.account = _normalize_identifier(self.account)
+        if not _SWISS_IBAN_RE.fullmatch(self.account):
+            raise ValueError(f'The account must be a Swiss or Liechtenstein IBAN made of 21 characters, got "{self.account}".')
+        if _mod97(self.account[4:] + self.account[:4]) != 1:
+            raise ValueError(f'The account "{self.account}" is not a valid IBAN (wrong check digits).')
+
+        if self.amount is not None:
+            if not Decimal("0") <= self.amount <= Decimal("999999999.99"):
+                raise ValueError(f"The amount must be between 0.00 and 999999999.99, got {self.amount}.")
+            if self.amount != self.amount.quantize(Decimal("0.01")):
+                raise ValueError(f"The amount cannot have more than two decimal places, got {self.amount}.")
+            # Turn a negative zero into zero, which would otherwise be written as "-0.00".
+            self.amount = abs(self.amount)
+
+        self.currency = self.currency.strip().upper()
+        if self.currency not in ("CHF", "EUR"):
+            raise ValueError(f'The currency must be either "CHF" or "EUR", got "{self.currency}".')
+
+        self.reference = _normalize_identifier(self.reference) if self.reference else None
+        if self.reference:
+            if self.reference.startswith("RF"):
+                if not _CREDITOR_REFERENCE_RE.fullmatch(self.reference) or _mod97(self.reference[4:] + self.reference[:4]) != 1:
+                    raise ValueError(f'The reference "{self.reference}" is not a valid creditor reference (ISO 11649).')
+            else:
+                if not _QR_REFERENCE_RE.fullmatch(self.reference):
+                    raise ValueError(f'The reference "{self.reference}" is neither a QR reference nor a creditor reference.')
+                self.reference = self.reference.rjust(27, "0")
+                if _qr_reference_check_digit(self.reference[:-1]) != self.reference[-1]:
+                    raise ValueError(f'The reference "{self.reference}" is not a valid QR reference (wrong check digit).')
+        if is_qr_iban(self.account) and self.reference_type != "QRR":
+            raise ValueError("A QR-IBAN requires a QR reference.")
+        if not is_qr_iban(self.account) and self.reference_type == "QRR":
+            raise ValueError("A QR reference requires a QR-IBAN.")
+
+        _check_text("unstructured message", self.unstructured_message, 140)
+        _check_text("billing information", self.billing_information, 140)
+        if self.billing_information and not self.billing_information.startswith("//"):
+            raise ValueError('The billing information must start with "//".')
+        if len(self.unstructured_message or "") + len(self.billing_information or "") > 140:
+            raise ValueError("The unstructured message and the billing information cannot have more than 140 characters altogether.")
+        if len(self.alternative_schemes) > 2:
+            raise ValueError("There cannot be more than two alternative schemes.")
+        for alternative_scheme in self.alternative_schemes:
+            _check_text("alternative scheme", alternative_scheme, 100, required=True)
+
+    @property
+    def reference_type(self) -> str:
+        """The type of reference: "QRR" (QR reference), "SCOR" (creditor reference) or "NON" (no reference)."""
+        if not self.reference:
+            return "NON"
+        return "SCOR" if self.reference.startswith("RF") else "QRR"
+
+    def make_qr_code_data(self) -> str:
+        """
+        Creates the data of the Swiss QR code of a Swiss QR-bill.
+
+        :rtype: str
+        """
+        fields = [
+            "SPC",  # QR type: Swiss Payments Code.
+            "0200",  # Version 2.
+            "1",  # Coding type: UTF-8 restricted to the Latin character set.
+            self.account,
+            *self.creditor._make_qr_code_data_fields(),
+            *[""] * 7,  # Ultimate creditor: reserved for future use.
+            f"{self.amount:.2f}" if self.amount is not None else "",
+            self.currency,
+            *(self.debtor._make_qr_code_data_fields() if self.debtor else [""] * 7),
+            self.reference_type,
+            self.reference or "",
+            self.unstructured_message or "",
+            "EPD",  # Trailer: end of payment data.
+        ]
+        # The trailing optional fields are omitted when they are empty.
+        if self.billing_information or self.alternative_schemes:
+            fields.append(self.billing_information or "")
+        fields.extend(self.alternative_schemes)
+        data = "\n".join(fields)
+        if len(data.encode("utf-8")) > _SWISS_QR_BILL_MAX_DATA_SIZE:
+            raise ValueError(f"The data of a Swiss QR code cannot exceed {_SWISS_QR_BILL_MAX_DATA_SIZE} bytes.")
+        return data
 
 
 class ContactDetail:
