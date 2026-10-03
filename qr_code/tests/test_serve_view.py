@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from qr_code.qrcode import constants
-from qr_code.qrcode.serve import make_qr_code_url
+from qr_code.qrcode.serve import get_qr_url_protection_signed_token, make_qr_code_url, verify_qr_url_protection_signed_token
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.tests import OVERRIDE_CACHES_SETTING, TEST_TEXT
 from qr_code.views import serve_qr_code_image
@@ -71,3 +71,12 @@ class TestServeQRCodeImage(SimpleTestCase):
         request.user = AnonymousUser()
         with self.assertRaises(PermissionDenied):
             serve_qr_code_image(request)
+
+    def test_verify_url_protection_signed_token(self):
+        options = QRCodeOptions(size="s", image_format="png")
+        token = get_qr_url_protection_signed_token(options)
+        self.assertTrue(verify_qr_url_protection_signed_token(options, token))
+        # The token is bound to the size, border, version, image format and error correction of the QR code.
+        self.assertFalse(verify_qr_url_protection_signed_token(QRCodeOptions(size="l", image_format="png"), token))
+        self.assertFalse(verify_qr_url_protection_signed_token(options, token + "x"))
+        self.assertFalse(verify_qr_url_protection_signed_token(options, "not-a-signed-token"))

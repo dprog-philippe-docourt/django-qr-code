@@ -7,7 +7,7 @@ from typing import Optional, Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
-from django.core.signing import Signer
+from django.core.signing import BadSignature, Signer
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_str
@@ -66,11 +66,25 @@ def _get_random_token() -> str:
     return get_random_string(url_protection_options[constants.TOKEN_LENGTH])
 
 
+def _get_url_protection_signer() -> Signer:
+    url_protection_options = get_url_protection_options()
+    return Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
+
+
 def get_qr_url_protection_signed_token(qr_code_options: QRCodeOptions):
     """Generate a signed token to handle view protection."""
-    url_protection_options = get_url_protection_options()
-    signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-    return signer.sign(get_qr_url_protection_token(qr_code_options, _get_random_token()))
+    return _get_url_protection_signer().sign(get_qr_url_protection_token(qr_code_options, _get_random_token()))
+
+
+def verify_qr_url_protection_signed_token(qr_code_options: QRCodeOptions, signed_token: str) -> bool:
+    """Tells whether the signed token (see `get_qr_url_protection_signed_token`) is valid for the given options."""
+    try:
+        url_protection_string = _get_url_protection_signer().unsign(signed_token)
+    except BadSignature:
+        return False
+    # The random token is the last part of the token (see get_qr_url_protection_token).
+    random_token = url_protection_string.split(".")[-1]
+    return get_qr_url_protection_token(qr_code_options, random_token) == url_protection_string
 
 
 def get_qr_url_protection_token(qr_code_options, random_token):

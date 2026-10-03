@@ -6,17 +6,14 @@ import inspect
 from django.conf import settings
 from django.core.cache import caches
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
-from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
-from qr_code.qrcode import constants
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import (
-    get_url_protection_options,
-    get_qr_url_protection_token,
+    verify_qr_url_protection_signed_token,
     qr_code_etag,
     qr_code_last_modified,
     allows_external_request_from_user,
@@ -137,14 +134,5 @@ def check_image_access_permission(request, qr_code_options) -> None:
 
 
 def check_url_signature_token(qr_code_options, token) -> None:
-    url_protection_options = get_url_protection_options()
-    signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-    try:
-        # Check signature.
-        url_protection_string = signer.unsign(token)
-        # Check that the given token matches the request parameters.
-        random_token = url_protection_string.split(".")[-1]
-        if get_qr_url_protection_token(qr_code_options, random_token) != url_protection_string:
-            raise PermissionDenied("Request query does not match protection token.")
-    except BadSignature:
-        raise PermissionDenied("Wrong token signature.")
+    if not verify_qr_url_protection_signed_token(qr_code_options, token):
+        raise PermissionDenied("Wrong token signature or token not matching the request query.")
