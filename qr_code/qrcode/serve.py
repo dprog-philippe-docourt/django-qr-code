@@ -1,5 +1,6 @@
 import base64
 import functools
+import inspect
 import urllib.parse
 from collections.abc import Mapping
 from datetime import datetime
@@ -16,6 +17,9 @@ from pydantic import validate_call
 
 from qr_code.qrcode import constants, PYDANTIC_CONFIG
 from qr_code.qrcode.utils import QRCodeOptions
+
+# Names of the QR code options, which can be passed as query arguments of the URL serving QR code images.
+_QR_CODE_OPTION_NAMES = frozenset(inspect.signature(QRCodeOptions.__init__).parameters) - {"self"}
 
 
 def _get_default_url_protection_options() -> dict:
@@ -106,6 +110,66 @@ def qr_code_last_modified(_request) -> datetime:
     return constants.QR_CODE_GENERATION_VERSION_DATE
 
 
+def get_boolean_url_param(params: Mapping[str, str], name: str, default: bool) -> bool:
+    """
+    Returns the value of a boolean query argument of the URL serving QR code images, passed as `1` (True) or `0` (False).
+
+    :raises ValueError: if the value is invalid.
+    """
+    value = params.get(name)
+    if value is None:
+        return default
+    try:
+        return int(value) == 1
+    except ValueError as e:
+        raise ValueError(f"Invalid value for boolean query argument '{name}'.") from e
+
+
+def _qr_code_options_to_url_params(qr_code_options: QRCodeOptions) -> dict[str, Any]:
+    """
+    Returns the query arguments encoding the given options in the URL serving QR code images (see
+    `qr_code_options_from_url_params`).
+
+    Only non-default values are included, except for `boost_error` and `encoding`: `boost_error` is only included when
+    True although it defaults to True (a missing `boost_error` stands for False), and `encoding` is always included (an
+    empty value stands for None). These rules must be kept so that the URLs built by previous versions keep producing
+    the same images.
+    """
+    params: dict[str, Any] = {}
+    if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
+        params["size"] = qr_code_options.size
+    if qr_code_options.border != constants.DEFAULT_BORDER_SIZE:
+        params["border"] = qr_code_options.border
+    if qr_code_options.version != constants.DEFAULT_VERSION:
+        params["version"] = qr_code_options.version
+    if qr_code_options.image_format != constants.DEFAULT_IMAGE_FORMAT:
+        params["image_format"] = qr_code_options.image_format
+    if qr_code_options.error_correction != constants.DEFAULT_ERROR_CORRECTION:
+        params["error_correction"] = qr_code_options.error_correction
+    if qr_code_options.micro:
+        params["micro"] = 1
+    if qr_code_options.eci:
+        params["eci"] = 1
+    if qr_code_options.boost_error:
+        params["boost_error"] = 1
+    params["encoding"] = qr_code_options.encoding or ""
+    params.update(qr_code_options.color_mapping())
+    return params
+
+
+def qr_code_options_from_url_params(params: Mapping[str, str]) -> QRCodeOptions:
+    """
+    Returns the options encoded in the query arguments of the URL serving QR code images (see
+    `_qr_code_options_to_url_params`). The query arguments that are not options are ignored.
+
+    :raises ValueError: if a query argument has an invalid value.
+    """
+    options: dict[str, Any] = {name: value for name, value in params.items() if name in _QR_CODE_OPTION_NAMES}
+    for name in ("micro", "eci", "boost_error"):
+        options[name] = get_boolean_url_param(params, name, default=False)
+    return QRCodeOptions(**options)
+
+
 @validate_call(config=PYDANTIC_CONFIG)
 def make_qr_code_url(
     data: Any,
@@ -141,26 +205,7 @@ def make_qr_code_url(
     else:
         raw_data = data.encode("utf-8") if isinstance(data, str) else data
         data_key, data_value = "bytes", base64.b64encode(raw_data).decode("utf-8")
-    params = {data_key: data_value, "cache_enabled": 1 if cache_enabled else 0}
-    # Only add non-default values to the params dict
-    if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
-        params["size"] = qr_code_options.size
-    if qr_code_options.border != constants.DEFAULT_BORDER_SIZE:
-        params["border"] = qr_code_options.border
-    if qr_code_options.version != constants.DEFAULT_VERSION:
-        params["version"] = qr_code_options.version
-    if qr_code_options.image_format != constants.DEFAULT_IMAGE_FORMAT:
-        params["image_format"] = qr_code_options.image_format
-    if qr_code_options.error_correction != constants.DEFAULT_ERROR_CORRECTION:
-        params["error_correction"] = qr_code_options.error_correction
-    if qr_code_options.micro:
-        params["micro"] = 1
-    if qr_code_options.eci:
-        params["eci"] = 1
-    if qr_code_options.boost_error:
-        params["boost_error"] = 1
-    params["encoding"] = qr_code_options.encoding or ""
-    params.update(qr_code_options.color_mapping())
+    params = {data_key: data_value, "cache_enabled": 1 if cache_enabled else 0, **_qr_code_options_to_url_params(qr_code_options)}
     path = reverse("qr_code:serve_qr_code_image")
     if url_signature_enabled:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace

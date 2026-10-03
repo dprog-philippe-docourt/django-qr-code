@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from qr_code.qrcode import constants
+from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.serve import get_qr_url_protection_signed_token, make_qr_code_url, verify_qr_url_protection_signed_token
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.tests import OVERRIDE_CACHES_SETTING, TEST_TEXT
@@ -29,6 +30,25 @@ class TestServeQRCodeImage(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         # The default timeout of the cache applies.
         self.assertIn("max-age=300", response["Cache-Control"])
+
+    def assert_served_image_matches_options(self, options_list):
+        # The options must survive their encoding into the URL and their decoding by the view.
+        for options in options_list:
+            with self.subTest(options=options.kw_make() | options.kw_save()):
+                response = self.client.get(make_qr_code_url("1234", options, cache_enabled=False))
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.content, make_qr_code_image("1234", options))
+
+    def test_served_image_matches_options(self):
+        self.assert_served_image_matches_options(
+            (
+                QRCodeOptions(),
+                QRCodeOptions(size="T", border=6, version="M3", image_format="png", error_correction="l", encoding=None, boost_error=False),
+                QRCodeOptions(size=3, version=5, error_correction="Q", eci=True, encoding="iso-8859-1", boost_error=False),
+                QRCodeOptions(dark_color="#ff000080", light_color="yellow", finder_dark_color="blue", quiet_zone_color="green"),
+                QRCodeOptions(image_format="png", micro=True, data_dark_color="red", separator_color="white"),
+            )
+        )
 
     def test_unknown_query_arguments_are_ignored(self):
         # E.g., tracking parameters added to the URL by a third party.
