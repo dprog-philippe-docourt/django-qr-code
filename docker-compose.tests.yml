@@ -1,0 +1,7 @@
+# Used by scripts/run-tests.sh on top of docker-compose.yml. The tests are run with "docker compose exec", so the container only has to keep
+# running, without starting the demo site: otherwise, the container stops when the demo site starts while the tests reinstall Django.
+services:
+  django-qr-code:
+    # Stop the container without waiting for the timeout, since sleep ignores the SIGTERM signal when it is the process 1.
+    init: true
+    command: ["sleep", "infinity"]
