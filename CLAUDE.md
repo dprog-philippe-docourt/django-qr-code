@@ -27,7 +27,7 @@ python manage.py runserver                     # demo at http://127.0.0.1:8000/q
 - `scripts/run-tests.sh` (what CI runs) uses Docker Compose to run the suite (`python -Wd manage.py test`) plus `mypy qr_code` across the Python 3.10–3.14 × Django 5.2 matrix, plus Django 6.0 / 6.1 on Python >= 3.12 (`django_versions` declares each Django version with its minimum Python version); logs go to `tests_result/`.
 - `scripts/run-demo-app.sh` serves the demo via Docker/gunicorn on port 8910.
 - Packaging is defined in `pyproject.toml` (setuptools backend); build with `python -m build`.
-- `scripts/generate-pypi-release.sh` builds and uploads to PyPI — do not run without being asked.
+- Publishing a GitHub release triggers `.github/workflows/python-publish.yml`, which builds and checks the package (the release tag must match `__version__`), then publishes it to PyPI with Trusted Publishing (no API token). Running that workflow manually only builds and checks the package. `scripts/generate-pypi-release.sh` is the manual alternative (twine upload) — do not run either without being asked.
 - Docs: Sphinx in `docs/` (`cd docs && make html`); `docs/conf.py` calls `django.setup()` with demo settings and symlinks root `README.md` / `CHANGELOG.md` into `docs/pages/`.
 
 Language: everything written to this repo — code, identifiers, comments, docstrings, documentation and commit messages — must be in English, even when the conversation with the user is in another language.

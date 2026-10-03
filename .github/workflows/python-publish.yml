@@ -1,39 +1,70 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# Builds the package and publishes it to PyPI when a GitHub release is published.
+#
+# Publishing uses PyPI Trusted Publishing (OpenID Connect), so no PyPI API token is stored in the repository. The PyPI
+# project must declare this repository, this workflow file and the "pypi" environment as a trusted publisher, see
+# https://docs.pypi.org/trusted-publishers/.
+#
+# Running the workflow manually builds and checks the package without publishing it.
 
 name: Upload Python Package
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
-
+  build:
+    name: Build and check the package
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
       with:
         python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
+    - name: Install build tools
+      run: python -m pip install --upgrade build twine
     - name: Build package
       run: python -m build
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+    - name: Check package
+      run: python -m twine check --strict dist/*
+    - name: Check that the release tag matches the package version
+      if: github.event_name == 'release'
+      run: |
+        version=$(python -c "import qr_code; print(qr_code.__version__)")
+        if [ "${GITHUB_REF_NAME#v}" != "${version}" ]; then
+          echo "::error::The release tag (${GITHUB_REF_NAME}) does not match the package version (${version})."
+          exit 1
+        fi
+    - name: Store the package
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+        name: python-package-distributions
+        path: dist/
+
+  publish:
+    name: Publish the package to PyPI
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/django-qr-code/
+    permissions:
+      id-token: write  # Required by PyPI Trusted Publishing.
+
+    steps:
+    - name: Retrieve the package
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
