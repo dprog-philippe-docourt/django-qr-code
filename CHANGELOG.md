@@ -11,6 +11,7 @@
 
 ### New features
 * Add support for the Swiss QR code of Swiss QR-bills (version 2.4 of the Swiss Implementation Guidelines, also compliant with version 2.3): `SwissQrBill` and `SwissQrBillAddress` data classes, `qr_for_swiss_qr_bill` and `qr_url_for_swiss_qr_bill` template tags, and `make_qr_reference`, `make_creditor_reference` and `is_qr_iban` helpers. The data is validated according to the specification. The Swiss cross is drawn in the middle of any QR code whose data is the data of a Swiss QR code.
+* Add `EPC_QR_CODE_ARGS`, the QR code options required by the EPC QR code specification, for generating EPC QR codes with the Python API.
 * Add support for Python 3.14.
 * Add support for Django 6.0 and 6.1.
 * Ship a `py.typed` marker (PEP 561), so that type checkers such as mypy use the type annotations of the package.

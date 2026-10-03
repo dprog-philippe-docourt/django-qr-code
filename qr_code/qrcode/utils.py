@@ -452,13 +452,17 @@ SUMMARY:{escape_char(self.summary)}"""
         return event_str
 
 
+# QR code options required by the EPC QR code specification.
+EPC_QR_CODE_ARGS: dict = dict(error_correction="M", boost_error=False, micro=False, encoding="utf-8")
+
+
 @pydantic_dataclass
 class EpcData:
     """
     Data for representing an European Payments Council Quick Response Code (EPC QR Code) version 002.
 
-    You must always use the error correction level "M" and utilizes max. version 13 to fulfill the constraints of the
-        EPC QR Code standard.
+    You must always use the error correction level "M" (see ``EPC_QR_CODE_ARGS``) and utilizes max. version 13 to fulfill the
+        constraints of the EPC QR Code standard.
 
         .. note::
 
