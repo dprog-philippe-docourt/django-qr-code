@@ -27,7 +27,8 @@ echo "--- CPU: $(nproc --all)"
 echo "--- RAM: $(free -h)"
 
 python_versions=("3.10 3.11 3.12 3.13 3.14")
-django_versions=("5.2.17")
+# Supported Django versions, each with the minimum Python version it requires ("<Django version>:<minimum Python version>").
+django_versions=("5.2.17:3.10" "6.0.8:3.12" "6.1.1:3.12")
 
 for python_version in ${python_versions[@]}
 do
@@ -45,8 +46,14 @@ do
 
     ${DOCKER_COMPOSE_COMMAND} up -d
 
-    for django_version in ${django_versions[@]}
+    for django_spec in "${django_versions[@]}"
     do
+        django_version="${django_spec%%:*}"
+        min_python_version="${django_spec##*:}"
+        if [ "$(printf '%s\n' "${min_python_version}" "${python_version}" | sort -V | head -n 1)" != "${min_python_version}" ]; then
+            echo --- Skip Django ${django_version} with Python ${python_version}: it requires Python ${min_python_version} or later.
+            continue
+        fi
         echo --- Testing against: Python ${python_version} and Django ${django_version}
 
         echo --- Force Django version

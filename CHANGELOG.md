@@ -2,6 +2,7 @@
 
 ## Unreleased
 * Add support for Python 3.14.
+* Add support for Django 6.0 and 6.1.
 * Drop support for Django < 5.2: Django 5.2 (LTS) is now the minimum required version.
 * Fix default `DTSTAMP` of `VEvent` being offset by the local time zone when `dtstamp` is not provided (replace deprecated `datetime.utcnow()`).
 * Upgrade dependencies (Pydantic, mypy, django-stubs, Sphinx, MyST-Parser, Gunicorn, etc.).
