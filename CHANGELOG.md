@@ -24,7 +24,7 @@
 ## 4.2.0 (2025-05-09)
 * Add support for Django 5.2.
 * Add support for Python 3.13.
-* Add support for caching embedded QR code <img> or <svg> tags with `get_or_make_cached_embedded_qr_code`.
+* Add support for caching embedded QR code `<img>` or `<svg>` tags with `get_or_make_cached_embedded_qr_code`.
 
 ## 4.1.0 (2024-06-01)
 * Upgrade dependencies and drop support for Python < 3.10 and Pydantic <2.7.
@@ -153,7 +153,7 @@ The changes mentioned above might break the compatibility with code using qr_cod
     * Additions to documentation.
     * Added ability to use a `QRCodeOptions` instance with `options` keyword argument in all tags.
 * Bug fixes:
-    * Fixed non-closed <img> tag when generating embedded PNG image.
+    * Fixed non-closed `<img>` tag when generating embedded PNG image.
     * Escape colon char (':') if it appears within a contact detail or a wifi configuration.
     * Add a second terminal semi-colon at the end of the text representing a wifi configuration, as recommended in some sources.
 
