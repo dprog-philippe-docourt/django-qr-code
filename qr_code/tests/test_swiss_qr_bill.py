@@ -63,6 +63,7 @@ class TestSwissQrBillReferences(SimpleTestCase):
         self.assertFalse(is_qr_iban(IBAN))
         self.assertFalse(is_qr_iban("CH4432000123000889012"))
         self.assertFalse(is_qr_iban("CH"))
+        self.assertFalse(is_qr_iban("CH44 ³1999 1230 0088 9012"))
 
 
 class TestSwissQrBill(SimpleTestCase):

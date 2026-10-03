@@ -563,8 +563,9 @@ def is_qr_iban(iban: str) -> bool:
 
     :rtype: bool
     """
-    iban = _normalize_identifier(iban)
-    return iban[4:9].isdigit() and int(iban[4:9]) in _QR_IID_RANGE
+    iid = _normalize_identifier(iban)[4:9]
+    # Not only isdigit(), which accepts non-ASCII digits (e.g., superscripts) that int() rejects.
+    return iid.isascii() and iid.isdigit() and int(iid) in _QR_IID_RANGE
 
 
 def make_qr_reference(base: Union[int, str]) -> str:
