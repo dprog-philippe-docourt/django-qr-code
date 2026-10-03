@@ -1,0 +1,11 @@
+# Keeps the GitHub Actions used by the workflows up to date (they are pinned by commit SHA).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
