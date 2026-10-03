@@ -224,7 +224,8 @@ def qr_for_wifi(
 def qr_for_epc(epc_data, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs) -> str:
     return make_qr_code_with_args(
         _make_app_qr_code_data(epc_data, EpcData),
-        qr_code_args={**kwargs, **EPC_QR_CODE_ARGS},
+        qr_code_args=kwargs,
+        forced_qr_code_args=EPC_QR_CODE_ARGS,
         use_data_uri_for_svg=use_data_uri_for_svg,
         alt_text=alt_text,
         class_names=class_names,
@@ -238,7 +239,8 @@ def qr_for_swiss_qr_bill(
 ) -> str:
     return make_qr_code_with_args(
         _make_app_qr_code_data(swiss_qr_bill, SwissQrBill),
-        qr_code_args={**kwargs, **SWISS_QR_BILL_QR_CODE_ARGS},
+        qr_code_args=kwargs,
+        forced_qr_code_args=SWISS_QR_BILL_QR_CODE_ARGS,
         use_data_uri_for_svg=use_data_uri_for_svg,
         alt_text=alt_text,
         class_names=class_names,
@@ -326,14 +328,14 @@ def qr_url_for_wifi(wifi_config, **kwargs) -> str:
 @register.simple_tag()
 def qr_url_for_epc(epc_data, **kwargs) -> str:
     return make_qr_code_url_with_args(
-        _make_app_qr_code_data(epc_data, EpcData), qr_code_args={**kwargs, **EPC_QR_CODE_ARGS}, force_text=False
+        _make_app_qr_code_data(epc_data, EpcData), qr_code_args=kwargs, force_text=False, forced_qr_code_args=EPC_QR_CODE_ARGS
     )
 
 
 @register.simple_tag()
 def qr_url_for_swiss_qr_bill(swiss_qr_bill, **kwargs) -> str:
     return make_qr_code_url_with_args(
-        _make_app_qr_code_data(swiss_qr_bill, SwissQrBill), qr_code_args={**kwargs, **SWISS_QR_BILL_QR_CODE_ARGS}
+        _make_app_qr_code_data(swiss_qr_bill, SwissQrBill), qr_code_args=kwargs, forced_qr_code_args=SWISS_QR_BILL_QR_CODE_ARGS
     )
 
 

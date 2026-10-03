@@ -19,6 +19,7 @@
 ### Fixes
 * Fix QR code images served by URL (`qr_url_*` tags, `make_qr_code_url`) for options that did not survive their encoding into the URL: a transparent color (e.g., `light_color=None`) or a color given as an `(R, G, B)` / `(R, G, B, A)` tuple made the request fail, and a decimal size (e.g., `size=2.5`) was replaced by the default size.
 * Fix a decimal size given as a string (e.g., `size="2.5"` in a template tag) being replaced by the default size.
+* Fix the `qr_for_epc` and `qr_url_for_epc` template tags not enforcing the QR code options required by the EPC QR code specification (e.g., the error correction level "M") when the options are given as an `options` object.
 * Fix crash when rendering a QR code with an unknown size letter (e.g., `size="xyz"`): it now falls back to the default size, as documented.
 * Fix `VCard` without `zipcode` encoding a bogus `ADR:;;;;;None;` address line.
 * Fix the return type annotation of `EpcData.make_qr_code_data`, which returns bytes (encoded in UTF-8), not a string.

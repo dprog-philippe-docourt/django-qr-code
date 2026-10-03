@@ -196,6 +196,11 @@ class TestSwissQrBillTemplateTags(SimpleTestCase):
         # The QR code options required by the specification take precedence over the template tag arguments.
         self.assertEqual(qr_for_swiss_qr_bill(bill, error_correction="H"), qr_for_swiss_qr_bill(bill))
         self.assertEqual(qr_url_for_swiss_qr_bill(bill, error_correction="H"), qr_url_for_swiss_qr_bill(bill))
+        # Including over the options of an options argument, whose other options are kept.
+        options = dict(size=3, image_format="png", dark_color="darkblue")
+        options_h = QRCodeOptions(**options, error_correction="H")
+        self.assertEqual(qr_for_swiss_qr_bill(bill, options=options_h), qr_for_swiss_qr_bill(bill, **options))
+        self.assertEqual(qr_url_for_swiss_qr_bill(bill, options=options_h), qr_url_for_swiss_qr_bill(bill, **options))
 
     def test_from_object_or_dict(self):
         kwargs = dict(account=QR_IBAN, creditor=CREDITOR, debtor=DEBTOR, reference=QR_REFERENCE)

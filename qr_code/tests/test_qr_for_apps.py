@@ -23,7 +23,9 @@ from qr_code.qrcode.utils import (
     EventTransparency,
     EventStatus,
     SwissQrBill,
+    QRCodeOptions,
 )
+from qr_code.templatetags.qr_code import qr_for_epc, qr_url_for_epc
 from qr_code.tests import REFRESH_REFERENCE_IMAGES, IMAGE_TAG_BASE64_DATA_RE
 from qr_code.tests.utils import (
     write_svg_content_to_file,
@@ -258,6 +260,14 @@ class TestEpcData(SimpleTestCase):
             EpcData(**TEST_EPC_QR_1).make_qr_code_data(),
             "BCD\n002\n1\nSCT\n\nWikimedia Foerdergesellschaft\nDE33100205000001194700\nEUR20\n\n\nTo Wikipedia, From Gérard Boéchat".encode("utf-8"),
         )
+
+    def test_qr_code_options(self):
+        epc_data = EpcData(**TEST_EPC_QR_1)
+        # The QR code options required by the specification take precedence over the template tag arguments, including over the options
+        # of an options argument.
+        self.assertEqual(qr_for_epc(epc_data, error_correction="H"), qr_for_epc(epc_data))
+        self.assertEqual(qr_for_epc(epc_data, options=QRCodeOptions(error_correction="H")), qr_for_epc(epc_data))
+        self.assertEqual(qr_url_for_epc(epc_data, options=QRCodeOptions(error_correction="H")), qr_url_for_epc(epc_data))
 
 
 class TestCoordinates(SimpleTestCase):

@@ -297,18 +297,19 @@ def make_qr_code_with_args(
     use_data_uri_for_svg: bool = False,
     alt_text: None | str = None,
     class_names: None | str = None,
+    forced_qr_code_args: None | Mapping = None,
 ) -> str:
-    options = _options_from_args(qr_code_args)
+    options = _options_from_args(qr_code_args, forced_qr_code_args)
     return make_embedded_qr_code(
         data, options, force_text=force_text, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names
     )
 
 
-def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:
+def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True, forced_qr_code_args: None | Mapping = None) -> str:
     # The boolean arguments may be strings (e.g., "False", "false", "0" or "no"), which make_qr_code_url converts.
     cache_enabled = _from_tag_arg(qr_code_args.pop("cache_enabled", None))
     url_signature_enabled = _from_tag_arg(qr_code_args.pop("url_signature_enabled", None))
-    options = _options_from_args(qr_code_args)
+    options = _options_from_args(qr_code_args, forced_qr_code_args)
     return make_qr_code_url(data, options, force_text=force_text, cache_enabled=cache_enabled, url_signature_enabled=url_signature_enabled)
 
 
@@ -317,13 +318,37 @@ def _from_tag_arg(value: Any) -> Any:
     return None if value == "None" else value
 
 
-def _options_from_args(args: Mapping) -> QRCodeOptions:
-    """Returns a QRCodeOptions instance from the provided arguments."""
+def _options_from_args(args: Mapping, forced_args: None | Mapping = None) -> QRCodeOptions:
+    """
+    Returns a QRCodeOptions instance from the provided arguments.
+
+    The `forced_args` (e.g., the QR code options required by the specification of the data) override the provided arguments, including
+    the options of an `options` argument.
+    """
     options = args.get("options")
+    kw: dict[str, Any]
     if options:
         if not isinstance(options, QRCodeOptions):
             raise TypeError("The options argument must be of type QRCodeOptions.")
+        if not forced_args:
+            return options
+        kw = _options_as_args(options)
     else:
-        kw: dict[str, Any] = {k: _from_tag_arg(v) for k, v in args.items()}
-        options = QRCodeOptions(**kw)
-    return options
+        kw = {k: _from_tag_arg(v) for k, v in args.items()}
+    return QRCodeOptions(**{**kw, **(forced_args or {})})
+
+
+def _options_as_args(options: QRCodeOptions) -> dict[str, Any]:
+    """Returns the arguments to create a copy of the given `options`."""
+    return dict(
+        size=options.size,
+        border=options.border,
+        version=options.version,
+        image_format=options.image_format,
+        error_correction=options.error_correction,
+        encoding=options.encoding,
+        boost_error=options.boost_error,
+        micro=options.micro,
+        eci=options.eci,
+        **options.color_mapping(),
+    )

@@ -1,4 +1,5 @@
 """Tests for qr_code application."""
+import inspect
 import os
 from decimal import Decimal
 
@@ -14,6 +15,7 @@ from qr_code.qrcode.constants import (
     DEFAULT_BOOST_ERROR,
     DEFAULT_ENCODING,
 )
+from qr_code.qrcode.maker import _options_as_args
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.tests import TEST_TEXT, PNG_REF_SUFFIX, SVG_REF_SUFFIX
@@ -44,6 +46,17 @@ class TestQRCodeOptions(SimpleTestCase):
         self.assertEqual(options.encoding.lower(), DEFAULT_ENCODING)
         options = QRCodeOptions(image_format="invalid-image-format")
         self.assertEqual(options.image_format, DEFAULT_IMAGE_FORMAT)
+
+    def test_options_as_args(self):
+        colors = {name: "red" for name in inspect.signature(QRCodeOptions.__init__).parameters if name.endswith("_color")}
+        options = QRCodeOptions(
+            size=3, border=2, version=5, image_format="png", error_correction="Q", encoding="iso-8859-1", boost_error=False, eci=True, **colors
+        )
+        args = _options_as_args(options)
+        # Every argument of QRCodeOptions is copied.
+        self.assertEqual(set(args), set(inspect.signature(QRCodeOptions.__init__).parameters) - {"self"})
+        copy = QRCodeOptions(**args)
+        self.assertEqual((copy.kw_make(), copy.kw_save()), (options.kw_make(), options.kw_save()))
 
     def test_kw_save(self):
         options = QRCodeOptions(border=0, image_format="png", size=13)
