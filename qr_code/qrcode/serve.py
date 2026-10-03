@@ -27,21 +27,14 @@ def _get_default_url_protection_options() -> dict:
     }
 
 
-def _get_url_protection_settings() -> Optional[Mapping]:
-    if hasattr(settings, "QR_CODE_URL_PROTECTION") and isinstance(settings.QR_CODE_URL_PROTECTION, Mapping):
-        return settings.QR_CODE_URL_PROTECTION
-    return None
-
-
 def _options_allow_external_request(url_protection_options: Mapping, user: User | AnonymousUser | None) -> bool:
+    allows_external_requests = url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]
     # Evaluate the callable if required.
-    if callable(url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER]):
-        allows_external_request = url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER](user or AnonymousUser())
-    elif url_protection_options[constants.ALLOWS_EXTERNAL_REQUESTS_FOR_REGISTERED_USER] is True:
-        allows_external_request = user and user.pk and user.is_authenticated
-    else:
-        allows_external_request = False
-    return allows_external_request
+    if callable(allows_external_requests):
+        return allows_external_requests(user or AnonymousUser())
+    if allows_external_requests is True:
+        return bool(user and user.pk and user.is_authenticated)
+    return False
 
 
 def requires_url_protection_token(user: User | AnonymousUser | None = None) -> bool:
@@ -54,9 +47,9 @@ def allows_external_request_from_user(user: User | AnonymousUser | None = None) 
 
 def get_url_protection_options() -> dict:
     options = _get_default_url_protection_options()
-    settings_options = _get_url_protection_settings()
-    if settings_options is not None:
-        options.update(settings.QR_CODE_URL_PROTECTION)
+    settings_options = getattr(settings, "QR_CODE_URL_PROTECTION", None)
+    if isinstance(settings_options, Mapping):
+        options.update(settings_options)
     return options
 
 
@@ -77,8 +70,7 @@ def get_qr_url_protection_signed_token(qr_code_options: QRCodeOptions):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
     signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-    token = signer.sign(get_qr_url_protection_token(qr_code_options, _get_random_token()))
-    return token
+    return signer.sign(get_qr_url_protection_token(qr_code_options, _get_random_token()))
 
 
 def get_qr_url_protection_token(qr_code_options, random_token):
@@ -88,21 +80,8 @@ def get_qr_url_protection_token(qr_code_options, random_token):
     The token contains image attributes so that a user cannot use a token provided somewhere on a website to
     generate bigger QR codes. The random_token part ensures that the signed token is not predictable.
     """
-    return ".".join(
-        list(
-            map(
-                str,
-                (
-                    qr_code_options.size,
-                    qr_code_options.border,
-                    qr_code_options.version or "",
-                    qr_code_options.image_format,
-                    qr_code_options.error_correction,
-                    random_token,
-                ),
-            )
-        )
-    )
+    o = qr_code_options
+    return f"{o.size}.{o.border}.{o.version or ''}.{o.image_format}.{o.error_correction}.{random_token}"
 
 
 def qr_code_etag(request) -> str:
@@ -140,19 +119,15 @@ def make_qr_code_url(
         url_signature_enabled = constants.DEFAULT_URL_SIGNATURE_ENABLED
     if cache_enabled is None:
         cache_enabled = constants.DEFAULT_CACHE_ENABLED
-    cache_enabled_arg = 1 if cache_enabled else 0
+    data_value: str | int
     if force_text:
-        encoded_data = str(base64.b64encode(force_str(data).encode("utf-8")), encoding="utf-8")
-        params = dict(text=encoded_data, cache_enabled=cache_enabled_arg)
+        data_key, data_value = "text", base64.b64encode(force_str(data).encode("utf-8")).decode("utf-8")
     elif isinstance(data, int):
-        params = dict(int=data, cache_enabled=cache_enabled_arg)
+        data_key, data_value = "int", data
     else:
-        if isinstance(data, str):
-            b64data = base64.b64encode(force_str(data).encode("utf-8"))
-        else:
-            b64data = base64.b64encode(data)
-        encoded_data = str(b64data, encoding="utf-8")
-        params = dict(bytes=encoded_data, cache_enabled=cache_enabled_arg)
+        raw_data = data.encode("utf-8") if isinstance(data, str) else data
+        data_key, data_value = "bytes", base64.b64encode(raw_data).decode("utf-8")
+    params = {data_key: data_value, "cache_enabled": 1 if cache_enabled else 0}
     # Only add non-default values to the params dict
     if qr_code_options.size != constants.DEFAULT_MODULE_SIZE:
         params["size"] = qr_code_options.size
@@ -170,14 +145,13 @@ def make_qr_code_url(
         params["eci"] = 1
     if qr_code_options.boost_error:
         params["boost_error"] = 1
-    params["encoding"] = qr_code_options.encoding if qr_code_options.encoding else ""
+    params["encoding"] = qr_code_options.encoding or ""
     params.update(qr_code_options.color_mapping())
     path = reverse("qr_code:serve_qr_code_image")
     if url_signature_enabled:
         # Generate token to handle view protection. The token is added to the query arguments. It does not replace
         # existing plain data query arguments to allow usage of the URL as an API (without a token since external
         # users cannot generate the signed token!).
-        token = get_qr_url_protection_signed_token(qr_code_options)
-        params["token"] = token
+        params["token"] = get_qr_url_protection_signed_token(qr_code_options)
     url = f"{path}?{urllib.parse.urlencode(params)}"
     return mark_safe(url)

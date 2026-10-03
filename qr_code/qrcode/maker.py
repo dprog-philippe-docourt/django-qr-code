@@ -3,7 +3,8 @@ import base64
 import hashlib
 import io
 import json
-from typing import Mapping, Any
+from collections.abc import Mapping
+from typing import Any
 
 from django.conf import settings
 from django.core.cache import caches
@@ -45,7 +46,11 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
     :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in byte mode.
     :rtype: bytes
     """
-    qr = make_qr(data, qr_code_options, force_text=force_text)
+    return _serialize_qr(make_qr(data, qr_code_options, force_text=force_text), qr_code_options)
+
+
+def _serialize_qr(qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
+    """Serializes the QR code into an image (bytes), as specified by `qr_code_options`."""
     out = io.BytesIO()
     qr.save(out, **qr_code_options.kw_save())
     return out.getvalue()
@@ -126,10 +131,8 @@ def make_embedded_qr_code(
                     break
                 except UnicodeDecodeError:
                     pass
-        elif not isinstance(data, str):
-            alt_text = str(data)
         else:
-            alt_text = data
+            alt_text = str(data)
 
     if class_names:
         class_attr = f' class="{escape(class_names)}"'
@@ -140,14 +143,9 @@ def make_embedded_qr_code(
         return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt_text)}"{class_attr}>')
 
     if use_data_uri_for_svg:
-        out = io.BytesIO()
-        qr.save(out, **qr_code_options.kw_save())
-        svg_path = out.getvalue()
-        svg_b64_data = base64.b64encode(svg_path).decode("utf-8")
-        html = f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}"{class_attr}>'
-        return mark_safe(html)
-    else:
-        return mark_safe(qr.svg_inline(**kw))
+        svg_b64_data = base64.b64encode(_serialize_qr(qr, qr_code_options)).decode("utf-8")
+        return mark_safe(f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}"{class_attr}>')
+    return mark_safe(qr.svg_inline(**kw))
 
 
 def get_or_make_cached_embedded_qr_code(
@@ -172,7 +170,7 @@ def get_or_make_cached_embedded_qr_code(
     """
     cache_name = getattr(settings, "QR_CODE_CACHE_ALIAS", None)
     if not cache_name:
-        raise RuntimeError(f"QR_CODE_CACHE_ALIAS must be set in settings.")
+        raise RuntimeError("QR_CODE_CACHE_ALIAS must be set in settings.")
 
     url = make_qr_code_url(data=data, qr_code_options=qr_code_options, force_text=force_text, cache_enabled=True, url_signature_enabled=False)
     # To simplify the logic, use the QR URL without a signature as the base for the cache key, and append the
@@ -206,14 +204,15 @@ def make_qr_code_with_args(
 
 
 def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:
-    cache_enabled = qr_code_args.pop("cache_enabled", DEFAULT_CACHE_ENABLED)
-    if not isinstance(cache_enabled, bool):
-        cache_enabled = not cache_enabled == "False"
-    url_signature_enabled = qr_code_args.pop("url_signature_enabled", DEFAULT_URL_SIGNATURE_ENABLED)
-    if not isinstance(url_signature_enabled, bool):
-        url_signature_enabled = not url_signature_enabled == "False"
+    cache_enabled = _bool_from_tag_arg(qr_code_args.pop("cache_enabled", DEFAULT_CACHE_ENABLED))
+    url_signature_enabled = _bool_from_tag_arg(qr_code_args.pop("url_signature_enabled", DEFAULT_URL_SIGNATURE_ENABLED))
     options = _options_from_args(qr_code_args)
     return make_qr_code_url(data, options, force_text=force_text, cache_enabled=cache_enabled, url_signature_enabled=url_signature_enabled)
+
+
+def _bool_from_tag_arg(value: Any) -> bool:
+    """Converts a template tag argument into a boolean: any value other than the string "False" is considered true."""
+    return value if isinstance(value, bool) else value != "False"
 
 
 def _options_from_args(args: Mapping) -> QRCodeOptions:

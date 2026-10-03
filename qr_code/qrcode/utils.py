@@ -1,18 +1,26 @@
 """Utility classes and functions for configuring and setting up the content and the look of a QR code."""
 import datetime
-import decimal
 from collections import namedtuple
 from dataclasses import asdict
-from datetime import date
 from decimal import Decimal
 from enum import Enum
 from typing import Optional, Any, Union, Sequence, List, Tuple
 
-import zoneinfo
 from django.utils.html import escape
 from pydantic import validate_call
 from pydantic.dataclasses import dataclass as pydantic_dataclass
-from qr_code.qrcode.constants import DEFAULT_MODULE_SIZE, SIZE_DICT, DEFAULT_ERROR_CORRECTION, DEFAULT_IMAGE_FORMAT
+from qr_code.qrcode.constants import (
+    DEFAULT_BOOST_ERROR,
+    DEFAULT_BORDER_SIZE,
+    DEFAULT_ECI,
+    DEFAULT_ENCODING,
+    DEFAULT_ERROR_CORRECTION,
+    DEFAULT_IMAGE_FORMAT,
+    DEFAULT_MODULE_SIZE,
+    DEFAULT_VERSION,
+    ERROR_CORRECTION_DICT,
+    SIZE_DICT,
+)
 
 from segno import helpers
 
@@ -26,14 +34,14 @@ class QRCodeOptions:
     def __init__(
         self,
         size: Union[int, float, str, Decimal, None] = DEFAULT_MODULE_SIZE,
-        border: int = 4,
-        version: Union[int, str, None] = None,
-        image_format: str = "svg",
+        border: int = DEFAULT_BORDER_SIZE,
+        version: Union[int, str, None] = DEFAULT_VERSION,
+        image_format: str = DEFAULT_IMAGE_FORMAT,
         error_correction: str = DEFAULT_ERROR_CORRECTION,
-        encoding: Optional[str] = "utf-8",
-        boost_error: bool = True,
+        encoding: Optional[str] = DEFAULT_ENCODING,
+        boost_error: bool = DEFAULT_BOOST_ERROR,
         micro: bool = False,
-        eci: bool = False,
+        eci: bool = DEFAULT_ECI,
         dark_color: Union[tuple, str, bool, None] = "black",
         light_color: Union[tuple, str, bool, None] = "white",
         finder_dark_color: Union[tuple, str, bool, None] = False,
@@ -146,12 +154,12 @@ class QRCodeOptions:
         :raises: TypeError in case an unknown argument is given.
         """
         self._size = size
-        self._border = int(border)
+        self._border = border
         if _can_be_cast_to_int(version):
             version = int(version)  # type: ignore
             if not 1 <= version <= 40:
                 version = None
-        elif version in ("m1", "m2", "m3", "m4", "M1", "M2", "M3", "M4"):
+        elif isinstance(version, str) and version.lower() in ("m1", "m2", "m3", "m4"):
             version = version.lower()  # type: ignore
             # Set / change the micro setting otherwise Segno complains about
             # conflicting parameters
@@ -159,25 +167,13 @@ class QRCodeOptions:
         else:
             version = None
         self._version = version
-        # if not isinstance(micro, bool):
-        #     micro = micro == 'True'
         self._micro = micro
-        # if not isinstance(eci, bool):
-        #     eci = eci == 'True'
         self._eci = eci
-        try:
-            error = error_correction.lower()
-            self._error_correction = error if error in ("l", "m", "q", "h") else DEFAULT_ERROR_CORRECTION
-        except AttributeError:
-            self._error_correction = DEFAULT_ERROR_CORRECTION
+        self._error_correction = ERROR_CORRECTION_DICT.get(error_correction.upper(), DEFAULT_ERROR_CORRECTION)
         self._boost_error = boost_error
-        # Handle encoding
-        self._encoding = None if encoding == "" else encoding
-        try:
-            image_format = image_format.lower()
-            self._image_format = image_format if image_format in ("svg", "png") else DEFAULT_IMAGE_FORMAT
-        except AttributeError:
-            self._image_format = DEFAULT_IMAGE_FORMAT
+        self._encoding = encoding or None
+        image_format = image_format.lower()
+        self._image_format = image_format if image_format in ("svg", "png") else DEFAULT_IMAGE_FORMAT
         self._colors = dict(
             dark_color=dark_color,
             light_color=light_color,
@@ -221,10 +217,10 @@ class QRCodeOptions:
         kw = dict(border=self.border, kind=image_format, scale=self._size_as_number())
         # Change the color mapping into the keywords Segno expects
         # (remove the "_color" suffix from the module names)
-        kw.update({k[:-6]: v for k, v in self.color_mapping().items()})
+        kw.update({k.removesuffix("_color"): v for k, v in self.color_mapping().items()})
         if image_format == "svg":
             kw["unit"] = "mm"
-            scale = decimal.Decimal(kw["scale"]) / 10
+            scale = Decimal(kw["scale"]) / 10
             kw["scale"] = scale
         return kw
 
@@ -375,9 +371,9 @@ class VEvent:
             new_text = ""
             for line in text.split("\n"):
                 # Use a fast and simple variant for the common case that line is all ASCII.
-                try:
-                    line.encode("ascii")
-                except (UnicodeEncodeError, UnicodeDecodeError):
+                if line.isascii():
+                    new_text += fold_sep.join(line[i : i + limit - 1] for i in range(0, len(line), limit - 1))
+                else:
                     ret_chars = []
                     byte_count = 0
                     for char in line:
@@ -388,8 +384,6 @@ class VEvent:
                             byte_count = char_byte_len
                         ret_chars.append(char)
                     new_text += "".join(ret_chars)
-                else:
-                    new_text += fold_sep.join(line[i : i + limit - 1] for i in range(0, len(line), limit - 1))
             return new_text
 
         # Source form icalendar: https://github.com/collective/icalendar/
@@ -408,18 +402,19 @@ class VEvent:
         def is_naive_datetime(t) -> bool:
             return t.tzinfo is None or t.tzinfo.utcoffset(t) is None
 
+        def get_utc_datetime_str(t) -> str:
+            return t.astimezone(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
         def get_datetime_str(t) -> str:
             if is_naive_datetime(t):
                 return t.strftime("%Y%m%dT%H%M%S")
-            else:
-                t_utc = t.astimezone(zoneinfo.ZoneInfo("UTC"))
-                return t_utc.strftime("%Y%m%dT%H%M%SZ")
+            return get_utc_datetime_str(t)
 
         event_str = f"""BEGIN:VCALENDAR
 PRODID:Django QR Code
 VERSION:2.0
 BEGIN:VEVENT
-DTSTAMP:{(self.dtstamp or datetime.datetime.now(datetime.timezone.utc)).astimezone(zoneinfo.ZoneInfo('UTC')).strftime("%Y%m%dT%H%M%SZ")}
+DTSTAMP:{get_utc_datetime_str(self.dtstamp or datetime.datetime.now(datetime.timezone.utc))}
 UID:{self.uid}
 DTSTART:{get_datetime_str(self.start)}
 DTEND:{get_datetime_str(self.end)}
@@ -443,7 +438,6 @@ SUMMARY:{escape_char(self.summary)}"""
         if self.url:
             event_str += f"\nURL:{self.url}"
         event_str += "\nEND:VEVENT\nEND:VCALENDAR"
-        # print(event_str)
         return event_str
 
 
@@ -477,7 +471,7 @@ class EpcData:
 
     name: str
     iban: str
-    amount: Union[int, float, decimal.Decimal]
+    amount: Union[int, float, Decimal]
     text: Optional[str] = None
     reference: Optional[str] = None
     bic: Optional[str] = None
@@ -529,7 +523,7 @@ class ContactDetail:
         tel_av: Optional[str] = None,
         email: Optional[str] = None,
         memo: Optional[str] = None,
-        birthday: Optional[date] = None,
+        birthday: Optional[datetime.date] = None,
         address: Optional[str] = None,
         url: Optional[str] = None,
         nickname: Optional[str] = None,
@@ -561,16 +555,12 @@ class ContactDetail:
         # See this for an archive of the format specifications:
         # https://web.archive.org/web/20160304025131/https://www.nttdocomo.co.jp/english/service/developer/make/content/barcode/function/application/addressbook/index.html
         contact_text = "MECARD:"
-        for name_components_pair in (
-            ("N:%s;", (_escape_mecard_special_chars(self.last_name), _escape_mecard_special_chars(self.first_name))),
-            ("SOUND:%s;", (_escape_mecard_special_chars(self.last_name_reading), _escape_mecard_special_chars(self.first_name_reading))),
+        for template, name_components in (
+            ("N:%s;", (self.last_name, self.first_name)),
+            ("SOUND:%s;", (self.last_name_reading, self.first_name_reading)),
         ):
-            if name_components_pair[1][0] and name_components_pair[1][1]:
-                name = "%s,%s" % name_components_pair[1]
-            else:
-                name = name_components_pair[1][0] or name_components_pair[1][1] or ""
-            if name:
-                contact_text += name_components_pair[0] % name
+            if name := ",".join(filter(None, map(_escape_mecard_special_chars, name_components))):
+                contact_text += template % name
         if self.tel:
             contact_text += "TEL:%s;" % _escape_mecard_special_chars(self.tel)
         if self.tel_av:
@@ -777,7 +767,7 @@ class WifiConfig:
         if self.password:
             wifi_config += "P:%s;" % _escape_mecard_special_chars(self.password)
         if self.hidden:
-            wifi_config += "H:%s;" % str(self.hidden).lower()
+            wifi_config += "H:true;"
         wifi_config += ";"
         return wifi_config
 
@@ -805,17 +795,15 @@ class Coordinates:
     def float_to_str(self, f):
         return f"{f:.8f}".rstrip("0")
 
+    def _coordinates_text(self) -> str:
+        coordinates = [self.latitude, self.longitude] + ([self.altitude] if self.altitude else [])
+        return ",".join(map(self.float_to_str, coordinates))
+
     def make_geolocation_text(self) -> str:
-        geo = f"geo:{self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"
-        if self.altitude:
-            return f"{geo},{self.float_to_str(self.altitude)}"
-        return geo
+        return f"geo:{self._coordinates_text()}"
 
     def make_google_maps_text(self) -> str:
-        geo = f"https://maps.google.com/local?q={self.float_to_str(self.latitude)},{self.float_to_str(self.longitude)}"
-        if self.altitude:
-            return f"{geo},{self.float_to_str(self.altitude)}"
-        return geo
+        return f"https://maps.google.com/local?q={self._coordinates_text()}"
 
 
 def make_tel_text(phone_number: Any) -> str:
