@@ -1,5 +1,10 @@
 # Change Log
 
+## Unreleased
+* Drop support for Django < 5.2: Django 5.2 (LTS) is now the minimum required version.
+* Upgrade dependencies (Pydantic, mypy, django-stubs, Sphinx, MyST-Parser, Gunicorn, etc.).
+* Fix broken cross-document link in the documentation when built with recent versions of Sphinx.
+
 ## 4.2.0 (2025-05-09)
 * Add support for Django 5.2.
 * Add support for Python 3.13.

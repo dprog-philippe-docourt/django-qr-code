@@ -26,7 +26,7 @@ echo "--- CPU: $(nproc --all)"
 echo "--- RAM: $(free -h)"
 
 python_versions=("3.10 3.11 3.12 3.13")
-django_versions=("4.2.21 5.2.1")
+django_versions=("5.2.17")
 
 for python_version in ${python_versions[@]}
 do

@@ -25,7 +25,7 @@ setup(
     description="An application that provides tools for displaying QR codes on your Django site.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["segno>=1.6", "django>=4.2", "pydantic>=2.7"],
+    install_requires=["segno>=1.6", "django>=5.2", "pydantic>=2.7"],
     python_requires=">=3.10",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -34,7 +34,6 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 3 :: Only",
-        "Framework :: Django :: 4.2",
         "Framework :: Django :: 5.2",
         "Natural Language :: English",
     ],

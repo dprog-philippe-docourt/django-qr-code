@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`django-qr-code` is a reusable Django app (package `qr_code`) that renders QR codes in templates, built on the Segno library, with Pydantic for runtime argument validation. It uses no models/database. Supported: Python >= 3.10, Django 4.2 and 5.2. The version lives in `qr_code/__init__.py` (`__version__`) and is read by `setup.py` without importing.
+`django-qr-code` is a reusable Django app (package `qr_code`) that renders QR codes in templates, built on the Segno library, with Pydantic for runtime argument validation. It uses no models/database. Supported: Python >= 3.10, Django >= 5.2 (LTS). The version lives in `qr_code/__init__.py` (`__version__`) and is read by `setup.py` without importing.
 
 The repo root is also a runnable Django project used for tests and the demo: `demo_site/` (settings, URLs) + `qr_code_demo/` (demo app and template). `manage.py` uses `demo_site.settings`.
 
@@ -23,7 +23,7 @@ mypy qr_code                                   # type checking (run in CI)
 python manage.py runserver                     # demo at http://127.0.0.1:8000/qr-code-demo/
 ```
 
-- `scripts/run-tests.sh` (what CI runs) uses Docker Compose to run the suite (`python -Wd manage.py test`) plus `mypy qr_code` across the Python 3.10–3.13 × Django 4.2/5.2 matrix; logs go to `tests_result/`.
+- `scripts/run-tests.sh` (what CI runs) uses Docker Compose to run the suite (`python -Wd manage.py test`) plus `mypy qr_code` across the Python 3.10–3.13 × Django 5.2 matrix; logs go to `tests_result/`.
 - `scripts/run-demo-app.sh` serves the demo via Docker/gunicorn on port 8910.
 - `scripts/generate-pypi-release.sh` builds and uploads to PyPI — do not run without being asked.
 - Docs: Sphinx in `docs/` (`cd docs && make html`); `docs/conf.py` calls `django.setup()` with demo settings and symlinks root `README.md` / `CHANGELOG.md` into `docs/pages/`.

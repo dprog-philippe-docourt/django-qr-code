@@ -156,7 +156,7 @@ def get_or_make_cached_embedded_qr_code(
         use_data_uri_for_svg: bool = False,
         alt_text: None | str = None,
         class_names: None | str = None,
-        cache_timeout: None | int | object = DEFAULT_TIMEOUT):
+        cache_timeout: None | float = DEFAULT_TIMEOUT):
     """
     Same as `make_embedded_qr_code` but caches the result the first time is it called for a given set of args and returned the cached result. It raises an exception when the `QR_CODE_CACHE_ALIAS` setting is not set.
 
@@ -221,6 +221,6 @@ def _options_from_args(args: Mapping) -> QRCodeOptions:
             raise TypeError("The options argument must be of type QRCodeOptions.")
     else:
         # Convert the string "None" into None
-        kw = {k: v if v != "None" else None for k, v in args.items()}
+        kw: dict[str, Any] = {k: v if v != "None" else None for k, v in args.items()}
         options = QRCodeOptions(**kw)
     return options
