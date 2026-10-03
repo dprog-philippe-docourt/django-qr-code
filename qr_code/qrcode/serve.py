@@ -1,4 +1,5 @@
 import base64
+import functools
 import urllib.parse
 from collections.abc import Mapping
 from datetime import datetime
@@ -59,19 +60,24 @@ def get_url_protection_options() -> dict:
     return options
 
 
-def _make_random_token() -> str:
+@functools.cache
+def _get_random_token() -> str:
+    """
+    Return the random part of the URL protection token.
+
+    It is generated once per process, on first use rather than at import time, so that importing this module does not
+    require the settings (e.g., SECRET_KEY) to be available. Keeping it stable produces identical URLs for identical
+    QR codes, which is required for the server-side cache and the ETag-based HTTP caching to be effective.
+    """
     url_protection_options = get_url_protection_options()
     return get_random_string(url_protection_options[constants.TOKEN_LENGTH])
-
-
-_RANDOM_TOKEN = _make_random_token()
 
 
 def get_qr_url_protection_signed_token(qr_code_options: QRCodeOptions):
     """Generate a signed token to handle view protection."""
     url_protection_options = get_url_protection_options()
     signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-    token = signer.sign(get_qr_url_protection_token(qr_code_options, _RANDOM_TOKEN))
+    token = signer.sign(get_qr_url_protection_token(qr_code_options, _get_random_token()))
     return token
 
 
