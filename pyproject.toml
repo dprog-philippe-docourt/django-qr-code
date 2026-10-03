@@ -30,6 +30,7 @@ classifiers = [
     "Framework :: Django :: 6.0",
     "Framework :: Django :: 6.1",
     "Natural Language :: English",
+    "Typing :: Typed",
 ]
 
 [project.urls]
