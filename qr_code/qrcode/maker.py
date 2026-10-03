@@ -55,14 +55,14 @@ def _serialize_qr(qr: segno.QRCode, qr_code_options: QRCodeOptions, data: Any) -
 
     The Swiss cross is drawn on the QR code if `data` is the data of a Swiss QR code.
     """
+    is_swiss_qr_code = _is_swiss_qr_code_data(data)
+    if is_swiss_qr_code and qr_code_options.image_format == "png":
+        return _make_swiss_qr_code_png(qr, qr_code_options)
     out = io.BytesIO()
     qr.save(out, **qr_code_options.kw_save())
     image = out.getvalue()
-    if _is_swiss_qr_code_data(data):
-        if qr_code_options.image_format == "png":
-            image = _add_swiss_cross_to_png(image, qr, qr_code_options)
-        else:
-            image = _add_swiss_cross_to_svg(image.decode("utf-8"), qr, qr_code_options).encode("utf-8")
+    if is_swiss_qr_code:
+        image = _add_swiss_cross_to_svg(image.decode("utf-8"), qr, qr_code_options).encode("utf-8")
     return image
 
 
@@ -114,14 +114,21 @@ def _swiss_cross_shapes(origin: float, symbol_size: float, whole_pixels: bool) -
     return shapes
 
 
-def _add_swiss_cross_to_png(png: bytes, qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
+def _make_swiss_qr_code_png(qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
+    """Serializes the Swiss QR code `qr` into a PNG image with the Swiss cross in the middle."""
     # Imported here so that only the processes drawing a Swiss cross on a PNG pay for the import of Pillow.
     from PIL import Image, ImageDraw
 
-    image: Image.Image = Image.open(io.BytesIO(png))
-    if image.mode not in ("1", "L"):
-        # For instance, a palette image with custom colors may not contain black and white.
-        image = image.convert("RGBA")
+    # Segno does not compress the PNG, which Pillow compresses once the Swiss cross is drawn on it.
+    png = io.BytesIO()
+    qr.save(png, **qr_code_options.kw_save(), compresslevel=0)
+    png.seek(0)
+    image: Image.Image = Image.open(png)
+    if "transparency" in image.info:
+        # The Swiss cross must be opaque, even if the transparent color is white or black.
+        image = image.convert("LA" if image.mode in ("1", "L") else "RGBA")
+    # Otherwise, the mode of the image is kept: if a palette image with custom colors does not contain black and white, they are
+    # added to its palette when drawing.
     modules = qr.symbol_size(scale=1, border=0)[0]
     module_size = image.width / (modules + 2 * qr_code_options.border)
     draw = ImageDraw.Draw(image)

@@ -208,29 +208,37 @@ class TestSwissCross(SimpleTestCase):
 
     data = _make_bill(debtor=DEBTOR).make_qr_code_data()
 
-    def _check_png_cross(self, png: bytes, border: int):
-        image = Image.open(io.BytesIO(png)).convert("RGB")
+    def _check_png_cross(self, png: bytes, qr_code_options: QRCodeOptions):
+        image = Image.open(io.BytesIO(png)).convert("RGBA")
         center = image.width // 2
         # The size of the Swiss cross is 7/46 of the symbol size, without the quiet zone (the border).
         modules = make_qr(self.data, QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS)).symbol_size(scale=1, border=0)[0]
-        cross_size = image.width * modules / (modules + 2 * border) * 7 / 46
-        white, black = (255, 255, 255), (0, 0, 0)
-        # Center of the white cross, black square around the cross, white border of the black square.
+        cross_size = image.width * modules / (modules + 2 * qr_code_options.border) * 7 / 46
+        white, black = (255, 255, 255, 255), (0, 0, 0, 255)
+        # Center of the white cross, black square around the cross, white border of the black square: all opaque.
         for offset, color in [(0, white), (0.3 * cross_size, black), (0.47 * cross_size, white)]:
             with self.subTest(offset=offset):
                 self.assertEqual(image.getpixel((round(center + offset), round(center + offset))), color)
+        # The rest of the QR code is unchanged, e.g., the quiet zone remains transparent.
+        image_without_cross = Image.open(io.BytesIO(_png_without_cross(self.data, qr_code_options))).convert("RGBA")
+        self.assertEqual(image.getpixel((0, 0)), image_without_cross.getpixel((0, 0)))
 
     def test_png(self):
-        for options in [dict(size=10), dict(size=10, border=6, dark_color="darkblue", light_color=None)]:
+        for options in [
+            dict(size=10),
+            dict(size=10, light_color=None),
+            dict(size=10, dark_color="darkblue", data_light_color="yellow"),
+            dict(size=10, border=6, dark_color="darkblue", light_color=None),
+        ]:
             with self.subTest(options=options):
                 qr_code_options = QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS, image_format="png", **options)
-                self._check_png_cross(make_qr_code_image(self.data, qr_code_options), qr_code_options.border)
+                self._check_png_cross(make_qr_code_image(self.data, qr_code_options), qr_code_options)
                 # The data may also be passed as bytes, with any line separator.
                 crlf_data = self.data.replace("\n", "\r\n").encode("utf-8")
-                self._check_png_cross(make_qr_code_image(crlf_data, qr_code_options, force_text=False), qr_code_options.border)
+                self._check_png_cross(make_qr_code_image(crlf_data, qr_code_options, force_text=False), qr_code_options)
                 html = make_embedded_qr_code(self.data, qr_code_options)
                 png = base64.b64decode(html.split("base64,")[1].split('"')[0])
-                self._check_png_cross(png, qr_code_options.border)
+                self._check_png_cross(png, qr_code_options)
 
     def test_svg(self):
         cross_path = '<path fill="#000" d="M'
