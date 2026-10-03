@@ -30,6 +30,7 @@ classifiers = [
     "Framework :: Django :: 6.0",
     "Framework :: Django :: 6.1",
     "Natural Language :: English",
+    "Typing :: Typed",
 ]
 
 [project.urls]
@@ -44,3 +45,25 @@ version = { attr = "qr_code.__version__" }
 [tool.setuptools.packages.find]
 include = ["qr_code", "qr_code.*"]
 exclude = ["qr_code.tests*"]
+
+[tool.mypy]
+files = ["qr_code"]
+# Check against the oldest supported Python version.
+python_version = "3.10"
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# The tests are mostly untyped, and some of them call the API with invalid arguments on purpose.
+module = "qr_code.tests.*"
+check_untyped_defs = false
+
+[tool.coverage.run]
+source = ["qr_code"]
+omit = ["qr_code/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

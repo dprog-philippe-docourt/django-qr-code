@@ -160,7 +160,7 @@ class QRCodeOptions:
             if not 1 <= version <= 40:
                 version = None
         elif isinstance(version, str) and version.lower() in ("m1", "m2", "m3", "m4"):
-            version = version.lower()  # type: ignore
+            version = version.lower()
             # Set / change the micro setting otherwise Segno complains about
             # conflicting parameters
             micro = True
@@ -246,7 +246,7 @@ class QRCodeOptions:
             if actual_size < 1:
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, (float, Decimal)):
-            actual_size = size  # type: ignore
+            actual_size = size
             if actual_size < Decimal("0.01"):
                 actual_size = SIZE_DICT[DEFAULT_MODULE_SIZE]
         elif isinstance(size, str):
