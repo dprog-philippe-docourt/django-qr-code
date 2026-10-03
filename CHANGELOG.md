@@ -1,6 +1,6 @@
 # Change Log
 
-## 5.0.0 (unreleased)
+## 5.0.0 (2026-10-03)
 
 ### Breaking changes
 * Pillow is a new required dependency, used to draw the Swiss cross on Swiss QR codes in PNG format.
