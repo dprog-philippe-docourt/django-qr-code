@@ -1,4 +1,5 @@
 """Tags for Django template system that help generating QR codes."""
+from collections.abc import Callable
 from typing import Optional, Any
 
 from django import template
@@ -21,6 +22,31 @@ from qr_code.qrcode.utils import (
 
 register = template.Library()
 
+# QR code options required by the EPC QR code specification.
+_EPC_QR_CODE_ARGS = dict(error_correction="M", boost_error=False, micro=False, encoding="utf-8")
+
+
+def _make_qr_code_or_url(
+    data: Any,
+    embedded: bool,
+    qr_code_args: dict,
+    force_text: bool = True,
+    use_data_uri_for_svg: bool = False,
+    alt_text: None | str = None,
+    class_names: None | str = None,
+) -> str:
+    """Returns the markup of the embedded QR code, or the URL serving its image if `embedded` is False."""
+    if embedded:
+        return make_qr_code_with_args(
+            data,
+            qr_code_args=qr_code_args,
+            force_text=force_text,
+            use_data_uri_for_svg=use_data_uri_for_svg,
+            alt_text=alt_text,
+            class_names=class_names,
+        )
+    return make_qr_code_url_with_args(data, qr_code_args=qr_code_args, force_text=force_text)
+
 
 def _make_app_qr_code_from_obj_or_kwargs(
     obj_or_kwargs,
@@ -41,61 +67,52 @@ def _make_app_qr_code_from_obj_or_kwargs(
     final_args = {**qr_code_args}
     if extra_qr_code_args:
         final_args.update(extra_qr_code_args)
-    if embedded:
-        return make_qr_code_with_args(
-            obj.make_qr_code_data(),
-            qr_code_args=final_args,
-            force_text=force_text,
-            use_data_uri_for_svg=use_data_uri_for_svg,
-            alt_text=alt_text,
-            class_names=class_names,
-        )
-    else:
-        return make_qr_code_url_with_args(obj.make_qr_code_data(), qr_code_args=final_args, force_text=force_text)
+    return _make_qr_code_or_url(
+        obj.make_qr_code_data(),
+        embedded,
+        qr_code_args=final_args,
+        force_text=force_text,
+        use_data_uri_for_svg=use_data_uri_for_svg,
+        alt_text=alt_text,
+        class_names=class_names,
+    )
 
 
-def _make_google_maps_qr_code(
-    embedded: bool, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
+def _make_coordinates_qr_code(
+    embedded: bool,
+    coordinate_names: tuple[str, ...],
+    make_text: Callable[[Coordinates], str],
+    use_data_uri_for_svg: bool = False,
+    alt_text: None | str = None,
+    class_names: None | str = None,
+    **kwargs,
 ) -> str:
+    """Accepts a *'coordinates'* keyword argument, or one keyword argument for each of the `coordinate_names`."""
     if "coordinates" in kwargs:
         coordinates = kwargs.pop("coordinates")
     else:
-        coordinates = Coordinates(kwargs.pop("latitude"), kwargs.pop("longitude"))
-    if embedded:
-        return make_qr_code_with_args(
-            coordinates.make_google_maps_text(),
-            qr_code_args=kwargs,
-            use_data_uri_for_svg=use_data_uri_for_svg,
-            alt_text=alt_text,
-            class_names=class_names,
-        )
-    else:
-        return make_qr_code_url_with_args(
-            coordinates.make_google_maps_text(),
-            qr_code_args=kwargs,
-        )
+        coordinates = Coordinates(*(kwargs.pop(name) for name in coordinate_names))
+    return _make_qr_code_or_url(
+        make_text(coordinates),
+        embedded,
+        qr_code_args=kwargs,
+        use_data_uri_for_svg=use_data_uri_for_svg,
+        alt_text=alt_text,
+        class_names=class_names,
+    )
 
 
-def _make_geolocation_qr_code(
-    embedded: bool, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
-) -> str:
-    if "coordinates" in kwargs:
-        coordinates = kwargs.pop("coordinates")
-    else:
-        coordinates = Coordinates(kwargs.pop("latitude"), kwargs.pop("longitude"), kwargs.pop("altitude"))
-    if embedded:
-        return make_qr_code_with_args(
-            coordinates.make_geolocation_text(),
-            qr_code_args=kwargs,
-            use_data_uri_for_svg=use_data_uri_for_svg,
-            alt_text=alt_text,
-            class_names=class_names,
-        )
-    else:
-        return make_qr_code_url_with_args(
-            coordinates.make_geolocation_text(),
-            qr_code_args=kwargs,
-        )
+def _make_geolocation_qr_code(embedded: bool, **kwargs) -> str:
+    return _make_coordinates_qr_code(embedded, ("latitude", "longitude", "altitude"), Coordinates.make_geolocation_text, **kwargs)
+
+
+def _make_google_maps_qr_code(embedded: bool, **kwargs) -> str:
+    return _make_coordinates_qr_code(embedded, ("latitude", "longitude"), Coordinates.make_google_maps_text, **kwargs)
+
+
+def _make_email(email: str | Email) -> Email:
+    # Handle simple case where e-mail is simple the electronic address.
+    return Email(to=email) if isinstance(email, str) else email
 
 
 @register.simple_tag()
@@ -125,11 +142,8 @@ def qr_from_data(
 def qr_for_email(
     email: str | Email, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs
 ) -> str:
-    if isinstance(email, str):
-        # Handle simple case where e-mail is simple the electronic address.
-        email = Email(to=email)
     return _make_app_qr_code_from_obj_or_kwargs(
-        email,
+        _make_email(email),
         Email,
         embedded=True,
         qr_code_args=kwargs,
@@ -261,12 +275,6 @@ def qr_for_wifi(
 
 @register.simple_tag()
 def qr_for_epc(epc_data, use_data_uri_for_svg: bool = False, alt_text: None | str = None, class_names: None | str = None, **kwargs) -> str:
-    extra = dict(
-        error_correction="M",
-        boost_error=False,
-        micro=False,
-        encoding="utf-8",
-    )
     return _make_app_qr_code_from_obj_or_kwargs(
         epc_data,
         EpcData,
@@ -275,7 +283,7 @@ def qr_for_epc(epc_data, use_data_uri_for_svg: bool = False, alt_text: None | st
         use_data_uri_for_svg=use_data_uri_for_svg,
         alt_text=alt_text,
         class_names=class_names,
-        extra_qr_code_args=extra,
+        extra_qr_code_args=_EPC_QR_CODE_ARGS,
         force_text=False,
     )
 
@@ -317,11 +325,8 @@ def qr_url_from_data(
 def qr_url_for_email(
     email: str | Email, **kwargs
 ) -> str:
-    if isinstance(email, str):
-        # Handle simple case where e-mail is simple the electronic address.
-        email = Email(to=email)
     return _make_app_qr_code_from_obj_or_kwargs(
-        email,
+        _make_email(email),
         Email,
         embedded=False,
         qr_code_args=kwargs,
@@ -432,18 +437,12 @@ def qr_url_for_wifi(
 def qr_url_for_epc(
     epc_data, **kwargs
 ) -> str:
-    extra = dict(
-        error_correction="M",
-        boost_error=False,
-        micro=False,
-        encoding="utf-8",
-    )
     return _make_app_qr_code_from_obj_or_kwargs(
         epc_data,
         EpcData,
         embedded=False,
         qr_code_args=kwargs,
-        extra_qr_code_args=extra,
+        extra_qr_code_args=_EPC_QR_CODE_ARGS,
         force_text=False,
     )
 

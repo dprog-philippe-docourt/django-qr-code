@@ -2,11 +2,15 @@ import subprocess
 import sys
 import textwrap
 
+from decimal import Decimal
+
+from django.template import Context, Template
 from django.test import SimpleTestCase
 
 from qr_code.qrcode.maker import make_embedded_qr_code, make_qr_code_image
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions, VCard
+from qr_code.templatetags.qr_code import qr_url_from_text
 
 
 class TestIssues(SimpleTestCase):
@@ -67,3 +71,32 @@ class TestIssues(SimpleTestCase):
                 data = "été".encode("utf-8" if encoding == "UTF-8" else "latin-1")
                 options = QRCodeOptions(image_format="png", encoding=encoding)
                 self.assertIn('alt="été"', make_embedded_qr_code(data, options, force_text=False))
+
+    def test_decimal_size_given_as_string(self):
+        self.assertEqual(QRCodeOptions(size="2.5")._size_as_number(), Decimal("2.5"))
+        self.assertEqual(
+            Template('{% load qr_code %}{% qr_from_text "Decimal size" size="2.5" %}').render(Context()),
+            make_embedded_qr_code("Decimal size", QRCodeOptions(size=Decimal("2.5"))),
+        )
+        # Invalid sizes fall back to the default size.
+        for size in ("0.001", "-2.5", "NaN", "Infinity", "2.5.1"):
+            with self.subTest(size=size):
+                self.assertEqual(QRCodeOptions(size=size)._size_as_number(), 18)
+
+    def test_boolean_arguments_of_url_tags(self):
+        for value in ("False", "false", "0", "no", "off", False, 0):
+            with self.subTest(value=value):
+                url = qr_url_from_text("Boolean arguments", cache_enabled=value, url_signature_enabled=value)
+                self.assertIn("cache_enabled=0", url)
+                self.assertNotIn("token=", url)
+        for value in ("True", "true", "1", "yes", "on", True, 1, None, "None"):
+            with self.subTest(value=value):
+                url = qr_url_from_text("Boolean arguments", cache_enabled=value, url_signature_enabled=value)
+                self.assertIn("cache_enabled=1", url)
+                self.assertIn("token=", url)
+        self.assertNotIn(
+            "token=", Template('{% load qr_code %}{% qr_url_from_text "Boolean arguments" url_signature_enabled="false" %}').render(Context())
+        )
+        # An unrecognized value is an error rather than being silently considered true.
+        with self.assertRaises(ValueError):
+            qr_url_from_text("Boolean arguments", cache_enabled="maybe")

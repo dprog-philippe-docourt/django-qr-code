@@ -106,6 +106,8 @@ The `QR_CODE_CACHE_ALIAS = 'qr-code'` tells the *qr_code* app to use that cache 
 
 If you want to activate the cache for QR codes, but skip the caching for some specific codes, you can use the keyword argument `cache_enabled=False` when using `qr_url_from_text`.
 
+The boolean arguments `cache_enabled` and `url_signature_enabled` accept a boolean value, or a string such as `"True"` / `"False"`, `"1"` / `"0"`, `"yes"` / `"no"` or `"on"` / `"off"` (case-insensitive). Any other value raises an error.
+
 Here is a "hello world" QR code in version 20 with an error correction level Q (25% of redundant data) that uses a URL to serve the image in SVG format, and disable caching for served image:
 
 ```htmldjango

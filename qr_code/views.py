@@ -1,42 +1,24 @@
 import base64
 import binascii
 import functools
-import inspect
 
 from django.conf import settings
 from django.core.cache import caches
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
-from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import condition
 
-from qr_code.qrcode import constants
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
 from qr_code.qrcode.serve import (
-    get_url_protection_options,
-    get_qr_url_protection_token,
+    get_boolean_url_param,
+    qr_code_options_from_url_params,
+    verify_qr_url_protection_signed_token,
     qr_code_etag,
     qr_code_last_modified,
     allows_external_request_from_user,
 )
-
-# Names of the query arguments passed to QRCodeOptions. The other query arguments are either handled separately (data,
-# token, cache) or unknown (e.g., tracking parameters added to the URL by a third party) and ignored.
-_QR_CODE_OPTION_NAMES = frozenset(inspect.signature(QRCodeOptions.__init__).parameters) - {"self"}
-
-
-def _get_boolean_query_argument(request, name: str, default: bool) -> bool:
-    """Returns the value of a boolean query argument, which must be passed as `1` (True) or `0` (False)."""
-    value = request.GET.get(name)
-    if value is None:
-        return default
-    try:
-        return int(value) == 1
-    except ValueError as e:
-        raise SuspiciousOperation(f"Invalid value for boolean query argument '{name}'.") from e
-
 
 def cache_qr_code():
     """
@@ -46,7 +28,10 @@ def cache_qr_code():
     def decorator(view_func):
         @functools.wraps(view_func)
         def _wrapped_view(request, *view_args, **view_kwargs):
-            cache_enabled = _get_boolean_query_argument(request, "cache_enabled", default=True)
+            try:
+                cache_enabled = get_boolean_url_param(request.GET, "cache_enabled", default=True)
+            except ValueError as e:
+                raise SuspiciousOperation(str(e)) from e
             cache_alias = getattr(settings, "QR_CODE_CACHE_ALIAS", None)
             if cache_enabled and cache_alias:
                 # We found a cache alias for storing the generate qr code, and cache is enabled, use it to cache the
@@ -116,14 +101,11 @@ def serve_qr_code_image(request) -> HttpResponse:
 
 
 def get_qr_code_option_from_request(request) -> QRCodeOptions:
-    request_query = {key: value for key, value in request.GET.dict().items() if key in _QR_CODE_OPTION_NAMES}
-    # Force typing for booleans.
-    for name in ("micro", "eci", "boost_error"):
-        request_query[name] = _get_boolean_query_argument(request, name, default=False)
+    # Unknown query arguments (e.g., tracking parameters added to the URL by a third party) are ignored.
     try:
-        return QRCodeOptions(**request_query)
+        return qr_code_options_from_url_params(request.GET)
     except ValueError as e:
-        raise SuspiciousOperation("Invalid QR code options.") from e
+        raise SuspiciousOperation(f"Invalid QR code options: {e}") from e
 
 
 def check_image_access_permission(request, qr_code_options) -> None:
@@ -137,14 +119,5 @@ def check_image_access_permission(request, qr_code_options) -> None:
 
 
 def check_url_signature_token(qr_code_options, token) -> None:
-    url_protection_options = get_url_protection_options()
-    signer = Signer(key=url_protection_options[constants.SIGNING_KEY], salt=url_protection_options[constants.SIGNING_SALT])
-    try:
-        # Check signature.
-        url_protection_string = signer.unsign(token)
-        # Check that the given token matches the request parameters.
-        random_token = url_protection_string.split(".")[-1]
-        if get_qr_url_protection_token(qr_code_options, random_token) != url_protection_string:
-            raise PermissionDenied("Request query does not match protection token.")
-    except BadSignature:
-        raise PermissionDenied("Wrong token signature.")
+    if not verify_qr_url_protection_signed_token(qr_code_options, token):
+        raise PermissionDenied("Wrong token signature or token not matching the request query.")
