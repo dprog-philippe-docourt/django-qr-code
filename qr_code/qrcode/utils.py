@@ -654,10 +654,11 @@ class SwissQrBill:
     is also compliant with version 2.3).
 
     The fields are validated according to the specification, and a ``ValueError`` is raised when they are not valid (e.g., invalid IBAN,
-    wrong reference check digits, text too long, etc.). The allowed character set is not checked. The QR code must be generated with the
-    error correction level "M" and without ECI header (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what the ``qr_for_swiss_qr_bill``
-    and ``qr_url_for_swiss_qr_bill`` template tags do. The Swiss cross required by the specification is drawn in the middle of any QR code
-    whose data is the data of a Swiss QR code.
+    wrong reference check digits, text too long, etc.). They are validated when the object is created, and again when its data is created
+    (see :py:meth:`make_qr_code_data`), since they may have been changed in the meantime. The allowed character set is not checked. The QR
+    code must be generated with the error correction level "M" and without ECI header (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what
+    the ``qr_for_swiss_qr_bill`` and ``qr_url_for_swiss_qr_bill`` template tags do. The Swiss cross required by the specification is drawn
+    in the middle of any QR code whose data is the data of a Swiss QR code.
 
     The type of reference is inferred from the reference and the IBAN:
 
@@ -758,8 +759,16 @@ class SwissQrBill:
         """
         Creates the data of the Swiss QR code of a Swiss QR-bill.
 
+        The fields are validated again, since they may have been changed since the creation of the object (a ``ValueError`` is raised when
+        they are not valid). The object itself is not changed.
+
         :rtype: str
         """
+        # A copy is created from the fields, which validates and normalizes them like when the object was created.
+        return SwissQrBill(**asdict(self))._make_qr_code_data()
+
+    def _make_qr_code_data(self) -> str:
+        """Creates the data of the Swiss QR code from fields that are already validated."""
         fields = [
             "SPC",  # QR type: Swiss Payments Code.
             "0200",  # Version 2.

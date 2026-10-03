@@ -189,6 +189,23 @@ class TestSwissQrBill(SimpleTestCase):
         bill = _make_bill(creditor=address, debtor=address, unstructured_message="é" * 140)
         self.assertRaises(ValueError, bill.make_qr_code_data)
 
+    def test_fields_changed_after_creation(self):
+        # The fields are validated again when creating the data.
+        for name, value in [("amount", Decimal("1.005")), ("amount", 1.005), ("account", IBAN), ("unstructured_message", "a\nb")]:
+            with self.subTest(name=name, value=value):
+                bill = _make_bill(amount=Decimal("1.00"))
+                setattr(bill, name, value)
+                self.assertRaises(ValueError, bill.make_qr_code_data)
+        bill = _make_bill(debtor=DEBTOR)
+        bill.debtor.name = "a" * 71
+        self.assertRaises(ValueError, bill.make_qr_code_data)
+        # They are normalized in the data, without changing the object.
+        bill = _make_bill()
+        bill.account = "ch44 3199 9123 0008 8901 2"
+        bill.amount = "12.5"
+        self.assertEqual(bill.make_qr_code_data(), _make_bill(amount=Decimal("12.50")).make_qr_code_data())
+        self.assertEqual((bill.account, bill.amount), ("ch44 3199 9123 0008 8901 2", "12.5"))
+
 
 class TestSwissQrBillTemplateTags(SimpleTestCase):
     def test_qr_code_options(self):
