@@ -102,7 +102,7 @@ CACHES = {
 QR_CODE_CACHE_ALIAS = 'qr-code'
 ```
 
-The `QR_CODE_CACHE_ALIAS = 'qr-code'` tells the *qr_code* app to use that cache for storing the generated QR codes. All QR codes will be cached with the specified *TIMEOUT* when a non-empty value is set to `QR_CODE_CACHE_ALIAS`.
+The `QR_CODE_CACHE_ALIAS = 'qr-code'` tells the *qr_code* app to use that cache for storing the generated QR codes. All QR codes will be cached with the specified *TIMEOUT* (or the default timeout of the cache backend if *TIMEOUT* is not set) when a non-empty value is set to `QR_CODE_CACHE_ALIAS`.
 
 If you want to activate the cache for QR codes, but skip the caching for some specific codes, you can use the keyword argument `cache_enabled=False` when using `qr_url_from_text`.
 
