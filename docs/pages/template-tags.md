@@ -420,7 +420,7 @@ from qr_code.qrcode.utils import SwissQrBill, SWISS_QR_BILL_DO_NOT_USE_FOR_PAYME
 notification = SwissQrBill(account=..., creditor=..., amount=0, unstructured_message=SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES['fr'])
 ```
 
-The template tags always generate the QR code with the error correction level "M", as required by the specification, regardless of the given options. When you use the Python API directly, pass the required options yourself:
+The template tags always generate the QR code with the QR code options required by the specification (error correction level "M", UTF-8 encoding without ECI header), regardless of the given options. When you use the Python API directly, pass the required options yourself:
 
 ```python
 from qr_code.qrcode.maker import make_embedded_qr_code

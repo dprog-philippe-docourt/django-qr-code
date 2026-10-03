@@ -504,8 +504,9 @@ class EpcData:
         return helpers._make_epc_qr_data(**asdict(self), encoding=1)  # type: ignore
 
 
-# QR code options required by the Swiss QR-bill specification.
-SWISS_QR_BILL_QR_CODE_ARGS: dict = dict(error_correction="M", boost_error=False, micro=False, encoding="utf-8")
+# QR code options required by the Swiss QR-bill specification: error correction level "M" and byte mode in UTF-8 without ECI header (the
+# coding type of the data gives its encoding), so that the data always fits in a QR code of version 25 (see _SWISS_QR_BILL_MAX_DATA_SIZE).
+SWISS_QR_BILL_QR_CODE_ARGS: dict = dict(error_correction="M", boost_error=False, micro=False, encoding="utf-8", eci=False)
 # Maximum size of the data of a Swiss QR code, which must fit in a QR code of version 25 with error correction level "M".
 _SWISS_QR_BILL_MAX_DATA_SIZE = 997
 # IBAN of Switzerland or Liechtenstein: country code, check digits, institution identification (IID) and account number.
@@ -654,8 +655,8 @@ class SwissQrBill:
 
     The fields are validated according to the specification, and a ``ValueError`` is raised when they are not valid (e.g., invalid IBAN,
     wrong reference check digits, text too long, etc.). The allowed character set is not checked. The QR code must be generated with the
-    error correction level "M" (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what the ``qr_for_swiss_qr_bill`` and
-    ``qr_url_for_swiss_qr_bill`` template tags do. The Swiss cross required by the specification is drawn in the middle of any QR code
+    error correction level "M" and without ECI header (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what the ``qr_for_swiss_qr_bill``
+    and ``qr_url_for_swiss_qr_bill`` template tags do. The Swiss cross required by the specification is drawn in the middle of any QR code
     whose data is the data of a Swiss QR code.
 
     The type of reference is inferred from the reference and the IBAN:
