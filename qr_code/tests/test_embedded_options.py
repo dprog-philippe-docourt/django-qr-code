@@ -1,6 +1,6 @@
 import base64
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from qr_code.qrcode.maker import make_embedded_qr_code, get_or_make_cached_embedded_qr_code
 from qr_code.qrcode.utils import QRCodeOptions
@@ -9,6 +9,7 @@ from qr_code.tests import (
     TEST_TEXT,
     REFRESH_REFERENCE_IMAGES,
     IMAGE_TAG_BASE64_DATA_RE,
+    OVERRIDE_CACHES_SETTING,
     get_base64_png_image_template,
     get_base64_svg_image_template,
 )
@@ -171,3 +172,16 @@ class TestQREmbeddedImageResult(SimpleTestCase):
                 self.assertEqual(qr1, get_base64_svg_image_template() % base64.b64encode(result.encode("utf-8")).decode("utf-8"))
             else:
                 self.assertEqual(qr1, result)
+
+    @override_settings(CACHES=OVERRIDE_CACHES_SETTING)
+    def test_cached_embedded_qr_code_depends_on_alt_text_and_class_names(self):
+        for image_format, use_data_uri_for_svg in [("png", False), ("svg", True)]:
+            options = QRCodeOptions(image_format=image_format)
+            for alt_text, class_names in [(None, None), ("", None), ("Alt 1", None), ("Alt 2", None), ("Alt 1", "cls-1"), ("Alt 1", "cls-2")]:
+                print(f"Testing cached {image_format} with alt text {alt_text!r} and class names {class_names!r}")
+                expected = make_embedded_qr_code(TEST_TEXT, options, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names)
+                for _ in range(2):
+                    qr_cached = get_or_make_cached_embedded_qr_code(
+                        TEST_TEXT, options, use_data_uri_for_svg=use_data_uri_for_svg, alt_text=alt_text, class_names=class_names
+                    )
+                    self.assertEqual(qr_cached, expected)

@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import io
+import json
 from typing import Mapping, Any
 
 from django.conf import settings
@@ -175,9 +176,11 @@ def get_or_make_cached_embedded_qr_code(
 
     url = make_qr_code_url(data=data, qr_code_options=qr_code_options, force_text=force_text, cache_enabled=True, url_signature_enabled=False)
     # To simplify the logic, use the QR URL without a signature as the base for the cache key, and append the
-    # data_uri_for_svg value separately, since it is not encoded in the URL. Ensure that the resulting key remains
-    # reasonably sized and contains only characters compatible with all relevant cache backends by using MD5 hash.
-    key = hashlib.md5(f"qr.{url}&data_uri_for_svg={use_data_uri_for_svg}".encode()).hexdigest()
+    # arguments that affect the generated markup but are not encoded in the URL (data URI for SVG, alt text and CSS
+    # classes). JSON serialization keeps these values unambiguous (e.g., None vs. empty string). Ensure that the resulting
+    # key remains reasonably sized and contains only characters compatible with all relevant cache backends by using MD5 hash.
+    key_source = json.dumps(["qr", url, use_data_uri_for_svg, alt_text, class_names])
+    key = hashlib.md5(key_source.encode()).hexdigest()
     cache = caches[cache_name]
     qr_code = cache.get(key)
     if qr_code is None:
