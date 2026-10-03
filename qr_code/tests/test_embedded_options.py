@@ -173,6 +173,14 @@ class TestQREmbeddedImageResult(SimpleTestCase):
             else:
                 self.assertEqual(qr1, result)
 
+    def test_embedded_class_names_are_escaped(self):
+        class_names = 'cls" onerror="alert(1)'
+        for image_format, use_data_uri_for_svg in [("png", False), ("svg", True)]:
+            print(f"Testing escaped class names for {image_format}")
+            qr = make_embedded_qr_code(TEST_TEXT, QRCodeOptions(image_format=image_format), use_data_uri_for_svg=use_data_uri_for_svg, class_names=class_names)
+            self.assertNotIn(class_names, qr)
+            self.assertTrue(qr.endswith(' class="cls&quot; onerror=&quot;alert(1)">'))
+
     @override_settings(CACHES=OVERRIDE_CACHES_SETTING)
     def test_cached_embedded_qr_code_depends_on_alt_text_and_class_names(self):
         for image_format, use_data_uri_for_svg in [("png", False), ("svg", True)]:

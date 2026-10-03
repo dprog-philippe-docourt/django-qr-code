@@ -9,6 +9,7 @@
 * Migrate packaging from `setup.py` to `pyproject.toml` (PEP 621), with an SPDX license expression (PEP 639).
 * Fix import of the app requiring `SECRET_KEY` to be set (e.g., when running `collectstatic`): the random part of the URL protection token is now generated on first use instead of at import time (#53).
 * Fix `get_or_make_cached_embedded_qr_code` returning stale markup when called with the same data and options but a different `alt_text` or `class_names`: both are now part of the cache key.
+* Fix `class_names` not being HTML-escaped in the `class` attribute of embedded `<img>` QR codes.
 
 ## 4.2.0 (2025-05-09)
 * Add support for Django 5.2.

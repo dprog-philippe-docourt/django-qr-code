@@ -132,7 +132,7 @@ def make_embedded_qr_code(
             alt_text = data
 
     if class_names:
-        class_attr = f' class="{class_names}"'
+        class_attr = f' class="{escape(class_names)}"'
     else:
         class_attr = ""
 
