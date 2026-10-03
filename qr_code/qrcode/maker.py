@@ -15,7 +15,6 @@ import segno
 from pydantic import validate_call
 
 from qr_code.qrcode import PYDANTIC_CONFIG
-from qr_code.qrcode.constants import DEFAULT_CACHE_ENABLED, DEFAULT_URL_SIGNATURE_ENABLED
 from qr_code.qrcode.serve import make_qr_code_url
 from qr_code.qrcode.utils import QRCodeOptions
 
@@ -202,15 +201,16 @@ def make_qr_code_with_args(
 
 
 def make_qr_code_url_with_args(data: Any, qr_code_args: dict, force_text: bool = True) -> str:
-    cache_enabled = _bool_from_tag_arg(qr_code_args.pop("cache_enabled", DEFAULT_CACHE_ENABLED))
-    url_signature_enabled = _bool_from_tag_arg(qr_code_args.pop("url_signature_enabled", DEFAULT_URL_SIGNATURE_ENABLED))
+    # The boolean arguments may be strings (e.g., "False", "false", "0" or "no"), which make_qr_code_url converts.
+    cache_enabled = _from_tag_arg(qr_code_args.pop("cache_enabled", None))
+    url_signature_enabled = _from_tag_arg(qr_code_args.pop("url_signature_enabled", None))
     options = _options_from_args(qr_code_args)
     return make_qr_code_url(data, options, force_text=force_text, cache_enabled=cache_enabled, url_signature_enabled=url_signature_enabled)
 
 
-def _bool_from_tag_arg(value: Any) -> bool:
-    """Converts a template tag argument into a boolean: any value other than the string "False" is considered true."""
-    return value if isinstance(value, bool) else value != "False"
+def _from_tag_arg(value: Any) -> Any:
+    """Converts the string "None", which a template tag argument may be, into None."""
+    return None if value == "None" else value
 
 
 def _options_from_args(args: Mapping) -> QRCodeOptions:
@@ -220,7 +220,6 @@ def _options_from_args(args: Mapping) -> QRCodeOptions:
         if not isinstance(options, QRCodeOptions):
             raise TypeError("The options argument must be of type QRCodeOptions.")
     else:
-        # Convert the string "None" into None
-        kw: dict[str, Any] = {k: v if v != "None" else None for k, v in args.items()}
+        kw: dict[str, Any] = {k: _from_tag_arg(v) for k, v in args.items()}
         options = QRCodeOptions(**kw)
     return options
