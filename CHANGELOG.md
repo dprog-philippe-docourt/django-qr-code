@@ -6,6 +6,7 @@
 * Fix default `DTSTAMP` of `VEvent` being offset by the local time zone when `dtstamp` is not provided (replace deprecated `datetime.utcnow()`).
 * Upgrade dependencies (Pydantic, mypy, django-stubs, Sphinx, MyST-Parser, Gunicorn, etc.).
 * Fix broken cross-document link in the documentation when built with recent versions of Sphinx.
+* Fix import of the app requiring `SECRET_KEY` to be set (e.g., when running `collectstatic`): the random part of the URL protection token is now generated on first use instead of at import time (#53).
 
 ## 4.2.0 (2025-05-09)
 * Add support for Django 5.2.
