@@ -11,7 +11,7 @@ This application depends on the [Segno QR Code generator](https://pypi.org/proje
 
 This app makes no usage of the Django models and therefore do not use any database.
 
-Only Python >= 3.10 is supported.
+Only Python >= 3.10 is supported. The supported Django versions are 5.2 (LTS), 6.0 and 6.1 (Django 6.x requires Python >= 3.12).
 
 ## Features
 
