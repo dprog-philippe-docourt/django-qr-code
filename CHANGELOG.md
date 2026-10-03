@@ -12,6 +12,9 @@
 * Fix `class_names` not being HTML-escaped in the `class` attribute of embedded `<img>` QR codes.
 * Fix crash when rendering a QR code with an unknown size letter (e.g., `size="xyz"`): it now falls back to the default size, as documented.
 * Fix `VCard` without `zipcode` encoding a bogus `ADR:;;;;;None;` address line.
+* Fix serving QR code images when the cache referenced by `QR_CODE_CACHE_ALIAS` does not define `TIMEOUT`: the default timeout of the cache backend is now used instead of failing with an HTTP 500 error.
+* Ignore unknown query arguments when serving QR code images (e.g., tracking parameters such as `utm_source` added to the URL by a third party) instead of failing with an HTTP 500 error. Note that each distinct URL is still cached separately.
+* Respond with HTTP 400 Bad Request instead of HTTP 500 when serving a QR code image for invalid query arguments (e.g., `micro=abc`, `border=abc`, an invalid color or an unknown encoding) or for options that cannot be applied to the data (e.g., data too long for the requested `version`).
 * Fix crash when generating the default alternative text of a PNG or data URI QR code for bytes data whose `encoding` is not one of `utf-8`, `iso-8859-1` or `shift-jis` in lower case (e.g., `UTF-8` or `cp1252`).
 
 ## 4.2.0 (2025-05-09)

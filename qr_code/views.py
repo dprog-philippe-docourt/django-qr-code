@@ -1,8 +1,10 @@
 import base64
 import binascii
 import functools
+import inspect
 
 from django.conf import settings
+from django.core.cache import caches
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.signing import BadSignature, Signer
 from django.http import HttpResponse
@@ -20,6 +22,21 @@ from qr_code.qrcode.serve import (
     allows_external_request_from_user,
 )
 
+# Names of the query arguments passed to QRCodeOptions. The other query arguments are either handled separately (data,
+# token, cache) or unknown (e.g., tracking parameters added to the URL by a third party) and ignored.
+_QR_CODE_OPTION_NAMES = frozenset(inspect.signature(QRCodeOptions.__init__).parameters) - {"self"}
+
+
+def _get_boolean_query_argument(request, name: str, default: bool) -> bool:
+    """Returns the value of a boolean query argument, which must be passed as `1` (True) or `0` (False)."""
+    value = request.GET.get(name)
+    if value is None:
+        return default
+    try:
+        return int(value) == 1
+    except ValueError as e:
+        raise SuspiciousOperation(f"Invalid value for boolean query argument '{name}'.") from e
+
 
 def cache_qr_code():
     """
@@ -29,15 +46,15 @@ def cache_qr_code():
     def decorator(view_func):
         @functools.wraps(view_func)
         def _wrapped_view(request, *view_args, **view_kwargs):
-            cache_enabled = int(request.GET.get("cache_enabled", 1)) == 1
-            if cache_enabled and hasattr(settings, "QR_CODE_CACHE_ALIAS") and settings.QR_CODE_CACHE_ALIAS:
+            cache_enabled = _get_boolean_query_argument(request, "cache_enabled", default=True)
+            cache_alias = getattr(settings, "QR_CODE_CACHE_ALIAS", None)
+            if cache_enabled and cache_alias:
                 # We found a cache alias for storing the generate qr code, and cache is enabled, use it to cache the
                 # page.
-                timeout = settings.CACHES[settings.QR_CODE_CACHE_ALIAS]["TIMEOUT"]
-                key_prefix = f"token={request.GET.get('url_signature_enabled') or constants.DEFAULT_URL_SIGNATURE_ENABLED}.user_pk={request.user.pk}"
-                response = cache_page(timeout, cache=settings.QR_CODE_CACHE_ALIAS, key_prefix=key_prefix)(view_func)(
-                    request, *view_args, **view_kwargs
-                )
+                timeout = caches[cache_alias].default_timeout
+                # A cached response bypasses the access check of the view, so it must not be shared between users.
+                key_prefix = f"user_pk={request.user.pk}"
+                response = cache_page(timeout, cache=cache_alias, key_prefix=key_prefix)(view_func)(request, *view_args, **view_kwargs)
             else:
                 # No cache alias for storing the generated qr code, call the view as is.
                 response = (view_func)(request, *view_args, **view_kwargs)
@@ -64,6 +81,9 @@ def serve_qr_code_image(request) -> HttpResponse:
     from your application and addressed to your application). The authentication uses a HMAC to sign the request query
     arguments. The authentication code is passed as a query argument named `token` which is automatically generated
     by `qr_url_from_text` or `qr_url_from_data`.
+
+    Unknown query arguments are ignored. Invalid query arguments, as well as options that cannot be applied to the
+    data, result in an HTTP 400 Bad Request response.
     """
     qr_code_options = get_qr_code_option_from_request(request)
     # Handle image access protection (we do not allow external requests for anyone).
@@ -87,19 +107,23 @@ def serve_qr_code_image(request) -> HttpResponse:
             raise SuspiciousOperation("Invalid base64 encoded text.")
         except UnicodeDecodeError:
             raise SuspiciousOperation("Invalid UTF-8 encoded text.")
-    img = make_qr_code_image(data, qr_code_options=qr_code_options, force_text=force_text)
+    try:
+        img = make_qr_code_image(data, qr_code_options=qr_code_options, force_text=force_text)
+    except (ValueError, LookupError) as e:
+        # The options cannot be applied (e.g., invalid color, unknown encoding, data too long for the requested version).
+        raise SuspiciousOperation(f"Cannot generate the requested QR code: {e}") from e
     return HttpResponse(content=img, content_type="image/svg+xml" if qr_code_options.image_format == "svg" else "image/png")
 
 
 def get_qr_code_option_from_request(request) -> QRCodeOptions:
-    request_query = request.GET.dict()
-    for key in ("bytes", "text", "int", "token", "cache_enabled"):
-        request_query.pop(key, None)
+    request_query = {key: value for key, value in request.GET.dict().items() if key in _QR_CODE_OPTION_NAMES}
     # Force typing for booleans.
-    request_query["micro"] = int(request_query.get("micro", 0)) == 1
-    request_query["eci"] = int(request_query.get("eci", 0)) == 1
-    request_query["boost_error"] = int(request_query.get("boost_error", 0)) == 1
-    return QRCodeOptions(**request_query)
+    for name in ("micro", "eci", "boost_error"):
+        request_query[name] = _get_boolean_query_argument(request, name, default=False)
+    try:
+        return QRCodeOptions(**request_query)
+    except ValueError as e:
+        raise SuspiciousOperation("Invalid QR code options.") from e
 
 
 def check_image_access_permission(request, qr_code_options) -> None:
