@@ -252,6 +252,14 @@ class TestWifiConfig(SimpleTestCase):
         self.assertEqual(wifi2.make_qr_code_data(), "WIFI:S:my-wifi;T:WPA;P:wifi-password;H:true;;")
 
 
+class TestEpcData(SimpleTestCase):
+    def test_make_qr_code_data(self):
+        self.assertEqual(
+            EpcData(**TEST_EPC_QR_1).make_qr_code_data(),
+            "BCD\n002\n1\nSCT\n\nWikimedia Foerdergesellschaft\nDE33100205000001194700\nEUR20\n\n\nTo Wikipedia, From Gérard Boéchat".encode("utf-8"),
+        )
+
+
 class TestCoordinates(SimpleTestCase):
     def test_coordinates(self):
         c1 = Coordinates(latitude=586000.32, longitude=250954.19)

@@ -488,14 +488,14 @@ class EpcData:
     bic: Optional[str] = None
     purpose: Optional[str] = None
 
-    def make_qr_code_data(self) -> str:
+    def make_qr_code_data(self) -> bytes:
         """
         Validates the input and creates the data for an European Payments Council Quick Response Code
-        (EPC QR Code) version 002.
+        (EPC QR Code) version 002, encoded in UTF-8.
 
         This is a wrapper for :py:func:`segno.helpers._make_epc_qr_data` with no choice for encoding.
 
-        :rtype: str
+        :rtype: bytes
         """
         return helpers._make_epc_qr_data(**asdict(self), encoding=1)  # type: ignore
 

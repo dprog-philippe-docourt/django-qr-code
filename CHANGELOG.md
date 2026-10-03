@@ -20,6 +20,7 @@
 * Fix a decimal size given as a string (e.g., `size="2.5"` in a template tag) being replaced by the default size.
 * Fix crash when rendering a QR code with an unknown size letter (e.g., `size="xyz"`): it now falls back to the default size, as documented.
 * Fix `VCard` without `zipcode` encoding a bogus `ADR:;;;;;None;` address line.
+* Fix the return type annotation of `EpcData.make_qr_code_data`, which returns bytes (encoded in UTF-8), not a string.
 * Fix crash when generating the default alternative text of a PNG or data URI QR code for bytes data whose `encoding` is not one of `utf-8`, `iso-8859-1` or `shift-jis` in lower case (e.g., `UTF-8` or `cp1252`).
 * Fix default `DTSTAMP` of `VEvent` being offset by the local time zone when `dtstamp` is not provided (replace deprecated `datetime.utcnow()`).
 * Fix `get_or_make_cached_embedded_qr_code` returning stale markup when called with the same data and options but a different `alt_text` or `class_names`: both are now part of the cache key.
