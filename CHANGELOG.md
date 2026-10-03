@@ -6,6 +6,7 @@
 * Fix default `DTSTAMP` of `VEvent` being offset by the local time zone when `dtstamp` is not provided (replace deprecated `datetime.utcnow()`).
 * Upgrade dependencies (Pydantic, mypy, django-stubs, Sphinx, MyST-Parser, Gunicorn, etc.).
 * Fix broken cross-document link in the documentation when built with recent versions of Sphinx.
+* Migrate packaging from `setup.py` to `pyproject.toml` (PEP 621), with an SPDX license expression (PEP 639).
 
 ## 4.2.0 (2025-05-09)
 * Add support for Django 5.2.
