@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Philippe Docourt", email = "philippe@docourt.ch" }]
 maintainers = [{ name = "Philippe Docourt" }]
 keywords = ["qr code", "django"]
-dependencies = ["segno>=1.6", "django>=5.2", "pydantic>=2.7"]
+dependencies = ["segno>=1.6", "django>=5.2", "pydantic>=2.7", "pillow>=10.0"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

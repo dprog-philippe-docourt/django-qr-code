@@ -3,6 +3,7 @@ import base64
 import hashlib
 import io
 import json
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -12,6 +13,7 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import segno
+from PIL import Image, ImageDraw
 from pydantic import validate_call
 
 from qr_code.qrcode import PYDANTIC_CONFIG
@@ -45,14 +47,104 @@ def make_qr_code_image(data: Any, qr_code_options: QRCodeOptions, force_text: bo
     :param bool force_text: Tells whether we want to force the `data` to be considered as text string and encoded in byte mode.
     :rtype: bytes
     """
-    return _serialize_qr(make_qr(data, qr_code_options, force_text=force_text), qr_code_options)
+    return _serialize_qr(make_qr(data, qr_code_options, force_text=force_text), qr_code_options, data)
 
 
-def _serialize_qr(qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
-    """Serializes the QR code into an image (bytes), as specified by `qr_code_options`."""
+def _serialize_qr(qr: segno.QRCode, qr_code_options: QRCodeOptions, data: Any) -> bytes:
+    """
+    Serializes the QR code into an image (bytes), as specified by `qr_code_options`.
+
+    The Swiss cross is drawn on the QR code if `data` is the data of a Swiss QR code.
+    """
     out = io.BytesIO()
     qr.save(out, **qr_code_options.kw_save())
+    image = out.getvalue()
+    if _is_swiss_qr_code_data(data):
+        if qr_code_options.image_format == "png":
+            image = _add_swiss_cross_to_png(image, qr, qr_code_options)
+        else:
+            image = _add_swiss_cross_to_svg(image.decode("utf-8"), qr, qr_code_options).encode("utf-8")
+    return image
+
+
+# Header of the data of a Swiss QR code: QR type "SPC", version 2.x and coding type 1, separated by line breaks.
+_SWISS_QR_CODE_HEADER_RE = re.compile(r"SPC\r?\n02[0-9]{2}\r?\n1\r?\n")
+
+
+def _is_swiss_qr_code_data(data: Any) -> bool:
+    """Tells whether the data to encode is the data of a Swiss QR code (see `SwissQrBill`), which requires a Swiss cross."""
+    if isinstance(data, (bytes, bytearray)):
+        header = bytes(data[:16]).decode("latin-1")
+    else:
+        header = str(data)[:16]
+    return _SWISS_QR_CODE_HEADER_RE.match(header) is not None
+
+
+def _swiss_cross_shapes(origin: float, symbol_size: float, whole_pixels: bool) -> list[tuple[float, float, float, float, str]]:
+    """
+    Returns the squares and rectangles of the Swiss cross in the middle of a Swiss QR code, as tuples (x, y, width, height, color).
+
+    The Swiss cross measures 7 x 7 mm on a symbol of 46 x 46 mm (without the quiet zone). It is made of a black square with a white
+    border of 0.5 mm, and of a white cross whose arms are 1/6 of the Swiss cross wide and 5/9 of it long altogether.
+
+    :param origin: The position of the top left corner of the symbol, after the quiet zone.
+    :param symbol_size: The size of the symbol, without the quiet zone.
+    :param whole_pixels: Tells whether the sizes must be rounded so that the shapes are centered on whole pixels.
+    """
+
+    def size(ratio: float, reference: float) -> float:
+        value = reference * ratio
+        if whole_pixels:
+            # Round to a size with the same parity as the reference, so that the shape is centered on whole pixels.
+            value = reference + 2 * round((value - reference) / 2)
+        return value
+
+    cross_size = size(7 / 46, symbol_size)
+    black_square_size = size(6 / 7, cross_size)
+    arm_width = size(1 / 6, cross_size)
+    arm_length = size(5 / 9, cross_size)
+    center = origin + symbol_size / 2
+    shapes = []
+    for width, height, color in [
+        (cross_size, cross_size, "white"),
+        (black_square_size, black_square_size, "black"),
+        (arm_length, arm_width, "white"),
+        (arm_width, arm_length, "white"),
+    ]:
+        shapes.append((center - width / 2, center - height / 2, width, height, color))
+    return shapes
+
+
+def _add_swiss_cross_to_png(png: bytes, qr: segno.QRCode, qr_code_options: QRCodeOptions) -> bytes:
+    image: Image.Image = Image.open(io.BytesIO(png))
+    if image.mode not in ("1", "L"):
+        # For instance, a palette image with custom colors may not contain black and white.
+        image = image.convert("RGBA")
+    modules = qr.symbol_size(scale=1, border=0)[0]
+    module_size = image.width / (modules + 2 * qr_code_options.border)
+    draw = ImageDraw.Draw(image)
+    for x, y, width, height, color in _swiss_cross_shapes(
+        round(qr_code_options.border * module_size), round(modules * module_size), whole_pixels=True
+    ):
+        draw.rectangle((x, y, x + width - 1, y + height - 1), fill=color)
+    out = io.BytesIO()
+    image.save(out, format="PNG", optimize=True)
     return out.getvalue()
+
+
+def _add_swiss_cross_to_svg(svg: str, qr: segno.QRCode, qr_code_options: QRCodeOptions) -> str:
+    def number(value: float) -> str:
+        return f"{value:.3f}".rstrip("0").rstrip(".")
+
+    modules = qr.symbol_size(scale=1, border=0)[0]
+    paths = "".join(
+        f'<path fill="{"#fff" if color == "white" else "#000"}" d="M{number(x)} {number(y)}h{number(width)}v{number(height)}h-{number(width)}z"/>'
+        for x, y, width, height, color in _swiss_cross_shapes(qr_code_options.border, modules, whole_pixels=False)
+    )
+    # The shapes are drawn in modules, like the QR code, and then scaled like the QR code.
+    scale = number(float(qr_code_options.kw_save()["scale"]))
+    end = svg.rindex("</svg>")
+    return f'{svg[:end]}<g transform="scale({scale})">{paths}</g>{svg[end:]}'
 
 
 @validate_call(config=PYDANTIC_CONFIG)
@@ -111,10 +203,6 @@ def make_embedded_qr_code(
 """
 
     qr = make_qr(data, qr_code_options, force_text=force_text)
-    kw = qr_code_options.kw_save()
-    # Pop the image format from the keywords since qr.png_data_uri / qr.svg_inline
-    # set it automatically
-    kw.pop("kind")
     if alt_text is None and (use_data_uri_for_svg or qr_code_options.image_format == "png"):
         if isinstance(data, bytes):
             alt_text = ""
@@ -137,12 +225,19 @@ def make_embedded_qr_code(
         class_attr = ""
 
     if qr_code_options.image_format == "png":
-        return mark_safe(f'<img src="{qr.png_data_uri(**kw)}" alt="{escape(alt_text)}"{class_attr}>')
+        png_b64_data = base64.b64encode(_serialize_qr(qr, qr_code_options, data)).decode("utf-8")
+        return mark_safe(f'<img src="data:image/png;base64,{png_b64_data}" alt="{escape(alt_text)}"{class_attr}>')
 
     if use_data_uri_for_svg:
-        svg_b64_data = base64.b64encode(_serialize_qr(qr, qr_code_options)).decode("utf-8")
+        svg_b64_data = base64.b64encode(_serialize_qr(qr, qr_code_options, data)).decode("utf-8")
         return mark_safe(f'<img src="data:image/svg+xml;base64,{svg_b64_data}" alt="{escape(alt_text)}"{class_attr}>')
-    return mark_safe(qr.svg_inline(**kw))
+    kw = qr_code_options.kw_save()
+    # Pop the image format from the keywords since qr.svg_inline sets it automatically.
+    kw.pop("kind")
+    svg = qr.svg_inline(**kw)
+    if _is_swiss_qr_code_data(data):
+        svg = _add_swiss_cross_to_svg(svg, qr, qr_code_options)
+    return mark_safe(svg)
 
 
 def get_or_make_cached_embedded_qr_code(

@@ -3,13 +3,14 @@
 ## 5.0.0 (unreleased)
 
 ### Breaking changes
+* Pillow is a new required dependency, used to draw the Swiss cross on Swiss QR codes in PNG format.
 * Drop support for Django < 5.2: Django 5.2 (LTS) is now the minimum required version.
 * The `cache_enabled` and `url_signature_enabled` arguments of the `qr_url_*` template tags are now converted like the other boolean options: strings such as `"false"`, `"0"`, `"no"` or `"off"` (case-insensitive) mean False. Previously, only the string `"False"` meant False and any other value (including `0`) meant True; an unrecognized value now raises an error.
 * Generated QR codes change in two cases: a `VCard` without `zipcode` no longer encodes a bogus address line, and a decimal size given as a string (e.g., `size="2.5"`) is no longer replaced by the default size (see the fixes below).
 * The images served by URL and cached with `QR_CODE_CACHE_ALIAS` are generated again once after the upgrade, since their cache key changed.
 
 ### New features
-* Add support for the Swiss QR code of Swiss QR-bills (version 2.3 of the Swiss Implementation Guidelines): `SwissQrBill` and `SwissQrBillAddress` data classes, `qr_for_swiss_qr_bill` and `qr_url_for_swiss_qr_bill` template tags, and `make_qr_reference`, `make_creditor_reference` and `is_qr_iban` helpers. The data is validated according to the specification.
+* Add support for the Swiss QR code of Swiss QR-bills (version 2.4 of the Swiss Implementation Guidelines, also compliant with version 2.3): `SwissQrBill` and `SwissQrBillAddress` data classes, `qr_for_swiss_qr_bill` and `qr_url_for_swiss_qr_bill` template tags, and `make_qr_reference`, `make_creditor_reference` and `is_qr_iban` helpers. The data is validated according to the specification. The Swiss cross is drawn in the middle of any QR code whose data is the data of a Swiss QR code.
 * Add support for Python 3.14.
 * Add support for Django 6.0 and 6.1.
 * Ship a `py.typed` marker (PEP 561), so that type checkers such as mypy use the type annotations of the package.

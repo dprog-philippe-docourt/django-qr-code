@@ -402,15 +402,23 @@ Please check out the [demo application](README.md#demo-application) to see more 
 
 ### Swiss QR-bill
 
-`SwissQrBill` encodes the Swiss QR code of a [Swiss QR-bill](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/qr-bill.html) (version 2.3 of the Swiss Implementation Guidelines), with structured addresses (`SwissQrBillAddress`) for the creditor and the optional debtor. The amount is optional, in which case the debtor enters it.
+`SwissQrBill` encodes the Swiss QR code of a [Swiss QR-bill](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/qr-bill.html) (version 2.4 of the Swiss Implementation Guidelines, which is also compliant with version 2.3), with structured addresses (`SwissQrBillAddress`) for the creditor and the optional debtor. The amount is optional, in which case the debtor enters it.
 
 The data is validated according to the specification, and a `ValueError` is raised when it is not valid (e.g., invalid IBAN, wrong check digits of the reference, text too long). Texts are never truncated: it is up to you to shorten them when needed. The allowed character set is not checked.
 
 The type of reference is inferred from the IBAN and the reference:
-* A QR-IBAN requires a QR reference (QRR) of 27 digits, which you can make from up to 26 digits with `make_qr_reference`.
+* A QR-IBAN requires a QR reference (QRR) of 27 digits, which you can make from up to 26 digits with `make_qr_reference`. They can only be used for a payment in CHF.
 * A regular IBAN accepts an ISO 11649 creditor reference (SCOR, e.g., `RF18539007547034`), which you can make with `make_creditor_reference`, or no reference at all.
 
 `is_qr_iban` tells whether an IBAN is a QR-IBAN.
+
+An amount of 0.00 is only allowed for a notification that must not be paid (e.g., when the invoice is already paid with a credit), whose unstructured message must be "DO NOT USE FOR PAYMENT" in one of the languages of the specification. `SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES` provides these messages by language code (`de`, `fr`, `it`, `en` and `rm`):
+
+```python
+from qr_code.qrcode.utils import SwissQrBill, SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES
+
+notification = SwissQrBill(account=..., creditor=..., amount=0, unstructured_message=SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES['fr'])
+```
 
 The template tags always generate the QR code with the error correction level "M", as required by the specification, regardless of the given options. When you use the Python API directly, pass the required options yourself:
 
@@ -421,7 +429,7 @@ from qr_code.qrcode.utils import QRCodeOptions, SWISS_QR_BILL_QR_CODE_ARGS
 qr_code_html = make_embedded_qr_code(swiss_qr_bill.make_qr_code_data(), QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS, image_format='png'))
 ```
 
-**Note**: The Swiss cross that the specification requires in the middle of the QR code is not drawn.
+The Swiss cross that the specification requires in the middle of the QR code (7 x 7 mm on a QR code of 46 x 46 mm) is drawn automatically on any QR code whose data is the data of a Swiss QR code, whichever template tag or function generates it, in SVG and in PNG.
 
 ## QR code rendering options
 

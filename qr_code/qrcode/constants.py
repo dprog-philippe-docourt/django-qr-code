@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-QR_CODE_GENERATION_VERSION_DATE: datetime = datetime(year=2026, month=10, day=3, hour=19, minute=45)
+QR_CODE_GENERATION_VERSION_DATE: datetime = datetime(year=2026, month=10, day=3, hour=21, minute=30)
 SIZE_DICT: dict = {"t": 6, "s": 12, "m": 18, "l": 30, "h": 48}
 ERROR_CORRECTION_DICT: dict = {"L": "l", "M": "m", "Q": "q", "H": "h"}
 DEFAULT_MODULE_SIZE: str | int = "m"

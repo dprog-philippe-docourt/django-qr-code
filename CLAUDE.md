@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`django-qr-code` is a reusable Django app (package `qr_code`) that renders QR codes in templates, built on the Segno library, with Pydantic for runtime argument validation. It uses no models/database. Supported: Python >= 3.10, Django >= 5.2 (LTS). The version lives in `qr_code/__init__.py` (`__version__`) and is read by setuptools (dynamic `attr` version in `pyproject.toml`) without importing.
+`django-qr-code` is a reusable Django app (package `qr_code`) that renders QR codes in templates, built on the Segno library, with Pydantic for runtime argument validation and Pillow for drawing the Swiss cross on PNG Swiss QR codes. It uses no models/database. Supported: Python >= 3.10, Django >= 5.2 (LTS). The version lives in `qr_code/__init__.py` (`__version__`) and is read by setuptools (dynamic `attr` version in `pyproject.toml`) without importing.
 
 The repo root is also a runnable Django project used for tests and the demo: `demo_site/` (settings, URLs) + `qr_code_demo/` (demo app and template). `manage.py` uses `demo_site.settings`.
 

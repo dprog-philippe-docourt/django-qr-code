@@ -1,14 +1,18 @@
-"""Tests for the Swiss QR-bill data (SwissQrBill) and its template tags."""
+"""Tests for the Swiss QR-bill data (SwissQrBill), its template tags and the Swiss cross."""
+import base64
+import io
 from decimal import Decimal
 from typing import Any
 
 from django.test import SimpleTestCase
+from PIL import Image
 
-from qr_code.qrcode.maker import make_qr
+from qr_code.qrcode.maker import make_embedded_qr_code, make_qr, make_qr_code_image
 from qr_code.qrcode.utils import (
     QRCodeOptions,
     SwissQrBill,
     SwissQrBillAddress,
+    SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES,
     SWISS_QR_BILL_QR_CODE_ARGS,
     is_qr_iban,
     make_creditor_reference,
@@ -35,10 +39,9 @@ class TestSwissQrBillReferences(SimpleTestCase):
     def test_make_qr_reference(self):
         self.assertEqual(make_qr_reference("21 00000 00003 13947 14300 0901"), QR_REFERENCE)
         self.assertEqual(make_qr_reference(1), "000000000000000000000000011")
-        self.assertEqual(make_qr_reference("0"), "000000000000000000000000000")
 
     def test_make_qr_reference_with_invalid_base(self):
-        for base in ["", "12A", "1" * 27, -1]:
+        for base in ["", "0", "000", "12A", "1" * 27, -1]:
             with self.subTest(base=base):
                 self.assertRaises(ValueError, make_qr_reference, base)
 
@@ -125,9 +128,19 @@ class TestSwissQrBill(SimpleTestCase):
         self.assertIn("\n20.50\n", bill.make_qr_code_data())
 
     def test_amount_limits(self):
-        self.assertIn("\n0.00\nCHF\n", _make_bill(amount=0).make_qr_code_data())
-        self.assertIn("\n0.00\nCHF\n", _make_bill(amount="-0").make_qr_code_data())
+        self.assertIn("\n0.01\nCHF\n", _make_bill(amount="0.01").make_qr_code_data())
         self.assertIn("\n999999999.99\nCHF\n", _make_bill(amount="999999999.99").make_qr_code_data())
+
+    def test_notification_with_zero_amount(self):
+        # An amount of 0.00 is only allowed for a notification that must not be paid.
+        for language, message in SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES.items():
+            for amount in [0, "0.00", "-0"]:
+                with self.subTest(language=language, amount=amount):
+                    data = _make_bill(amount=amount, unstructured_message=message).make_qr_code_data()
+                    self.assertTrue(data.endswith(f"\n0.00\nCHF\n\n\n\n\n\n\n\nQRR\n{QR_REFERENCE}\n{message}\nEPD"))
+        for message in [None, "Contribution 2026", "Ne pas utiliser pour le paiement"]:
+            with self.subTest(message=message):
+                self.assertRaises(ValueError, _make_bill, amount=0, unstructured_message=message)
 
     def test_invalid_data(self):
         too_long_address = dict(CREDITOR, name="N" * 71)
@@ -142,9 +155,12 @@ class TestSwissQrBill(SimpleTestCase):
             dict(reference="ABC"),
             dict(account=IBAN, reference="RF19539007547034"),
             dict(amount=-1),
+            dict(amount="-0.01"),
             dict(amount="1000000000"),
             dict(amount="10.005"),
             dict(currency="USD"),
+            dict(currency="EUR"),
+            dict(reference="0" * 27),
             dict(creditor=too_long_address),
             dict(debtor=too_long_address),
             dict(creditor=dict(CREDITOR, name=" ")),
@@ -185,3 +201,57 @@ class TestSwissQrBillTemplateTags(SimpleTestCase):
         kwargs = dict(account=QR_IBAN, creditor=CREDITOR, debtor=DEBTOR, reference=QR_REFERENCE)
         self.assertEqual(qr_for_swiss_qr_bill(kwargs), qr_for_swiss_qr_bill(SwissQrBill(**kwargs)))
         self.assertEqual(qr_url_for_swiss_qr_bill(kwargs), qr_url_for_swiss_qr_bill(SwissQrBill(**kwargs)))
+
+
+class TestSwissCross(SimpleTestCase):
+    """The Swiss cross is drawn in the middle of any QR code that encodes the data of a Swiss QR code."""
+
+    data = _make_bill(debtor=DEBTOR).make_qr_code_data()
+
+    def _check_png_cross(self, png: bytes, border: int):
+        image = Image.open(io.BytesIO(png)).convert("RGB")
+        center = image.width // 2
+        # The size of the Swiss cross is 7/46 of the symbol size, without the quiet zone (the border).
+        modules = make_qr(self.data, QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS)).symbol_size(scale=1, border=0)[0]
+        cross_size = image.width * modules / (modules + 2 * border) * 7 / 46
+        white, black = (255, 255, 255), (0, 0, 0)
+        # Center of the white cross, black square around the cross, white border of the black square.
+        for offset, color in [(0, white), (0.3 * cross_size, black), (0.47 * cross_size, white)]:
+            with self.subTest(offset=offset):
+                self.assertEqual(image.getpixel((round(center + offset), round(center + offset))), color)
+
+    def test_png(self):
+        for options in [dict(size=10), dict(size=10, border=6, dark_color="darkblue", light_color=None)]:
+            with self.subTest(options=options):
+                qr_code_options = QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS, image_format="png", **options)
+                self._check_png_cross(make_qr_code_image(self.data, qr_code_options), qr_code_options.border)
+                # The data may also be passed as bytes, with any line separator.
+                crlf_data = self.data.replace("\n", "\r\n").encode("utf-8")
+                self._check_png_cross(make_qr_code_image(crlf_data, qr_code_options, force_text=False), qr_code_options.border)
+                html = make_embedded_qr_code(self.data, qr_code_options)
+                png = base64.b64decode(html.split("base64,")[1].split('"')[0])
+                self._check_png_cross(png, qr_code_options.border)
+
+    def test_svg(self):
+        cross_path = '<path fill="#000" d="M'
+        options = QRCodeOptions(**SWISS_QR_BILL_QR_CODE_ARGS, image_format="svg")
+        svg = make_qr_code_image(self.data, options).decode("utf-8")
+        self.assertIn(cross_path, svg)
+        self.assertTrue(svg.endswith("</g></svg>\n") or svg.endswith("</g></svg>"))
+        self.assertIn(cross_path, make_embedded_qr_code(self.data, options))
+        html = make_embedded_qr_code(self.data, options, use_data_uri_for_svg=True)
+        self.assertIn(cross_path, base64.b64decode(html.split("base64,")[1].split('"')[0]).decode("utf-8"))
+
+    def test_no_cross_for_other_data(self):
+        for data in ["Hello", "SPC", "SPC\n0100\n1\n", "SPC-like text", 12345]:
+            with self.subTest(data=data):
+                svg_options = QRCodeOptions(image_format="svg")
+                png_options = QRCodeOptions(image_format="png")
+                self.assertNotIn('<path fill="#000" d="M', make_embedded_qr_code(data, svg_options))
+                self.assertEqual(make_qr_code_image(data, png_options), _png_without_cross(data, png_options))
+
+
+def _png_without_cross(data, options: QRCodeOptions) -> bytes:
+    out = io.BytesIO()
+    make_qr(data, options).save(out, **options.kw_save())
+    return out.getvalue()

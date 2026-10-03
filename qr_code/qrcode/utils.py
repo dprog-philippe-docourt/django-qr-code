@@ -511,6 +511,14 @@ _QR_IID_RANGE = range(30000, 32000)
 _QR_REFERENCE_RE = re.compile(r"[0-9]{1,27}")
 _CREDITOR_REFERENCE_RE = re.compile(r"RF[0-9]{2}[0-9A-Z]{1,21}")
 _QR_REFERENCE_CHECK_DIGIT_TABLE = (0, 9, 4, 6, 8, 2, 7, 1, 3, 5)
+# Unstructured message of a notification Swiss QR-bill that must not be paid, by language, the only one allowed to have an amount of 0.00.
+SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES: dict[str, str] = {
+    "de": "NICHT ZUR ZAHLUNG VERWENDEN",
+    "fr": "NE PAS UTILISER POUR LE PAIEMENT",
+    "it": "NON UTILIZZARE PER IL PAGAMENTO",
+    "en": "DO NOT USE FOR PAYMENT",
+    "rm": "BETG DUVRAR PER IL PAJAMENT",
+}
 
 
 def _normalize_identifier(value: Any) -> str:
@@ -560,15 +568,15 @@ def make_qr_reference(base: Union[int, str]) -> str:
     Makes a QR reference (QRR) for a Swiss QR-bill from up to 26 digits, by padding them with leading zeros and appending the check digit
     computed with the recursive modulo 10 algorithm.
 
-    A QR reference can only be used with a QR-IBAN.
+    A QR reference can only be used with a QR-IBAN, for a payment in CHF.
 
-    :param base: The digits of the reference (spaces are ignored).
+    :param base: The digits of the reference (spaces are ignored), which cannot all be zeros.
     :return: The 27 digits of the QR reference.
     :rtype: str
     """
     digits = _normalize_identifier(base)
-    if not re.fullmatch(r"[0-9]{1,26}", digits):
-        raise ValueError(f'The base of a QR reference must be made of 1 to 26 digits, got "{base}".')
+    if not re.fullmatch(r"[0-9]{1,26}", digits) or not digits.strip("0"):
+        raise ValueError(f'The base of a QR reference must be made of 1 to 26 digits, which cannot all be zeros, got "{base}".')
     digits = digits.rjust(26, "0")
     return digits + _qr_reference_check_digit(digits)
 
@@ -636,28 +644,29 @@ class SwissQrBillAddress:
 @pydantic_dataclass
 class SwissQrBill:
     """
-    Data for representing the Swiss QR code of a Swiss QR-bill (version 2.3 of the Swiss Implementation Guidelines for the QR-bill).
+    Data for representing the Swiss QR code of a Swiss QR-bill (version 2.4 of the Swiss Implementation Guidelines for the QR-bill, which
+    is also compliant with version 2.3).
 
     The fields are validated according to the specification, and a ``ValueError`` is raised when they are not valid (e.g., invalid IBAN,
     wrong reference check digits, text too long, etc.). The allowed character set is not checked. The QR code must be generated with the
     error correction level "M" (see ``SWISS_QR_BILL_QR_CODE_ARGS``), which is what the ``qr_for_swiss_qr_bill`` and
-    ``qr_url_for_swiss_qr_bill`` template tags do.
+    ``qr_url_for_swiss_qr_bill`` template tags do. The Swiss cross required by the specification is drawn in the middle of any QR code
+    whose data is the data of a Swiss QR code.
 
     The type of reference is inferred from the reference and the IBAN:
 
-        * QRR: a QR reference (27 digits, see :py:func:`make_qr_reference`), which is required with a QR-IBAN and only allowed with a QR-IBAN.
+        * QRR: a QR reference (27 digits, see :py:func:`make_qr_reference`), which is required with a QR-IBAN and only allowed with a
+          QR-IBAN, for a payment in CHF.
         * SCOR: an ISO 11649 creditor reference starting with "RF" (see :py:func:`make_creditor_reference`).
         * NON: no reference.
-
-    .. note::
-
-        The Swiss cross that must be displayed in the middle of a Swiss QR code is not drawn.
 
     Fields meaning:
         * account: IBAN or QR-IBAN of the creditor, from Switzerland or Liechtenstein. Spaces are ignored.
         * creditor: Address of the creditor.
-        * amount: Amount of the payment, between 0.00 and 999999999.99 with at most two decimal places. Leave it empty to let the
-          debtor enter the amount.
+        * amount: Amount of the payment, between 0.01 and 999999999.99 with at most two decimal places. Leave it empty to let the
+          debtor enter the amount. An amount of 0.00 is only allowed for a notification that must not be paid, whose unstructured
+          message must be "DO NOT USE FOR PAYMENT" in one of the languages of the specification (see
+          ``SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES``).
         * currency: Currency of the payment, either "CHF" (default) or "EUR".
         * debtor: Address of the debtor. Optional.
         * reference: QR reference or creditor reference. Optional, spaces are ignored.
@@ -691,6 +700,11 @@ class SwissQrBill:
                 raise ValueError(f"The amount cannot have more than two decimal places, got {self.amount}.")
             # Turn a negative zero into zero, which would otherwise be written as "-0.00".
             self.amount = abs(self.amount)
+            if self.amount == 0 and self.unstructured_message not in SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES.values():
+                raise ValueError(
+                    'An amount of 0.00 is only allowed for a notification that must not be paid, whose unstructured message must be "DO NOT '
+                    f'USE FOR PAYMENT" in one of the languages of the specification: {", ".join(SWISS_QR_BILL_DO_NOT_USE_FOR_PAYMENT_MESSAGES.values())}.'
+                )
 
         self.currency = self.currency.strip().upper()
         if self.currency not in ("CHF", "EUR"):
@@ -705,12 +719,16 @@ class SwissQrBill:
                 if not _QR_REFERENCE_RE.fullmatch(self.reference):
                     raise ValueError(f'The reference "{self.reference}" is neither a QR reference nor a creditor reference.')
                 self.reference = self.reference.rjust(27, "0")
+                if not self.reference.strip("0"):
+                    raise ValueError("A QR reference cannot be made of zeros only.")
                 if _qr_reference_check_digit(self.reference[:-1]) != self.reference[-1]:
                     raise ValueError(f'The reference "{self.reference}" is not a valid QR reference (wrong check digit).')
         if is_qr_iban(self.account) and self.reference_type != "QRR":
             raise ValueError("A QR-IBAN requires a QR reference.")
         if not is_qr_iban(self.account) and self.reference_type == "QRR":
             raise ValueError("A QR reference requires a QR-IBAN.")
+        if self.reference_type == "QRR" and self.currency != "CHF":
+            raise ValueError("A QR-IBAN and a QR reference can only be used for a payment in CHF.")
 
         _check_text("unstructured message", self.unstructured_message, 140)
         _check_text("billing information", self.billing_information, 140)
