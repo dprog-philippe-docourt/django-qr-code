@@ -32,7 +32,7 @@ django_versions=("5.2.17:3.10" "6.0.8:3.12" "6.1.1:3.12")
 
 for python_version in ${python_versions[@]}
 do
-    DOCKER_COMPOSE_COMMAND="docker compose -f docker-compose.yml"
+    DOCKER_COMPOSE_COMMAND="docker compose -f docker-compose.yml -f docker-compose.tests.yml"
     if [ -n "$GITHUB_ACTION" ]; then
         DOCKER_COMPOSE_EXEC_COMMAND="${DOCKER_COMPOSE_COMMAND} exec -T django-qr-code"
     else

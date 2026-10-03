@@ -3,12 +3,15 @@
 ## 5.0.0 (unreleased)
 
 ### Breaking changes
+* Pillow is a new required dependency, used to draw the Swiss cross on Swiss QR codes in PNG format.
 * Drop support for Django < 5.2: Django 5.2 (LTS) is now the minimum required version.
 * The `cache_enabled` and `url_signature_enabled` arguments of the `qr_url_*` template tags are now converted like the other boolean options: strings such as `"false"`, `"0"`, `"no"` or `"off"` (case-insensitive) mean False. Previously, only the string `"False"` meant False and any other value (including `0`) meant True; an unrecognized value now raises an error.
 * Generated QR codes change in two cases: a `VCard` without `zipcode` no longer encodes a bogus address line, and a decimal size given as a string (e.g., `size="2.5"`) is no longer replaced by the default size (see the fixes below).
 * The images served by URL and cached with `QR_CODE_CACHE_ALIAS` are generated again once after the upgrade, since their cache key changed.
 
 ### New features
+* Add support for the Swiss QR code of Swiss QR-bills (version 2.4 of the Swiss Implementation Guidelines, also compliant with version 2.3): `SwissQrBill` and `SwissQrBillAddress` data classes, `qr_for_swiss_qr_bill` and `qr_url_for_swiss_qr_bill` template tags, and `make_qr_reference`, `make_creditor_reference` and `is_qr_iban` helpers. The data is validated according to the specification. The Swiss cross is drawn in the middle of any QR code whose data is the data of a Swiss QR code.
+* Add `EPC_QR_CODE_ARGS`, the QR code options required by the EPC QR code specification, for generating EPC QR codes with the Python API.
 * Add support for Python 3.14.
 * Add support for Django 6.0 and 6.1.
 * Ship a `py.typed` marker (PEP 561), so that type checkers such as mypy use the type annotations of the package.
@@ -16,8 +19,10 @@
 ### Fixes
 * Fix QR code images served by URL (`qr_url_*` tags, `make_qr_code_url`) for options that did not survive their encoding into the URL: a transparent color (e.g., `light_color=None`) or a color given as an `(R, G, B)` / `(R, G, B, A)` tuple made the request fail, and a decimal size (e.g., `size=2.5`) was replaced by the default size.
 * Fix a decimal size given as a string (e.g., `size="2.5"` in a template tag) being replaced by the default size.
+* Fix the `qr_for_epc` and `qr_url_for_epc` template tags not enforcing the QR code options required by the EPC QR code specification (e.g., the error correction level "M") when the options are given as an `options` object.
 * Fix crash when rendering a QR code with an unknown size letter (e.g., `size="xyz"`): it now falls back to the default size, as documented.
 * Fix `VCard` without `zipcode` encoding a bogus `ADR:;;;;;None;` address line.
+* Fix the return type annotation of `EpcData.make_qr_code_data`, which returns bytes (encoded in UTF-8), not a string.
 * Fix crash when generating the default alternative text of a PNG or data URI QR code for bytes data whose `encoding` is not one of `utf-8`, `iso-8859-1` or `shift-jis` in lower case (e.g., `UTF-8` or `cp1252`).
 * Fix default `DTSTAMP` of `VEvent` being offset by the local time zone when `dtstamp` is not provided (replace deprecated `datetime.utcnow()`).
 * Fix `get_or_make_cached_embedded_qr_code` returning stale markup when called with the same data and options but a different `alt_text` or `class_names`: both are now part of the cache key.

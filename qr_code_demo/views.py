@@ -9,6 +9,8 @@ from qr_code.qrcode.utils import (
     QRCodeOptions,
     Email,
     EpcData,
+    SwissQrBill,
+    SwissQrBillAddress,
     VEvent,
     EventClass,
     EventStatus,
@@ -94,6 +96,16 @@ def index(request):
         ),
         epc_data=EpcData(
             name="Wikimedia Foerdergesellschaft", iban="DE33100205000001194700", amount=20, text="To Wikipedia, From Gérard Boéchat"
+        ),
+        swiss_qr_bill=SwissQrBill(
+            account="CH44 3199 9123 0008 8901 2",
+            creditor=SwissQrBillAddress(name="Robert Schneider AG", street="Rue du Lac", building_number="1268", postal_code="2501", town="Biel"),
+            amount="1949.75",
+            debtor=SwissQrBillAddress(
+                name="Pia-Maria Rutschmann-Schnyder", street="Grosse Marktgasse", building_number="28", postal_code="9400", town="Rorschach"
+            ),
+            reference="21 00000 00003 13947 14300 09017",
+            unstructured_message="Order of 15 June 2020",
         ),
         event=DEMO_EVENT,
         shift_js_encoded="ウェブサイトにおける文字コードの割合、UTF-8が90％超え。Shift_JISやEUC-JPは？".encode("shift-jis"),

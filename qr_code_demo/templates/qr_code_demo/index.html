@@ -687,6 +687,29 @@
   </tr>
 </table>
 
+<h3>Swiss QR-bill</h3>
+<table width="100%">
+  <tr>
+    <td>Template code:</td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <strong><code>{% templatetag openblock %} qr_for_swiss_qr_bill swiss_qr_bill {% templatetag closeblock %}</code></strong>
+    </td>
+    <td width="33%">
+      <strong><code>&lt;img src="{% templatetag openblock %} qr_url_for_swiss_qr_bill swiss_qr_bill {% templatetag closeblock %}"&gt;</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <div>{% qr_for_swiss_qr_bill swiss_qr_bill %}</div>
+    </td>
+    <td width="33%">
+      <div><img src="{% qr_url_for_swiss_qr_bill swiss_qr_bill %}"></div>
+    </td>
+  </tr>
+</table>
+
 <h3>Calendar event (iCalendar)</h3>
 <table width="100%">
   <tr>
