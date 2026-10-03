@@ -419,7 +419,7 @@ class VEvent:
 PRODID:Django QR Code
 VERSION:2.0
 BEGIN:VEVENT
-DTSTAMP:{(self.dtstamp or datetime.datetime.utcnow()).astimezone(zoneinfo.ZoneInfo('UTC')).strftime("%Y%m%dT%H%M%SZ")}
+DTSTAMP:{(self.dtstamp or datetime.datetime.now(datetime.timezone.utc)).astimezone(zoneinfo.ZoneInfo('UTC')).strftime("%Y%m%dT%H%M%SZ")}
 UID:{self.uid}
 DTSTART:{get_datetime_str(self.start)}
 DTEND:{get_datetime_str(self.end)}

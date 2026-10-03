@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.." && scripts_dir="$(pwd)/scripts"
 
 output_folder_name=tests_result
 if [ -d "${output_folder_name}" ]; then
+    rm -rf "${output_folder_name}.back"
     mv "${output_folder_name}" "${output_folder_name}.back"
 fi
 mkdir -p "${output_folder_name}"
@@ -25,8 +26,8 @@ echo "--- Computer: $(hostname) ($(uname -a), CPU: $(nproc --all)"
 echo "--- CPU: $(nproc --all)"
 echo "--- RAM: $(free -h)"
 
-python_versions=("3.10 3.11 3.12 3.13")
-django_versions=("4.2.21 5.2.1")
+python_versions=("3.10 3.11 3.12 3.13 3.14")
+django_versions=("5.2.17")
 
 for python_version in ${python_versions[@]}
 do
@@ -56,7 +57,7 @@ do
         ${DOCKER_COMPOSE_EXEC_COMMAND} python manage.py collectstatic --noinput || (echo "collectstatic - Python: ${python_version}, Django: ${django_version}" >> ${output_folder_name}/fail.flag)
 
         # Run tests
-        (${DOCKER_COMPOSE_EXEC_COMMAND} python -Wd manage.py test || (echo "test - Python: ${python_version}, Django: ${django_version}" >> ${output_folder_name}/fail.flag)) | tee "${output_folder_name}/python_${python_version}-django_${django_version}-${log_file_name}"
+        (${DOCKER_COMPOSE_EXEC_COMMAND} python -Wd manage.py test 2>&1 || (echo "test - Python: ${python_version}, Django: ${django_version}" >> ${output_folder_name}/fail.flag)) | tee "${output_folder_name}/python_${python_version}-django_${django_version}-${log_file_name}"
      done
 
     echo "--- Run type checking"

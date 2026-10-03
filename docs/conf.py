@@ -19,6 +19,7 @@
 #
 import os
 import re
+import shutil
 import sys
 import django
 
@@ -26,13 +27,15 @@ sys.path.insert(0, os.path.abspath("../"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "demo_site.settings")
 django.setup()
 
-# Symlink CHANGELOG.md from repo root to the pages dir.
+# Copy CHANGELOG.md and README.md from repo root to the pages dir. Copies are used instead of symlinks because
+# Sphinx resolves symlinks to their real path (outside the docs source dir), which breaks cross-document links.
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 filenames = ["CHANGELOG.md", "README.md"]
 for filename in filenames:
     target = os.path.join(basedir, "docs", "pages", filename)
-    if not os.path.islink(target):
-        os.symlink(os.path.join(basedir, filename), target)
+    if os.path.islink(target):
+        os.remove(target)
+    shutil.copyfile(os.path.join(basedir, filename), target)
 
 
 # -- General configuration ------------------------------------------------

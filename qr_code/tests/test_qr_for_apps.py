@@ -1,13 +1,14 @@
 """Tests for qr_code application."""
 import base64
 import datetime
+import re
 
 from dataclasses import asdict
 from datetime import date
 
 import zoneinfo
 from django.template import Template, Context
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.utils.safestring import mark_safe
 
 from qr_code.qrcode.utils import (
@@ -242,6 +243,24 @@ class TestCoordinates(SimpleTestCase):
         c2 = Coordinates(latitude=586000.32, longitude=250954.19, altitude=500)
         self.assertEqual(c1.__str__(), "latitude: 586000.32, longitude: 250954.19")
         self.assertEqual(c2.__str__(), "latitude: 586000.32, longitude: 250954.19, altitude: 500")
+
+
+class TestVEvent(SimpleTestCase):
+    # Use a local time zone far from UTC so that any confusion between local time and UTC is detected.
+    @override_settings(TIME_ZONE="Pacific/Kiritimati")
+    def test_default_dtstamp_is_current_utc_time(self):
+        event = VEvent(
+            uid="django-qr-code-test-id",
+            summary="Meeting",
+            start=datetime.datetime(2022, 7, 6, hour=8, minute=30, tzinfo=EUROPE_ZURICH_TZ),
+            end=datetime.datetime(2022, 7, 6, hour=12, tzinfo=EUROPE_ZURICH_TZ),
+        )
+        before = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+        event_data = event.make_qr_code_data()
+        after = datetime.datetime.now(datetime.timezone.utc)
+        dtstamp_str = re.search(r"^DTSTAMP:(\S+)$", event_data, re.MULTILINE).group(1)
+        dtstamp = datetime.datetime.strptime(dtstamp_str, "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
+        self.assertTrue(before <= dtstamp <= after, f"{dtstamp} is not between {before} and {after}")
 
 
 class TestQRForApplications(SimpleTestCase):

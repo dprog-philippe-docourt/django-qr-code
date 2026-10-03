@@ -1,5 +1,5 @@
-sphinx==7.3.7
-sphinx-autobuild==2024.4.16
-docutils==0.21.2
-myst-parser[code_style,linkify,testing,rtd]==3.0.1
+sphinx==9.1.0
+sphinx-autobuild==2025.8.25
+docutils==0.22.4
+myst-parser[code_style,linkify,testing,rtd]==5.1.0
 -r ../requirements.txt
